@@ -3,7 +3,7 @@ import 'dart:developer';
 import 'package:http/http.dart' as http;
 
 class ApiHelper {
-  static const String baseUrl = 'https://your_server_ip:your_port/api';
+  static const String baseUrl = 'https://app.edubest.com.ng';
   static const String baseUrlIp = 'your_server_ip';
 
   /// API Paths
