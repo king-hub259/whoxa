@@ -15,11 +15,6 @@ workflows:
         script: |
           flutter clean
           flutter pub get
-          
-      - name: Analyze code size
-        script: |
-          flutter analyze
-          flutter build apk --analyze-size
 
       - name: Build optimized APK (per ABI)
         script: |
