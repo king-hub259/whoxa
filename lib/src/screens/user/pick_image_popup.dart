@@ -1,4 +1,4 @@
-// ignore_for_file: avoid_print
+// ignore_for_file: avoid_print, deprecated_member_use
 
 import 'dart:io';
 
@@ -7,11 +7,11 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hive/hive.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:meyaoo_new/app.dart';
-import 'package:meyaoo_new/controller/avatar_controller.dart';
-import 'package:meyaoo_new/src/global/global.dart';
-import 'package:meyaoo_new/src/global/strings.dart';
-import 'package:meyaoo_new/src/screens/user/avatars_popup.dart';
+import 'package:whoxachat/app.dart';
+import 'package:whoxachat/controller/avatar_controller.dart';
+import 'package:whoxachat/src/global/global.dart';
+import 'package:whoxachat/src/global/strings.dart';
+import 'package:whoxachat/src/screens/user/avatars_popup.dart';
 
 class PickImagePopup extends StatefulWidget {
   const PickImagePopup({super.key});
@@ -63,7 +63,7 @@ class _PickImagePopupState extends State<PickImagePopup> {
                       Container(
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: const Color(0xffFCC604).withOpacity(0.16),
+                          color: chatownColor.withOpacity(0.16),
                         ),
                         child: Image.asset(
                           "assets/images/camera.png",
@@ -99,7 +99,7 @@ class _PickImagePopupState extends State<PickImagePopup> {
                       Container(
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: const Color(0xffFCC604).withOpacity(0.16),
+                          color: chatownColor.withOpacity(0.16),
                         ),
                         child: Image.asset(
                           "assets/images/gallery.png",
@@ -135,7 +135,7 @@ class _PickImagePopupState extends State<PickImagePopup> {
                       Container(
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: const Color(0xffFCC604).withOpacity(0.16),
+                          color: chatownColor.withOpacity(0.16),
                         ),
                         child: Obx(
                           () => CachedNetworkImage(
@@ -145,26 +145,19 @@ class _PickImagePopupState extends State<PickImagePopup> {
                                     .where((avatar) =>
                                         avatar.avatarGender == "female" &&
                                         avatar.defaultAvtar == true)
-                                    .map((avatar) => avatar.avtarMedia!)
                                     .first
+                                    .avtarMedia!
                                 : avatarController.avatarsData
                                     .where((avatar) =>
-                                        avatar.avatarGender == "male" &&
-                                        avatar.defaultAvtar == true)
-                                    .map((avatar) => avatar.avtarMedia!)
-                                    .first,
+                                        avatar.avatarGender == "male")
+                                    .first
+                                    .avtarMedia!,
                             height: 30,
                             width: 30,
                             errorWidget: (context, url, error) =>
                                 const Icon(Icons.person, color: chatColor),
                           ),
-                        )
-                            // Image.asset(
-                            //   "assets/images/user.png",
-                            //   color: appColorBlack,
-                            //   scale: 2.8,
-                            // )
-                            .paddingAll(13),
+                        ).paddingAll(13),
                       ),
                       const SizedBox(
                         height: 10,
@@ -192,7 +185,6 @@ class _PickImagePopupState extends State<PickImagePopup> {
   File? image;
   final picker = ImagePicker();
   Future getImageFromCamera() async {
-    // ignore: deprecated_member_use
     final pickedFile = await picker.pickImage(source: ImageSource.camera);
     setState(() {
       if (pickedFile != null) {
@@ -205,7 +197,6 @@ class _PickImagePopupState extends State<PickImagePopup> {
   }
 
   Future getImageFromGallery() async {
-    // ignore: deprecated_member_use
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
     setState(() {
       if (pickedFile != null) {

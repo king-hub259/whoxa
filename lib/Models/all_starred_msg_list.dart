@@ -1,4 +1,4 @@
-import 'package:meyaoo_new/Models/reply_msg_model.dart';
+import 'package:whoxachat/Models/reply_msg_model.dart';
 
 class AllStaredMsgModel {
   bool? success;
@@ -61,12 +61,7 @@ class StarMessageList {
     chat = json['Chat'] != null ? Chat.fromJson(json['Chat']) : null;
     resData =
         json['resData'] != null ? ResData.fromJson(json['resData']) : null;
-    // if (json['resData'] != null) {
-    //   resData = <ResData>[];
-    //   json['resData'].forEach((v) {
-    //     resData!.add(ResData.fromJson(v));
-    //   });
-    // }
+
     otherUserId = json['other_user_id'];
     if (json['otherUserDetails'] != null) {
       otherUserDetails = <OtherUserDetails>[];
@@ -89,9 +84,7 @@ class StarMessageList {
     if (resData != null) {
       data['resData'] = resData!.toJson();
     }
-    // if (resData != null) {
-    //   data['resData'] = resData!.map((v) => v.toJson()).toList();
-    // }
+
     data['other_user_id'] = otherUserId;
     if (otherUserDetails != null) {
       data['otherUserDetails'] =
@@ -122,6 +115,8 @@ class Chat {
   String? updatedAt;
   int? senderId;
   int? conversationId;
+  bool? deleteFromEveryone;
+  String? deleteForMe;
   User? user;
   Conversation? conversation;
 
@@ -146,6 +141,8 @@ class Chat {
       this.updatedAt,
       this.senderId,
       this.conversationId,
+      this.deleteFromEveryone,
+      this.deleteForMe,
       this.user,
       this.conversation});
 
@@ -170,6 +167,8 @@ class Chat {
     updatedAt = json['updatedAt'];
     senderId = json['senderId'];
     conversationId = json['conversation_id'];
+    deleteFromEveryone = json['delete_from_everyone'];
+    deleteForMe = json['delete_for_me'];
     user = json['User'] != null ? User.fromJson(json['User']) : null;
     conversation = json['Conversation'] != null
         ? Conversation.fromJson(json['Conversation'])
@@ -198,6 +197,8 @@ class Chat {
     data['updatedAt'] = updatedAt;
     data['senderId'] = senderId;
     data['conversation_id'] = conversationId;
+    data['delete_from_everyone'] = deleteFromEveryone;
+    data['delete_for_me'] = deleteForMe;
     if (user != null) {
       data['User'] = user!.toJson();
     }

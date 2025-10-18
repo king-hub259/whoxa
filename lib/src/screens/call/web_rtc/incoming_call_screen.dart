@@ -1,19 +1,20 @@
-// ignore_for_file: must_be_immutable, non_constant_identifier_names
+// ignore_for_file: must_be_immutable, non_constant_identifier_names, avoid_print, deprecated_member_use
 
+import 'dart:io';
 import 'dart:ui';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:get/get.dart' as getx;
 import 'package:lottie/lottie.dart';
-import 'package:meyaoo_new/app.dart';
-import 'package:meyaoo_new/controller/call_controller.dart/get_roomId_controller.dart';
-import 'package:meyaoo_new/controller/user_chatlist_controller.dart';
-import 'package:meyaoo_new/src/Notification/notification_service.dart';
-import 'package:meyaoo_new/src/global/global.dart';
-import 'package:meyaoo_new/src/screens/call/web_rtc/audio_call_screen.dart';
-import 'package:meyaoo_new/src/screens/call/web_rtc/video_call_screen.dart';
+import 'package:whoxachat/app.dart';
+import 'package:whoxachat/controller/call_controller.dart/get_roomId_controller.dart';
+import 'package:whoxachat/controller/user_chatlist_controller.dart';
+import 'package:whoxachat/src/Notification/one_signal_service.dart';
+import 'package:whoxachat/src/global/global.dart';
+import 'package:whoxachat/src/screens/call/web_rtc/audio_call_screen.dart';
+import 'package:whoxachat/src/screens/call/web_rtc/video_call_screen.dart';
+import 'package:whoxachat/src/screens/layout/bottombar.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
 
 class IncomingCallScrenn extends StatefulWidget {
@@ -59,17 +60,31 @@ class _IncomingCallScrennState extends State<IncomingCallScrenn> {
   }
 
   localCamera() {
-    navigator.mediaDevices
-        .getUserMedia({"video": true, "audio": true}).then((mediaStream) {
+    navigator.mediaDevices.getUserMedia({
+      "video": widget.forVideoCall == true
+          ? Platform.isAndroid
+              ? true
+              : {
+                  'mandatory': {
+                    'minWidth': '640',
+                    'minHeight': '480',
+                    'minFrameRate': '30',
+                  },
+                  'facingMode': 'user',
+                }
+          : false,
+      "audio": true
+    }).then((mediaStream) async {
       localRenderer.srcObject = mediaStream;
       setState(() {});
+      await Helper.setSpeakerphoneOn(true);
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    // ignore: prefer_const_constructors
     return Scaffold(
+      backgroundColor: appColorBlack,
       body: Stack(
         children: [
           SizedBox(
@@ -87,20 +102,7 @@ class _IncomingCallScrennState extends State<IncomingCallScrenn> {
                       objectFit:
                           RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
                     )
-                  :
-                  //  Container(
-                  //     decoration: BoxDecoration(
-                  //       color: appColorWhite.withOpacity(0.1),
-                  //       image: DecorationImage(
-                  //         image: NetworkImage(widget.receiverImage!),
-                  //         fit: BoxFit.cover,
-                  //       ),
-                  //     ),
-                  //     child: BackdropFilter(
-                  //       filter: ImageFilter.blur(sigmaX: 5.0, sigmaY: 5.0),
-                  //       child: Text(""),
-                  // child:
-                  Stack(
+                  : Stack(
                       fit: StackFit.expand,
                       children: [
                         CachedNetworkImage(
@@ -121,9 +123,9 @@ class _IncomingCallScrennState extends State<IncomingCallScrenn> {
                           },
                         ),
                         BackdropFilter(
-                          filter: ImageFilter.blur(sigmaX: 5.0, sigmaY: 5.0),
+                          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
                           child: Container(
-                            color: Colors.black.withOpacity(0.1),
+                            color: Colors.white.withOpacity(0.053),
                           ),
                         ),
                       ],
@@ -232,12 +234,17 @@ class _IncomingCallScrennState extends State<IncomingCallScrenn> {
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
                     GestureDetector(
-                      onTap: () {
+                      onTap: () async {
                         OneSignal.Notifications.clearAll();
-                        FlutterRingtonePlayer().stop();
+                        stopRingtone();
 
                         if (widget.isGroupCall == "true") {
-                          getx.Get.back();
+                          getx.Get.find<ChatListController>().forChatList();
+                          getx.Get.offAll(
+                            TabbarScreen(
+                              currentTab: 0,
+                            ),
+                          );
                         } else {
                           roomIdController.callCutByReceiver(
                             conversationID: widget.conversation_id,
@@ -245,7 +252,6 @@ class _IncomingCallScrennState extends State<IncomingCallScrenn> {
                             caller_id: widget.caller_id,
                           );
                         }
-                        getx.Get.find<ChatListController>().forChatList();
                       },
                       child: Column(
                         children: [
@@ -290,16 +296,16 @@ class _IncomingCallScrennState extends State<IncomingCallScrenn> {
                     ),
                     GestureDetector(
                       onTap: () {
-                        LocalNotificationService.notificationsPlugin
-                            .cancelAll();
                         OneSignal.Notifications.clearAll();
-                        FlutterRingtonePlayer().stop();
+                        OneSignal.Notifications.clearAll();
+                        stopRingtone();
 
                         if (widget.forVideoCall == true) {
                           getx.Get.off(
                             VideoCallScreen(
                               roomID: widget.roomID,
                               conversation_id: widget.conversation_id,
+                              isGroupCall: widget.isGroupCall,
                             ),
                           );
                         } else {
@@ -309,6 +315,7 @@ class _IncomingCallScrennState extends State<IncomingCallScrenn> {
                               conversation_id: widget.conversation_id,
                               receiverImage: widget.callerImage,
                               receiverUserName: widget.senderName,
+                              isGroupCall: widget.isGroupCall,
                             ),
                           );
                         }
@@ -340,7 +347,7 @@ class _IncomingCallScrennState extends State<IncomingCallScrenn> {
                               const Positioned(
                                 bottom: 5,
                                 child: Text(
-                                  "Conform",
+                                  "Accept",
                                   style: TextStyle(
                                     fontWeight: FontWeight.w400,
                                     fontSize: 12,
@@ -369,8 +376,9 @@ class _IncomingCallScrennState extends State<IncomingCallScrenn> {
     localRenderer.srcObject!.getTracks().forEach((track) => track.stop());
     localRenderer.srcObject!.getAudioTracks().forEach((track) => track.stop());
     localRenderer.srcObject!.getVideoTracks().forEach((track) => track.stop());
-    localRenderer.srcObject = null;
+
     localRenderer.dispose();
+
     super.dispose();
   }
 }

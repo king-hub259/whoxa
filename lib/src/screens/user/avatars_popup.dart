@@ -6,9 +6,9 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hive/hive.dart';
-import 'package:meyaoo_new/controller/avatar_controller.dart';
-import 'package:meyaoo_new/src/global/global.dart';
-import 'package:meyaoo_new/src/global/strings.dart';
+import 'package:whoxachat/controller/avatar_controller.dart';
+import 'package:whoxachat/src/global/global.dart';
+import 'package:whoxachat/src/global/strings.dart';
 
 class AvatarsPopup extends StatefulWidget {
   File? image;
@@ -75,7 +75,7 @@ class _AvatarsPopupState extends State<AvatarsPopup> {
                                 });
                               },
                               child: Hive.box(userdata).get(userImage) ==
-                                          "http://62.72.36.245:3000/uploads/not-found-images/profile-image.png" &&
+                                          "https://whoxachat.com/uploads/not-found-images/profile-image.png" &&
                                       widget.image == null &&
                                       Hive.box(userdata).get(userGender) ==
                                           "male" &&
@@ -91,7 +91,7 @@ class _AvatarsPopupState extends State<AvatarsPopup> {
                                           decoration: BoxDecoration(
                                             shape: BoxShape.circle,
                                             border: Border.all(
-                                                color: const Color(0xffFCC604),
+                                                color: chatownColor,
                                                 width: 2),
                                           ),
                                           padding: const EdgeInsets.all(4),
@@ -125,12 +125,12 @@ class _AvatarsPopupState extends State<AvatarsPopup> {
                                               color: appColorWhite,
                                             ),
                                             child: Container(
-                                              decoration: const BoxDecoration(
+                                              decoration:  BoxDecoration(
                                                   shape: BoxShape.circle,
                                                   gradient:
                                                       LinearGradient(colors: [
-                                                    Color(0xffFFEDAB),
-                                                    Color(0xffFCC604),
+                                                    secondaryColor,
+                                                  chatownColor,
                                                   ])),
                                               child: const Icon(
                                                 Icons.check_rounded,
@@ -142,7 +142,7 @@ class _AvatarsPopupState extends State<AvatarsPopup> {
                                       ],
                                     )
                                   : Hive.box(userdata).get(userImage) ==
-                                              "http://62.72.36.245:3000/uploads/not-found-images/profile-image.png" &&
+                                              "https://whoxachat.com/uploads/not-found-images/profile-image.png" &&
                                           widget.image == null &&
                                           Hive.box(userdata).get(userGender) ==
                                               "female" &&
@@ -160,7 +160,7 @@ class _AvatarsPopupState extends State<AvatarsPopup> {
                                                 shape: BoxShape.circle,
                                                 border: Border.all(
                                                     color:
-                                                        const Color(0xffFCC604),
+                                                        chatownColor,
                                                     width: 2),
                                               ),
                                               padding: const EdgeInsets.all(4),
@@ -196,16 +196,14 @@ class _AvatarsPopupState extends State<AvatarsPopup> {
                                                 ),
                                                 child: Container(
                                                   decoration:
-                                                      const BoxDecoration(
+                                                       BoxDecoration(
                                                           shape:
                                                               BoxShape.circle,
                                                           gradient:
                                                               LinearGradient(
                                                                   colors: [
-                                                                Color(
-                                                                    0xffFFEDAB),
-                                                                Color(
-                                                                    0xffFCC604),
+                                                               secondaryColor,
+                                                               chatownColor
                                                               ])),
                                                   child: const Icon(
                                                     Icons.check_rounded,
@@ -225,8 +223,7 @@ class _AvatarsPopupState extends State<AvatarsPopup> {
                                                   decoration: BoxDecoration(
                                                     shape: BoxShape.circle,
                                                     border: Border.all(
-                                                        color: const Color(
-                                                            0xffFCC604),
+                                                        color: chatownColor,
                                                         width: 2),
                                                   ),
                                                   padding:
@@ -264,16 +261,14 @@ class _AvatarsPopupState extends State<AvatarsPopup> {
                                                     ),
                                                     child: Container(
                                                       decoration:
-                                                          const BoxDecoration(
+                                                           BoxDecoration(
                                                               shape: BoxShape
                                                                   .circle,
                                                               gradient:
                                                                   LinearGradient(
                                                                       colors: [
-                                                                    Color(
-                                                                        0xffFFEDAB),
-                                                                    Color(
-                                                                        0xffFCC604),
+                                                                    secondaryColor,
+                                                                  chatownColor
                                                                   ])),
                                                       child: const Icon(
                                                         Icons.check_rounded,
@@ -288,7 +283,7 @@ class _AvatarsPopupState extends State<AvatarsPopup> {
                                                       .get(userImage)!
                                                       .isNotEmpty &&
                                                   Hive.box(userdata).get(userImage) !=
-                                                      "http://62.72.36.245:3000/uploads/not-found-images/profile-image.png" &&
+                                                      "https://whoxachat.com/uploads/not-found-images/profile-image.png" &&
                                                   avatarController.avatarsData
                                                       .where((avatar) =>
                                                           avatar.avtarMedia ==
@@ -306,8 +301,7 @@ class _AvatarsPopupState extends State<AvatarsPopup> {
                                                       decoration: BoxDecoration(
                                                         shape: BoxShape.circle,
                                                         border: Border.all(
-                                                            color: const Color(
-                                                                0xffFCC604),
+                                                            color: chatownColor,
                                                             width: 2),
                                                       ),
                                                       padding:
@@ -351,16 +345,14 @@ class _AvatarsPopupState extends State<AvatarsPopup> {
                                                         ),
                                                         child: Container(
                                                           decoration:
-                                                              const BoxDecoration(
+                                                               BoxDecoration(
                                                                   shape: BoxShape
                                                                       .circle,
                                                                   gradient:
                                                                       LinearGradient(
                                                                           colors: [
-                                                                        Color(
-                                                                            0xffFFEDAB),
-                                                                        Color(
-                                                                            0xffFCC604),
+                                                                         secondaryColor,
+                                                                  chatownColor
                                                                       ])),
                                                           child: const Icon(
                                                             Icons.check_rounded,
@@ -410,35 +402,6 @@ class _AvatarsPopupState extends State<AvatarsPopup> {
                               ),
                             ),
                     );
-                    //  avatarController
-                    //         .avatarsData[index].avtarMedia!.isNotEmpty
-                    //     ? CachedNetworkImage(
-                    //         imageUrl:
-                    //             avatarController.avatarsData[index].avtarMedia!,
-                    //         errorWidget: (context, url, error) => Container(
-                    //               height: 30,
-                    //               width: 30,
-                    //               decoration: const BoxDecoration(
-                    //                   color: Color(0XFFE7B12D),
-                    //                   shape: BoxShape.circle),
-                    //               child: const Icon(
-                    //                 Icons.person,
-                    //                 size: 15,
-                    //                 color: Colors.black,
-                    //               ),
-                    //             ))
-                    //     : Container(
-                    //         height: 30,
-                    //         width: 30,
-                    //         decoration: const BoxDecoration(
-                    //             color: Color(0XFFE7B12D),
-                    //             shape: BoxShape.circle),
-                    //         child: const Icon(
-                    //           Icons.person,
-                    //           size: 15,
-                    //           color: Colors.black,
-                    //         ),
-                    //       );
                   },
                 ),
               ),

@@ -2,10 +2,12 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>CADisableMinimumFrameDurationOnPhone</key>
+	<true/>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>Meyaoo New</string>
+	<string>Your App Name</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -13,7 +15,7 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>meyaoo_new</string>
+	<string>Your App Name</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
@@ -24,34 +26,42 @@
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSContactsUsageDescription</key>
+	<string>Whoxa app need access to the get phone contact list so it will show to invite contacts.</string>
+	<key>UIApplicationSupportsIndirectInputEvents</key>
+	<true/>
+	<key>BGTaskSchedulerPermittedIdentifiers</key>
+	<array>
+		<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+		<string>com.example.chat</string>
+	</array>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Your App Name app user need this capability for to send media in chat, set profile picture from phone library.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Your App Name app user need this capability for send audio message in chat.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Your App Name app user need access to the camera for video calls.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>Your App Name app user need this capability for share location in chat.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Your App Name app user need this capability for share location in chat.</string>
+	<key>OneSignal_APP_ID</key>
+	<string>your-project-one-singal-id</string>
+	<key>FirebaseAppDelegateProxyEnabled</key>
+	<false/>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>fetch</string>
+		<string>voip</string>
+		<string>remote-notification</string>
+		<string>audio</string>
+		<!-- <string>processing</string> -->
+	</array>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
 	<string>Main</string>
-	<key>UISupportedInterfaceOrientations</key>
-	<array>
-		<string>UIInterfaceOrientationPortrait</string>
-		<string>UIInterfaceOrientationLandscapeLeft</string>
-		<string>UIInterfaceOrientationLandscapeRight</string>
-	</array>
-	<key>UISupportedInterfaceOrientations~ipad</key>
-	<array>
-		<string>UIInterfaceOrientationPortrait</string>
-		<string>UIInterfaceOrientationPortraitUpsideDown</string>
-		<string>UIInterfaceOrientationLandscapeLeft</string>
-		<string>UIInterfaceOrientationLandscapeRight</string>
-	</array>
-	<key>CADisableMinimumFrameDurationOnPhone</key>
-	<true/>
-	<key>UIApplicationSupportsIndirectInputEvents</key>
-	<true/>
-	<key>NSContactsUsageDescription</key>
-    <string>Reason we need access to the contact list</string>
-	<key>UIBackgroundModes</key>
-	<array>
-		<string>voip</string>
-		<string>remote-notification</string>
-		<string>processing</string>
-	</array>
+	<key>UIStatusBarHidden</key>
+	<false/>
 </dict>
 </plist>

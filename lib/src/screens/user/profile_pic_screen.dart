@@ -1,4 +1,4 @@
-// ignore_for_file: avoid_print, use_build_context_synchronously
+// ignore_for_file: avoid_print, use_build_context_synchronously, deprecated_member_use
 
 import 'dart:io';
 
@@ -6,18 +6,18 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:meyaoo_new/app.dart';
-import 'package:meyaoo_new/controller/avatar_controller.dart';
-import 'package:meyaoo_new/src/global/api_helper.dart';
-import 'package:meyaoo_new/src/global/global.dart';
+import 'package:whoxachat/app.dart';
+import 'package:whoxachat/controller/avatar_controller.dart';
+import 'package:whoxachat/src/global/api_helper.dart';
+import 'package:whoxachat/src/global/global.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
 import 'package:http/http.dart' as http;
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:meyaoo_new/Models/user_profile_model.dart';
-import 'package:meyaoo_new/src/global/strings.dart';
-import 'package:meyaoo_new/src/screens/layout/bottombar.dart';
+import 'package:whoxachat/Models/user_profile_model.dart';
+import 'package:whoxachat/src/global/strings.dart';
+import 'package:whoxachat/src/screens/layout/bottombar.dart';
 import 'package:page_transition/page_transition.dart';
 
 class ProfilePicScreen extends StatefulWidget {
@@ -84,7 +84,7 @@ class _ProfilePicScreenState extends State<ProfilePicScreen> {
                           height: 42,
                         ),
                         buttonClick
-                            ? const Center(
+                            ? Center(
                                 child: SizedBox(
                                 height: 30,
                                 width: 30,
@@ -95,22 +95,6 @@ class _ProfilePicScreenState extends State<ProfilePicScreen> {
                                 onPressed: () {
                                   closekeyboard();
                                   editApiCall();
-                                  // if (userController.text.isNotEmpty &&
-                                  //     fNameController.text.isNotEmpty &&
-                                  //     lNameController.text.isNotEmpty) {
-                                  //   editApiCall();
-                                  // } else {
-                                  //   if (userController.text.isEmpty) {
-                                  //     showCustomToast(
-                                  //         "Please enter username");
-                                  //   } else if (fNameController.text.isEmpty) {
-                                  //     showCustomToast(
-                                  //         "Please enter first name");
-                                  //   } else if (lNameController.text.isEmpty) {
-                                  //     showCustomToast(
-                                  //         "Please enter last name");
-                                  //   }
-                                  // }
                                 },
                                 title: "Submit",
                               )
@@ -183,7 +167,7 @@ class _ProfilePicScreenState extends State<ProfilePicScreen> {
                               setState(() {});
                               avatarController.avatarIndex.value = index;
                             },
-                            child: profileImg == "http://62.72.36.245:3000/uploads/not-found-images/profile-image.png" &&
+                            child: profileImg == "https://whoxachat.com/uploads/not-found-images/profile-image.png" &&
                                     image == null &&
                                     Hive.box(userdata).get(userGender) ==
                                         "male" &&
@@ -201,8 +185,7 @@ class _ProfilePicScreenState extends State<ProfilePicScreen> {
                                         decoration: BoxDecoration(
                                           shape: BoxShape.circle,
                                           border: Border.all(
-                                              color: const Color(0xffFCC604),
-                                              width: 2),
+                                              color: chatownColor, width: 2),
                                         ),
                                         padding: const EdgeInsets.all(4),
                                         child: CachedNetworkImage(
@@ -234,13 +217,13 @@ class _ProfilePicScreenState extends State<ProfilePicScreen> {
                                             color: appColorWhite,
                                           ),
                                           child: Container(
-                                            decoration: const BoxDecoration(
+                                            decoration: BoxDecoration(
                                                 shape: BoxShape.circle,
-                                                gradient:
-                                                    LinearGradient(colors: [
-                                                  Color(0xffFFEDAB),
-                                                  Color(0xffFCC604),
-                                                ])),
+                                                gradient: LinearGradient(
+                                                    colors: [
+                                                      secondaryColor,
+                                                      chatownColor
+                                                    ])),
                                             child: const Icon(
                                               Icons.check_rounded,
                                               size: 13,
@@ -250,7 +233,7 @@ class _ProfilePicScreenState extends State<ProfilePicScreen> {
                                       )
                                     ],
                                   )
-                                : profileImg == "http://62.72.36.245:3000/uploads/not-found-images/profile-image.png" &&
+                                : profileImg == "https://whoxachat.com/uploads/not-found-images/profile-image.png" &&
                                         image == null &&
                                         Hive.box(userdata)
                                                 .get(userGender) ==
@@ -269,8 +252,7 @@ class _ProfilePicScreenState extends State<ProfilePicScreen> {
                                             decoration: BoxDecoration(
                                               shape: BoxShape.circle,
                                               border: Border.all(
-                                                  color:
-                                                      const Color(0xffFCC604),
+                                                  color: chatownColor,
                                                   width: 2),
                                             ),
                                             padding: const EdgeInsets.all(4),
@@ -304,13 +286,13 @@ class _ProfilePicScreenState extends State<ProfilePicScreen> {
                                                 color: appColorWhite,
                                               ),
                                               child: Container(
-                                                decoration: const BoxDecoration(
+                                                decoration: BoxDecoration(
                                                     shape: BoxShape.circle,
-                                                    gradient:
-                                                        LinearGradient(colors: [
-                                                      Color(0xffFFEDAB),
-                                                      Color(0xffFCC604),
-                                                    ])),
+                                                    gradient: LinearGradient(
+                                                        colors: [
+                                                          secondaryColor,
+                                                          chatownColor
+                                                        ])),
                                                 child: const Icon(
                                                   Icons.check_rounded,
                                                   size: 13,
@@ -330,8 +312,7 @@ class _ProfilePicScreenState extends State<ProfilePicScreen> {
                                                 decoration: BoxDecoration(
                                                   shape: BoxShape.circle,
                                                   border: Border.all(
-                                                      color: const Color(
-                                                          0xffFCC604),
+                                                      color: chatownColor,
                                                       width: 2),
                                                 ),
                                                 padding:
@@ -368,18 +349,14 @@ class _ProfilePicScreenState extends State<ProfilePicScreen> {
                                                     color: appColorWhite,
                                                   ),
                                                   child: Container(
-                                                    decoration:
-                                                        const BoxDecoration(
-                                                            shape:
-                                                                BoxShape.circle,
-                                                            gradient:
-                                                                LinearGradient(
-                                                                    colors: [
-                                                                  Color(
-                                                                      0xffFFEDAB),
-                                                                  Color(
-                                                                      0xffFCC604),
-                                                                ])),
+                                                    decoration: BoxDecoration(
+                                                        shape: BoxShape.circle,
+                                                        gradient:
+                                                            LinearGradient(
+                                                                colors: [
+                                                              secondaryColor,
+                                                              chatownColor
+                                                            ])),
                                                     child: const Icon(
                                                       Icons.check_rounded,
                                                       size: 13,
@@ -391,7 +368,7 @@ class _ProfilePicScreenState extends State<ProfilePicScreen> {
                                           )
                                         : profileImg!.isNotEmpty &&
                                                 profileImg !=
-                                                    "http://62.72.36.245:3000/uploads/not-found-images/profile-image.png" &&
+                                                    "https://whoxachat.com/uploads/not-found-images/profile-image.png" &&
                                                 avatarController.avatarsData
                                                     .where((avatar) =>
                                                         avatar.avtarMedia ==
@@ -414,8 +391,7 @@ class _ProfilePicScreenState extends State<ProfilePicScreen> {
                                                     decoration: BoxDecoration(
                                                       shape: BoxShape.circle,
                                                       border: Border.all(
-                                                          color: const Color(
-                                                              0xffFCC604),
+                                                          color: chatownColor,
                                                           width: 2),
                                                     ),
                                                     padding:
@@ -454,18 +430,15 @@ class _ProfilePicScreenState extends State<ProfilePicScreen> {
                                                         color: appColorWhite,
                                                       ),
                                                       child: Container(
-                                                        decoration:
-                                                            const BoxDecoration(
-                                                                shape: BoxShape
-                                                                    .circle,
-                                                                gradient:
-                                                                    LinearGradient(
-                                                                        colors: [
-                                                                      Color(
-                                                                          0xffFFEDAB),
-                                                                      Color(
-                                                                          0xffFCC604),
-                                                                    ])),
+                                                        decoration: BoxDecoration(
+                                                            shape:
+                                                                BoxShape.circle,
+                                                            gradient:
+                                                                LinearGradient(
+                                                                    colors: [
+                                                                  secondaryColor,
+                                                                  chatownColor
+                                                                ])),
                                                         child: const Icon(
                                                           Icons.check_rounded,
                                                           size: 13,
@@ -564,14 +537,13 @@ class _ProfilePicScreenState extends State<ProfilePicScreen> {
                   color: Colors.grey,
                   blurRadius: 1.0,
                   spreadRadius: 0.0,
-                  offset: Offset(0.0, 0.0) // shadow direction: bottom right
-                  )
+                  offset: Offset(0.0, 0.0))
             ]),
         child: ClipRRect(
             borderRadius: BorderRadius.circular(110),
             child: profileImg != null &&
                     profileImg !=
-                        "http://62.72.36.245:3000/uploads/not-found-images/profile-image.png" &&
+                        "https://whoxachat.com/uploads/not-found-images/profile-image.png" &&
                     avatarController.avatarIndex.value == -1 &&
                     image == null
                 ? avatarController.avatarsData
@@ -607,6 +579,87 @@ class _ProfilePicScreenState extends State<ProfilePicScreen> {
                             const Icon(Icons.person, color: chatColor),
                       )
                 : image == null
+                    // ? Obx(
+                    //     () => avatarController.avatarIndex.value != -1
+                    //         ? CachedNetworkImage(
+                    //             imageUrl: avatarController
+                    //                 .avatarsData[
+                    //                     avatarController.avatarIndex.value]
+                    //                 .avtarMedia!,
+                    //             imageBuilder: (context, imageProvider) =>
+                    //                 Container(
+                    //               decoration: BoxDecoration(
+                    //                 shape: BoxShape.circle,
+                    //                 image: DecorationImage(
+                    //                   image: imageProvider,
+                    //                   fit: BoxFit.cover,
+                    //                 ),
+                    //               ),
+                    //             ),
+                    //             errorWidget: (context, url, error) =>
+                    //                 const Icon(Icons.person, color: chatColor),
+                    //           )
+                    //         : Hive.box(userdata).get(userGender) == "male"
+                    //             ? CachedNetworkImage(
+                    //                 imageUrl: avatarController.avatarsData
+                    //                     .where((avatar) =>
+                    //                         avatar.avatarGender == "male" &&
+                    //                         avatar.defaultAvtar == true)
+                    //                     .map((avatar) => avatar.avtarMedia!)
+                    //                     .first,
+                    //                 imageBuilder: (context, imageProvider) =>
+                    //                     Container(
+                    //                   decoration: BoxDecoration(
+                    //                     shape: BoxShape.circle,
+                    //                     image: DecorationImage(
+                    //                       image: imageProvider,
+                    //                       fit: BoxFit.cover,
+                    //                     ),
+                    //                   ),
+                    //                 ),
+                    //                 errorWidget: (context, url, error) =>
+                    //                     const Icon(Icons.person,
+                    //                         color: chatColor),
+                    //               )
+                    //             : Hive.box(userdata).get(userGender) != null &&
+                    //                     Hive.box(userdata).get(userGender) ==
+                    //                         "female"
+                    //                 ? CachedNetworkImage(
+                    //                     imageUrl: avatarController.avatarsData
+                    //                         .where((avatar) =>
+                    //                             avatar.avatarGender ==
+                    //                                 "female" &&
+                    //                             avatar.defaultAvtar == true)
+                    //                         .map((avatar) => avatar.avtarMedia!)
+                    //                         .first,
+                    //                     imageBuilder:
+                    //                         (context, imageProvider) =>
+                    //                             Container(
+                    //                       decoration: BoxDecoration(
+                    //                         shape: BoxShape.circle,
+                    //                         image: DecorationImage(
+                    //                           image: imageProvider,
+                    //                           fit: BoxFit.cover,
+                    //                         ),
+                    //                       ),
+                    //                     ),
+                    //                     errorWidget: (context, url, error) =>
+                    //                         const Icon(Icons.person,
+                    //                             color: chatColor),
+                    //                   )
+                    //                 : Container(
+                    //                     height: 30,
+                    //                     width: 30,
+                    //                     decoration: BoxDecoration(
+                    //                         color: chatownColor,
+                    //                         shape: BoxShape.circle),
+                    //                     child: const Icon(
+                    //                       Icons.person,
+                    //                       size: 30,
+                    //                       color: Colors.black,
+                    //                     ),
+                    //                   ),
+                    //   )
                     ? Obx(
                         () => avatarController.avatarIndex.value != -1
                             ? CachedNetworkImage(
@@ -614,72 +667,19 @@ class _ProfilePicScreenState extends State<ProfilePicScreen> {
                                     .avatarsData[
                                         avatarController.avatarIndex.value]
                                     .avtarMedia!,
-                                imageBuilder: (context, imageProvider) =>
-                                    Container(
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    image: DecorationImage(
-                                      image: imageProvider,
-                                      fit: BoxFit.cover,
-                                    ),
-                                  ),
-                                ),
-                                errorWidget: (context, url, error) =>
-                                    const Icon(Icons.person, color: chatColor),
+                                // ... existing ImageBuilder ...
                               )
                             : Hive.box(userdata).get(userGender) == "male"
-                                ? CachedNetworkImage(
-                                    imageUrl: avatarController.avatarsData
-                                        .where((avatar) =>
-                                            avatar.avatarGender == "male" &&
-                                            avatar.defaultAvtar == true)
-                                        .map((avatar) => avatar.avtarMedia!)
-                                        .first,
-                                    imageBuilder: (context, imageProvider) =>
-                                        Container(
-                                      decoration: BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        image: DecorationImage(
-                                          image: imageProvider,
-                                          fit: BoxFit.cover,
-                                        ),
-                                      ),
-                                    ),
-                                    errorWidget: (context, url, error) =>
-                                        const Icon(Icons.person,
-                                            color: chatColor),
-                                  )
+                                ? _getDefaultMaleAvatar()
                                 : Hive.box(userdata).get(userGender) != null &&
                                         Hive.box(userdata).get(userGender) ==
                                             "female"
-                                    ? CachedNetworkImage(
-                                        imageUrl: avatarController.avatarsData
-                                            .where((avatar) =>
-                                                avatar.avatarGender ==
-                                                    "female" &&
-                                                avatar.defaultAvtar == true)
-                                            .map((avatar) => avatar.avtarMedia!)
-                                            .first,
-                                        imageBuilder:
-                                            (context, imageProvider) =>
-                                                Container(
-                                          decoration: BoxDecoration(
-                                            shape: BoxShape.circle,
-                                            image: DecorationImage(
-                                              image: imageProvider,
-                                              fit: BoxFit.cover,
-                                            ),
-                                          ),
-                                        ),
-                                        errorWidget: (context, url, error) =>
-                                            const Icon(Icons.person,
-                                                color: chatColor),
-                                      )
+                                    ? _getDefaultFemaleAvatar()
                                     : Container(
                                         height: 30,
                                         width: 30,
-                                        decoration: const BoxDecoration(
-                                            color: Color(0xFFFCC604),
+                                        decoration: BoxDecoration(
+                                            color: chatownColor,
                                             shape: BoxShape.circle),
                                         child: const Icon(
                                           Icons.person,
@@ -739,7 +739,7 @@ class _ProfilePicScreenState extends State<ProfilePicScreen> {
                     Container(
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: const Color(0xffFCC604).withOpacity(0.16),
+                        color: chatownColor.withOpacity(0.16),
                       ),
                       child: Image.asset(
                         "assets/images/camera.png",
@@ -775,7 +775,7 @@ class _ProfilePicScreenState extends State<ProfilePicScreen> {
                     Container(
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: const Color(0xffFCC604).withOpacity(0.16),
+                        color: chatownColor.withOpacity(0.16),
                       ),
                       child: Image.asset(
                         "assets/images/gallery.png",
@@ -815,9 +815,9 @@ class _ProfilePicScreenState extends State<ProfilePicScreen> {
         Expanded(
           child: Container(
             height: 1,
-            decoration: const BoxDecoration(
-                color: Color(0xFFFCC604),
-                borderRadius: BorderRadius.all(Radius.circular(5))),
+            decoration: BoxDecoration(
+                color: chatownColor,
+                borderRadius: const BorderRadius.all(Radius.circular(5))),
           ),
         ),
         const SizedBox(
@@ -837,9 +837,9 @@ class _ProfilePicScreenState extends State<ProfilePicScreen> {
         Expanded(
           child: Container(
             height: 1,
-            decoration: const BoxDecoration(
-                color: Color(0xFFFCC604),
-                borderRadius: BorderRadius.all(Radius.circular(5))),
+            decoration: BoxDecoration(
+                color: chatownColor,
+                borderRadius: const BorderRadius.all(Radius.circular(5))),
           ),
         ),
       ],
@@ -849,7 +849,6 @@ class _ProfilePicScreenState extends State<ProfilePicScreen> {
   File? image;
   final picker = ImagePicker();
   Future getImageFromCamera() async {
-    // ignore: deprecated_member_use
     final pickedFile = await picker.pickImage(source: ImageSource.camera);
     setState(() {
       if (pickedFile != null) {
@@ -862,7 +861,6 @@ class _ProfilePicScreenState extends State<ProfilePicScreen> {
   }
 
   Future getImageFromGallery() async {
-    // ignore: deprecated_member_use
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
     setState(() {
       if (pickedFile != null) {
@@ -904,12 +902,11 @@ class _ProfilePicScreenState extends State<ProfilePicScreen> {
           .toString();
     } else if (profileImg!.isNotEmpty &&
         profileImg !=
-            "http://62.72.36.245:3000/uploads/not-found-images/profile-image.png" &&
+            "https://whoxachat.com/uploads/not-found-images/profile-image.png" &&
         avatarController.avatarsData
             .where((avatar) => avatar.avtarMedia == profileImg)
             .map((avatar) => avatar.avtarMedia!)
             .isNotEmpty &&
-        // profileImg == avatarController.avatarsData[index].avtarMedia &&
         avatarController.avatarIndex.value == -1 &&
         image == null) {
       request.fields['avatar_id'] = avatarController.avatarsData
@@ -963,6 +960,72 @@ class _ProfilePicScreenState extends State<ProfilePicScreen> {
         buttonClick = false;
       });
       showCustomToast("Error");
+    }
+  }
+
+  Widget _getDefaultMaleAvatar() {
+    final maleAvatars = avatarController.avatarsData.where((avatar) =>
+        avatar.avatarGender == "male" && avatar.defaultAvtar == true);
+
+    if (maleAvatars.isNotEmpty) {
+      return CachedNetworkImage(
+        imageUrl: maleAvatars.first.avtarMedia!,
+        imageBuilder: (context, imageProvider) => Container(
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            image: DecorationImage(
+              image: imageProvider,
+              fit: BoxFit.cover,
+            ),
+          ),
+        ),
+        errorWidget: (context, url, error) =>
+            const Icon(Icons.person, color: chatColor),
+      );
+    } else {
+      return Container(
+        height: 30,
+        width: 30,
+        decoration: BoxDecoration(color: chatownColor, shape: BoxShape.circle),
+        child: const Icon(
+          Icons.person,
+          size: 30,
+          color: Colors.black,
+        ),
+      );
+    }
+  }
+
+  Widget _getDefaultFemaleAvatar() {
+    final femaleAvatars = avatarController.avatarsData.where((avatar) =>
+        avatar.avatarGender == "female" && avatar.defaultAvtar == true);
+
+    if (femaleAvatars.isNotEmpty) {
+      return CachedNetworkImage(
+        imageUrl: femaleAvatars.first.avtarMedia!,
+        imageBuilder: (context, imageProvider) => Container(
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            image: DecorationImage(
+              image: imageProvider,
+              fit: BoxFit.cover,
+            ),
+          ),
+        ),
+        errorWidget: (context, url, error) =>
+            const Icon(Icons.person, color: chatColor),
+      );
+    } else {
+      return Container(
+        height: 30,
+        width: 30,
+        decoration: BoxDecoration(color: chatownColor, shape: BoxShape.circle),
+        child: const Icon(
+          Icons.person,
+          size: 30,
+          color: Colors.black,
+        ),
+      );
     }
   }
 }

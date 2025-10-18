@@ -13,8 +13,6 @@ class PlayVideo extends StatefulWidget {
 }
 
 class _PlayVideoState extends State<PlayVideo> {
-  // ChewieController? _chewieController;
-  // late VideoPlayerController _videoPlayerController;
   VideoPlayerController? _controller;
   Future<void>? _initializeVideoPlayerFuture;
   @override
@@ -25,44 +23,12 @@ class _PlayVideoState extends State<PlayVideo> {
     _controller!.setVolume(1.0);
     super.initState();
   }
-  // @override
-  // void initState() {
-  //   super.initState();
-  //   print('video link ============= > init ${widget.videoLink}');
-  //   initializePlayer();
-  // }
 
   @override
   void dispose() {
     _controller!.dispose();
     super.dispose();
   }
-  // void dispose() {
-  //   super.dispose();
-  //   _videoPlayerController.dispose();
-  //   _chewieController!.dispose();
-  // }
-
-  // Future<void> initializePlayer() async {
-  //   _videoPlayerController = VideoPlayerController.network(widget.videoLink);
-
-  //   await Future.wait([_videoPlayerController.initialize()]);
-  //   _createChewieController();
-
-  //   print('video link ============= > ${widget.videoLink}');
-
-  //   setState(() {});
-  // }
-
-  // void _createChewieController() {
-  //   _chewieController = ChewieController(
-  //       videoPlayerController: _videoPlayerController,
-  //       autoPlay: true,
-  //       looping: true,
-  //       showControls: true,
-  //       showControlsOnInitialize: true,
-  //       hideControlsTimer: Duration(seconds: 3));
-  // }
 
   @override
   Widget build(BuildContext context) {
@@ -103,44 +69,3 @@ class _PlayVideoState extends State<PlayVideo> {
     );
   }
 }
-  // Widget build(BuildContext context) {
-  //   return SafeArea(
-  //       child: Scaffold(
-  //     backgroundColor: Colors.black,
-  //     body: Stack(
-  //       alignment: Alignment.center,
-  //       children: [
-  //         Container(
-  //             height: double.infinity,
-  //             width: double.infinity,
-  //             color: Colors.black,
-  //             child: _chewieController != null &&
-  //                     _chewieController!
-  //                         .videoPlayerController.value.isInitialized
-  //                 ? Chewie(
-  //                     controller: _chewieController!,
-  //                   )
-  //                 : Center(
-  //                     child: CircularProgressIndicator(color: appColorOrange),
-  //                   )),
-  //         Positioned(
-  //           left: 20,
-  //           top: 20,
-  //           child: InkWell(
-  //             onTap: () {
-  //               _videoPlayerController.dispose();
-  //               _chewieController!.dispose();
-  //               Navigator.pop(context);
-  //             },
-  //             child: const Icon(
-  //               Icons.arrow_back_ios_new_rounded,
-  //               color: appColorWhite,
-  //               size: 24,
-  //             ),
-  //           ),
-  //         )
-  //       ],
-  //     ),
-  //   ));
-  // }
-

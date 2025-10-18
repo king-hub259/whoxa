@@ -11,16 +11,16 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:hive/hive.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:meyaoo_new/Models/Story%20Models/add_story_data.dart';
-import 'package:meyaoo_new/Models/Story%20Models/my_story_seen_list_data.dart';
-import 'package:meyaoo_new/Models/Story%20Models/status_delete_model.dart';
-import 'package:meyaoo_new/Models/Story%20Models/story_list_data.dart';
-import 'package:meyaoo_new/Models/Story%20Models/view_story_data.dart';
-import 'package:meyaoo_new/hive_service/hive_service.dart';
-import 'package:meyaoo_new/src/global/api_helper.dart';
-import 'package:meyaoo_new/src/global/global.dart';
-import 'package:meyaoo_new/src/global/strings.dart';
-import 'package:meyaoo_new/src/screens/layout/story/final_story.dart';
+import 'package:whoxachat/Models/Story%20Models/add_story_data.dart';
+import 'package:whoxachat/Models/Story%20Models/my_story_seen_list_data.dart';
+import 'package:whoxachat/Models/Story%20Models/status_delete_model.dart';
+import 'package:whoxachat/Models/Story%20Models/story_list_data.dart';
+import 'package:whoxachat/Models/Story%20Models/view_story_data.dart';
+import 'package:whoxachat/hive_service/hive_service.dart';
+import 'package:whoxachat/src/global/api_helper.dart';
+import 'package:whoxachat/src/global/global.dart';
+import 'package:whoxachat/src/global/strings.dart';
+import 'package:whoxachat/src/screens/layout/story/final_story.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:http/http.dart' as http;
 
@@ -43,10 +43,10 @@ class StroyGetxController extends GetxController {
   var deleteStatusModel = StatusDeleteModel().obs;
 
   var addStoryData = AddStoryDataModel().obs;
-  var storyListData = StoryListData().obs;
+  Rx<StoryListData> storyListData = StoryListData().obs;
   RxList<ViewedStatusList> viewedStatusList = <ViewedStatusList>[].obs;
   RxList<NotViewedStatusList> notViewedStatusList = <NotViewedStatusList>[].obs;
-  ////
+
   var allStoryListData = StoryListData().obs;
   var viewStoryData = ViewStoryData().obs;
   var myStorySeenData = MyStorySeenListData().obs;
@@ -58,16 +58,12 @@ class StroyGetxController extends GetxController {
   var pageIndexValue = 0.obs;
   var storyIndexValue = 0.obs;
 
-  // final userIdOfAccount = Hive.box(userdata).get(userId);
-
   RxString imagePath = ''.obs;
   RxString videoPath = ''.obs;
 
   late FilePickerResult result;
 
   late Options options;
-
-  //var contactListData = ContactListResponseModel().obs;
 
   StroyGetxController() {
     options = Options(
@@ -81,17 +77,11 @@ class StroyGetxController extends GetxController {
     );
   }
 
-  filePickForStory() async {
+  Future filePickForStory() async {
     result = (await FilePicker.platform.pickFiles(
       allowMultiple: false,
       allowCompression: true,
       type: FileType.image,
-      // allowedExtensions: [
-      //   'jpg',
-      //   'jpeg',
-      //   'png',
-      //   //'mp4',
-      // ],
     ))!;
 
     if (result != null) {
@@ -105,41 +95,22 @@ class StroyGetxController extends GetxController {
       String? extension =
           filePath != null ? filePath.split('.').last.toLowerCase() : null;
 
-      // if (extension == 'mp4') {
-      //   Get.to(() => VideoTrimmer(
-      //         files: result.files[0],
-      //       ));
-      //   // The picked file is an MP4 video
-      // } else {
-      //   Get.to(() => const FinalStoryConfirmationScreen());
-
-      //   // The picked file is not an MP4 video
-      // }
-      Get.to(() => const FinalStoryConfirmationScreen());
+      Get.to(
+        () => const FinalStoryConfirmationScreen(),
+      )!
+          .then(
+        (value) {
+          debugPrint("filePickForStory value 1 $value");
+        },
+      );
     }
   }
-
-  // late XFile? imageFile;
-
-  // getImageFromGallery() async {
-  //   final pickedFile =
-  //       await ImagePicker().pickImage(source: ImageSource.gallery);
-
-  //   if (pickedFile != null) {
-  //     // A file was picked from the gallery
-  //     imageFile = XFile(pickedFile.path);
-
-  //     // Proceed with your logic here, such as navigating to the next screen
-  //     Get.to(() => const FinalStoryConfirmationScreen());
-  //   }
-  // }
 
   void setImagePath(String path) {
     imagePath.value = path;
     if (kDebugMode) {
       print("${imagePath.value} PATH☺☺☺");
     }
-    //addImageStory(imagePath.value);
   }
 
   Future<void> openImagePicker(bool isForCamera) async {
@@ -156,7 +127,7 @@ class StroyGetxController extends GetxController {
         source: isForCamera ? ImageSource.camera : ImageSource.gallery);
     if (pickedVideo != null) {
       videoPath.value = pickedVideo.path;
-      // setImagePath(pickedImage.path);
+
       Get.back();
     }
   }
@@ -218,21 +189,13 @@ class StroyGetxController extends GetxController {
       String timestamp = DateTime.now().millisecondsSinceEpoch.toString();
       String thumbnailPath = '${appDirectory.path}/thumbnail_$timestamp.jpg';
 
-      // await flutterFFmpeg.execute(
-      //   '-i $imagePath -ss 00:00:01 -vframes 1 $thumbnailPath',
-      // );
-
       File thumbnailFile = File(thumbnailPath);
 
       dd.FormData formData = dd.FormData.fromMap({
-        // if (imagePath.isNotEmpty)
         "files": await dd.MultipartFile.fromFile(
           imagePath,
         ),
         "status_text": text
-        // "user_id": Hive.box(userdata).get(userId),
-        // // "video_thumbnail": thumbnailFile,
-        // "type": "video",
       });
 
       print("Requested Data of add_story $formData");
@@ -272,40 +235,6 @@ class StroyGetxController extends GetxController {
     try {
       isAllUserStoryLoad(true);
 
-      //var box = await Hive.openBox(HiveService.getAllStoryBox);
-
-      // Map<String, dynamic> data = {
-      //   'user_id': Hive.box(userdata).get(userId),
-      // };
-
-      // if (internetController.isOnline.value) {
-      //   final result = await dio.post("${baseUrl()}GerStoryByUser",
-      //       data: data, options: options);
-
-      //   final respo = StoryListData.fromJson(result.data);
-
-      //   storyListData = respo.obs;
-      //   allStoryListData = respo.obs;
-      //   var storeJsonData = json.encode(result.data);
-      //   box.put(HiveKeyService.storyKey, storeJsonData);
-      //   var getData = box.get(HiveKeyService.storyKey);
-      //   log("STORY:$getData");
-
-      //   if (kDebugMode) {
-      //     print("Status of get_story_by_user : ${result.statusCode}");
-      //   }
-      // } else {
-      //   var getData = box.get(HiveKeyService.storyKey);
-      //   if (getData == null) {
-      //     storyListData.value.post = null;
-      //     storyListData.value.myPost = null;
-      //   } else {
-      //     var getJSONData = json.decode(getData);
-      //     var respo = StoryListData.fromJson(getJSONData);
-      //     storyListData = respo.obs;
-      //     print("GET_STORY:$respo");
-      //   }
-      // }
       final result = await dio.post(apiHelper.statusListUrl, options: options);
 
       final respo = StoryListData.fromJson(result.data);
@@ -313,16 +242,20 @@ class StroyGetxController extends GetxController {
       storyListData = respo.obs;
       viewedStatusList.value = storyListData.value.viewedStatusList!;
       notViewedStatusList.value = storyListData.value.notViewedStatusList!;
+      notViewedStatusList.removeWhere((element) =>
+          element.userData!.userId! == Hive.box(userdata).get(userId));
+      notViewedStatusList.refresh();
+      storyListData.refresh();
       allStoryListData = respo.obs;
 
       var storeJsonData = json.encode(result.data);
-      //box.put(HiveKeyService.storyKey, storeJsonData);
+
       log("STORY-LIST:$respo");
       log("STORY-LIST:${storyListData.toString()}");
       log("STORY-LIST:${allStoryListData.toString()}");
       log("STORY-LIST viewedStatusList.length :${viewedStatusList.length}");
       log("STORY-LIST notViewedStatusList.length :${notViewedStatusList.length}");
-      //log("SEEN-LIST:$seenList");
+
       if (kDebugMode) {
         print("Status of get_story_by_user : ${result.statusCode}");
       }
@@ -367,34 +300,11 @@ class StroyGetxController extends GetxController {
               .statusViews![0]
               .statusCount! +
           1;
-
+      notViewedStatusList.refresh();
       storyListData.refresh();
       viewedStatusList.refresh();
       notViewedStatusList.refresh();
       print("Requested Data of add_story$respo");
-      // if (respo.responseCode == 1) {
-      //   for (int i = 0; i < storyListData.value.post!.length; i++) {
-      //     for (int j = 0;
-      //         j < storyListData.value.post![i].storyImage!.length;
-      //         j++) {
-      //       if (storyID ==
-      //           storyListData.value.post![i].storyImage![j].storyId
-      //               .toString()) {
-      //         log("Story ID MATCHED");
-      //         storyListData.value.post![i].storyImage![j].isSeen = 1;
-      //         if (storyListData.value.post![i].userReadCount !=
-      //             storyListData.value.post![i].totalStories) {
-      //           log("USER COUNT ${storyListData.value.post![i].userReadCount}");
-      //           storyListData.value.post![i].userReadCount =
-      //               storyListData.value.post![i].userReadCount! + 1;
-      //           log("USER COUNT AFTER ${storyListData.value.post![i].userReadCount}");
-      //           storyListData.refresh();
-      //         }
-      //       }
-      //       // if( storyListData.value.post![i].storyImage![j]. )
-      //     }
-      //   }
-      // }
 
       viewStoryData = respo.obs;
       isViewStoryLoading.value = false;
@@ -416,36 +326,6 @@ class StroyGetxController extends GetxController {
         print("Requested data of story_seen_list $data");
       }
 
-      // if (internetController.isOnline.value) {
-      //   final result = await dio.post("${baseUrl()}StorySeenList",
-      //       data: data, options: options);
-
-      //   log("Status of story_seen_list ${result.statusCode}");
-
-      //   var storeJsonData = json.encode(result.data);
-      //   await box.put(storyID, storeJsonData);
-      //   var getData = box.get(storyID);
-
-      //   log("Stored Seen List $getData");
-
-      //   // if (result.statusCode == 200) {}
-
-      //   final respo = MyStorySeenListData.fromJson(result.data);
-      //   myStorySeenData = respo.obs;
-
-      //   if (myStorySeenData.value.post!.isNotEmpty) {
-      //     print(myStorySeenData.value.post![0].username);
-      //   }
-      // } else {
-      //   var getData = box.get(storyID);
-      //   if (getData == null) {
-      //     myStorySeenData.value.post = null;
-      //   } else {
-      //     var getJsonData = json.decode(getData);
-      //     final respo = MyStorySeenListData.fromJson(getJsonData);
-      //     myStorySeenData = respo.obs;
-      //   }
-      // }
       final result = await dio.post(apiHelper.myStatusSeenListUrl,
           data: data, options: options);
 
@@ -456,8 +336,6 @@ class StroyGetxController extends GetxController {
       var getData = box.get(storyID);
 
       log("Stored Seen List $getData");
-
-      // if (result.statusCode == 200) {}
 
       final respo = MyStorySeenListData.fromJson(result.data);
       myStorySeenData = respo.obs;
@@ -481,12 +359,11 @@ class StroyGetxController extends GetxController {
         "Accept": "application/json",
       };
 
-      //add headers
       request.headers.addAll(headers);
       request.fields['status_media_id'] = statusMediaID;
 
       print(request.fields);
-      // send
+
       var response = await request.send();
 
       String responseData =
@@ -521,11 +398,11 @@ class StroyGetxController extends GetxController {
     allStoryListData = respo.obs;
 
     var storeJsonData = json.encode(result.data);
-    //box.put(HiveKeyService.storyKey, storeJsonData);
+
     log("STORY-LIST:$respo");
     log("STORY-LIST:${storyListData.toString()}");
     log("STORY-LIST:${allStoryListData.toString()}");
-    //log("SEEN-LIST:$seenList");
+
     if (kDebugMode) {
       print("Status of get_story_by_user : ${result.statusCode}");
     }

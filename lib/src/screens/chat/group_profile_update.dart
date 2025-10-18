@@ -3,9 +3,9 @@ import 'dart:io';
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:meyaoo_new/app.dart';
-import 'package:meyaoo_new/controller/group_create_controller.dart';
-import 'package:meyaoo_new/src/global/global.dart';
+import 'package:whoxachat/app.dart';
+import 'package:whoxachat/controller/group_create_controller.dart';
+import 'package:whoxachat/src/global/global.dart';
 
 class group_profile extends StatefulWidget {
   String dp;
@@ -29,7 +29,6 @@ class _group_profileState extends State<group_profile> {
 
   @override
   void initState() {
-    // log("groupid" + widget.groupid.toString());
     print("GROUP_ID: ${widget.groupid}");
     groupnameController.text = widget.name;
     super.initState();
@@ -102,7 +101,6 @@ class _group_profileState extends State<group_profile> {
                                   borderRadius: BorderRadius.circular(10)),
                               contentPadding: const EdgeInsets.only(
                                   top: 1, left: 15, bottom: 1),
-                              // hintText: 'Add a brief description',
                               hintText: languageController
                                   .textTranslate('Group Name Change'),
                               hintStyle: const TextStyle(
@@ -112,8 +110,6 @@ class _group_profileState extends State<group_profile> {
                               ),
                               filled: true,
                               fillColor: Colors.grey.shade100,
-
-                              // ),
                             )),
                       ),
                     )
@@ -211,7 +207,7 @@ class _group_profileState extends State<group_profile> {
               child: Container(
                 width: 32,
                 height: 32,
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   color: chatownColor,
                   shape: BoxShape.circle,
                 ),
@@ -266,7 +262,7 @@ class _group_profileState extends State<group_profile> {
                         getImageFromCamera();
                       },
                       style: ButtonStyle(
-                        shape: MaterialStateProperty.all(RoundedRectangleBorder(
+                        shape: WidgetStateProperty.all(RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8.0))),
                       ),
                       child: Text(
@@ -283,7 +279,7 @@ class _group_profileState extends State<group_profile> {
                         getImageFromGallery();
                       },
                       style: ButtonStyle(
-                        shape: MaterialStateProperty.all(
+                        shape: WidgetStateProperty.all(
                           RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8.0),
                           ),
@@ -304,9 +300,9 @@ class _group_profileState extends State<group_profile> {
                   child: ClipOval(
                     child: Material(
                       elevation: 5,
-                      color: chatownColor, // button color
+                      color: chatownColor,
                       child: InkWell(
-                        splashColor: chatownColor, // inkwell color
+                        splashColor: chatownColor,
                         child: const SizedBox(
                             width: 25,
                             height: 25,
@@ -332,7 +328,6 @@ class _group_profileState extends State<group_profile> {
   }
 
   Future getImageFromCamera() async {
-    // ignore: deprecated_member_use
     final pickedFile = await picker.pickImage(source: ImageSource.camera);
     setState(() {
       if (pickedFile != null) {
@@ -344,7 +339,6 @@ class _group_profileState extends State<group_profile> {
   }
 
   Future getImageFromGallery() async {
-    // ignore: deprecated_member_use
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
     setState(() {
       if (pickedFile != null) {

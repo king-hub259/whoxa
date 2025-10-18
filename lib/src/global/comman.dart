@@ -1,4 +1,4 @@
-// ignore_for_file: prefer_const_constructors, depend_on_referenced_packages, curly_braces_in_flow_control_structures
+// ignore_for_file: prefer_const_constructors, depend_on_referenced_packages, curly_braces_in_flow_control_structures, deprecated_member_use
 
 import 'dart:math';
 
@@ -116,55 +116,55 @@ class SeekBarState extends State<SeekBar> {
             ),
           ],
         ),
-        // Padding(
-        //   padding: const EdgeInsets.symmetric(horizontal: 25.0),
-        //   child: Row(
-        //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        //     children: [
-        //       StreamBuilder<PlayerState>(
-        //         stream: widget.player.playerStateStream,
-        //         builder: (context, snapshot) {
-        //           final playerState = snapshot.data;
-        //           final processingState = playerState?.processingState;
-        //           final playing = playerState?.playing;
-        //           if (processingState == ProcessingState.loading ||
-        //               processingState == ProcessingState.buffering) {
-        //             return SizedBox(
-        //                 height: 60.0, child: CircularProgressIndicator());
-        //           } else if (playing != true) {
-        //             return GestureDetector(
-        //               onTap: widget.player.play,
-        //               child: CircleAvatar(
-        //                   radius: 30.0,
-        //                   backgroundColor: Colors.black,
-        //                   child: Icon(Icons.play_arrow,
-        //                       color: Colors.white, size: 30)),
-        //             );
-        //           } else if (processingState != ProcessingState.completed) {
-        //             return GestureDetector(
-        //               onTap: widget.player.pause,
-        //               child: CircleAvatar(
-        //                 radius: 30.0,
-        //                 backgroundColor: Colors.black,
-        //                 child: Icon(Icons.pause, color: Colors.white, size: 30),
-        //               ),
-        //             );
-        //           } else {
-        //             return GestureDetector(
-        //               onTap: () => widget.player.seek(Duration.zero),
-        //               child: CircleAvatar(
-        //                 radius: 30.0,
-        //                 backgroundColor: Colors.black,
-        //                 child:
-        //                     Icon(Icons.replay, color: Colors.white, size: 30),
-        //               ),
-        //             );
-        //           }
-        //         },
-        //       ),
-        //     ],
-        //   ),
-        // )
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
       ],
     );
   }

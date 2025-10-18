@@ -6,16 +6,17 @@ import 'dart:developer';
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:hive/hive.dart';
-import 'package:meyaoo_new/Models/calls_Model/call_history_model.dart';
-import 'package:meyaoo_new/Models/calls_Model/get_roomId.dart';
+import 'package:whoxachat/Models/calls_Model/call_history_model.dart';
+import 'package:whoxachat/Models/calls_Model/get_roomId.dart';
 import 'package:http/http.dart' as http;
-import 'package:meyaoo_new/Models/calls_Model/joined_users_model.dart';
-import 'package:meyaoo_new/main.dart';
-import 'package:meyaoo_new/src/Notification/notification_service.dart';
-import 'package:meyaoo_new/src/global/api_helper.dart';
-import 'package:meyaoo_new/src/global/global.dart';
-import 'package:meyaoo_new/src/global/strings.dart';
-// import 'package:meyaoo_new/src/screens/call/web_rtc/web_rtc.dart';
+import 'package:whoxachat/Models/calls_Model/joined_users_model.dart';
+import 'package:whoxachat/controller/user_chatlist_controller.dart';
+import 'package:whoxachat/main.dart';
+import 'package:whoxachat/src/global/api_helper.dart';
+import 'package:whoxachat/src/global/global.dart';
+import 'package:whoxachat/src/global/strings.dart';
+import 'package:whoxachat/src/screens/layout/bottombar.dart';
+// import 'package:whoxachat/src/screens/call/web_rtc/web_rtc.dart';
 
 final ApiHelper apiHelper = ApiHelper();
 
@@ -54,8 +55,6 @@ class RoomIdController extends GetxController {
       print("DATA:$responseData");
 
       if (roomModel.value!.success == true) {
-        // Get.to(() => CallScreen(
-        //     roomID: roomModel.value!.roomId, conversation_id: conversationID));
         isLoading(false);
       } else {
         isLoading(false);
@@ -96,8 +95,7 @@ class RoomIdController extends GetxController {
 
       if (callCutByMeData["success"] == true) {
         Get.back();
-        // Get.to(() => CallScreen(
-        //     roomID: roomModel.value!.roomId, conversation_id: conversationID));
+
         isCallCutByMeLoading(false);
       } else {
         isCallCutByMeLoading(false);
@@ -140,10 +138,13 @@ class RoomIdController extends GetxController {
       print("callCutByRcecieverData: $callCutByReceiverData");
 
       if (callCutByReceiverData["success"] == true) {
-        LocalNotificationService.notificationsPlugin.cancelAll();
-        Get.back();
-        // Get.to(() => CallScreen(
-        //     roomID: roomModel.value!.roomId, conversation_id: conversationID));
+        Get.find<ChatListController>().forChatList();
+        Get.offAll(
+          TabbarScreen(
+            currentTab: 0,
+          ),
+        );
+
         isCallCutByReceiverLoading(false);
       } else {
         isCallCutByReceiverLoading(false);
@@ -160,7 +161,7 @@ class RoomIdController extends GetxController {
   callHistory() async {
     try {
       isCallHistoryLoading.value = true;
-      // final token = "${Hive.box(userdata).get(authToken)}";
+
       await Hive.openBox(userdata);
       log("token: ${Hive.box(userdata).get(authToken)}");
       final responseJson = await apiHelper.postMethod(
@@ -183,7 +184,11 @@ class RoomIdController extends GetxController {
     }
   }
 
-  joinUsers() {
+  joinUsers({
+    required bool isCaller,
+    required bool isGroupCall,
+    VoidCallback? callback,
+  }) {
     try {
       socketIntilized.socket!.on("connected-user-list", (data) {
         if (kDebugMode) {
@@ -191,7 +196,13 @@ class RoomIdController extends GetxController {
         }
         connnectdUsersData.value =
             ConnectedUsersModel.fromJson(data).connectedUsers!;
-        log("connnectdUsersData.length :: ${connnectdUsersData.length}");
+
+        if (isCaller == false) {
+          if (callback != null) {
+            callback();
+            log("connnectdUsersData call back executed");
+          }
+        }
       });
     } catch (e) {
       isCallHistoryLoading.value = false;

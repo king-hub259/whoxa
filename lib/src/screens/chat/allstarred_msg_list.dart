@@ -1,4 +1,4 @@
-// ignore_for_file: avoid_print, must_be_immutable, prefer_is_empty
+// ignore_for_file: avoid_print, must_be_immutable, prefer_is_empty, deprecated_member_use
 import 'dart:convert';
 import 'dart:ui' as ui;
 
@@ -11,25 +11,26 @@ import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:hive/hive.dart';
 import 'package:lecle_flutter_link_preview/lecle_flutter_link_preview.dart';
-import 'package:meyaoo_new/Models/add_star_model.dart';
-import 'package:meyaoo_new/Models/all_starred_msg_list.dart';
-import 'package:meyaoo_new/app.dart';
-import 'package:meyaoo_new/controller/all_star_msg_controller.dart';
-import 'package:meyaoo_new/controller/audio_controller.dart';
-import 'package:meyaoo_new/controller/reply_msg_controller.dart';
-import 'package:meyaoo_new/controller/single_chat_controller.dart';
-import 'package:meyaoo_new/controller/user_chatlist_controller.dart';
-import 'package:meyaoo_new/src/global/api_helper.dart';
-import 'package:meyaoo_new/src/global/global.dart';
-import 'package:meyaoo_new/src/global/pdf.dart';
-import 'package:meyaoo_new/src/global/strings.dart';
-import 'package:meyaoo_new/src/screens/Onlichat/ChatOnline.dart';
-import 'package:meyaoo_new/src/screens/chat/FileView.dart';
-import 'package:meyaoo_new/src/screens/chat/chatvideo.dart';
-import 'package:meyaoo_new/src/screens/chat/group_chat_temp.dart';
-import 'package:meyaoo_new/src/screens/chat/imageView.dart';
-import 'package:meyaoo_new/src/screens/chat/single_chat.dart';
-import 'package:meyaoo_new/src/screens/save_contact.dart';
+import 'package:whoxachat/Models/add_star_model.dart';
+import 'package:whoxachat/Models/all_starred_msg_list.dart';
+import 'package:whoxachat/app.dart';
+import 'package:whoxachat/controller/all_star_msg_controller.dart';
+import 'package:whoxachat/controller/audio_controller.dart';
+import 'package:whoxachat/controller/reply_msg_controller.dart';
+import 'package:whoxachat/controller/single_chat_controller.dart';
+import 'package:whoxachat/controller/user_chatlist_controller.dart';
+import 'package:whoxachat/src/global/api_helper.dart';
+import 'package:whoxachat/src/global/common_widget.dart';
+import 'package:whoxachat/src/global/global.dart';
+import 'package:whoxachat/src/global/pdf.dart';
+import 'package:whoxachat/src/global/strings.dart';
+import 'package:whoxachat/src/screens/Onlichat/ChatOnline.dart';
+import 'package:whoxachat/src/screens/chat/FileView.dart';
+import 'package:whoxachat/src/screens/chat/chatvideo.dart';
+import 'package:whoxachat/src/screens/chat/group_chat_temp.dart';
+import 'package:whoxachat/src/screens/chat/imageView.dart';
+import 'package:whoxachat/src/screens/chat/single_chat.dart';
+import 'package:whoxachat/src/screens/save_contact.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:scroll_to_index/scroll_to_index.dart';
 import 'package:http/http.dart' as http;
@@ -57,7 +58,9 @@ class _AllStarredMsgListState extends State<AllStarredMsgList> {
 
   @override
   void initState() {
-    allStaredMsgController.getAllStarMsg(widget.conversationid);
+    if (widget.conversationid != null && widget.conversationid!.isNotEmpty) {
+      allStaredMsgController.getAllStarMsg(widget.conversationid);
+    }
     chatListController.forChatList();
     initlizedcontroller();
     super.initState();
@@ -168,7 +171,8 @@ class _AllStarredMsgListState extends State<AllStarredMsgList> {
                 fontWeight: FontWeight.w500, fontSize: 19, color: chatColor),
           ),
           actions: [
-            containerWidget(
+            allStaredMsgController.allStarred.length > 0
+                ? containerWidget(
                     onTap: () {
                       setState(() {
                         isSelectedmessage = "1";
@@ -177,7 +181,7 @@ class _AllStarredMsgListState extends State<AllStarredMsgList> {
                       });
                     },
                     title: languageController.textTranslate('Edit'))
-                .paddingOnly(right: 10)
+                : SizedBox().paddingOnly(right: 10)
           ],
         ),
         bottomNavigationBar: starId.isEmpty
@@ -196,7 +200,7 @@ class _AllStarredMsgListState extends State<AllStarredMsgList> {
                             setState(() {
                               singleChatContorller
                                   .removeStarApiMultiple(starId);
-                              // Iterate over starId and remove corresponding items from allStarred
+
                               for (var id in starId) {
                                 allStaredMsgController.allStarred.removeWhere(
                                     (item) =>
@@ -235,32 +239,15 @@ class _AllStarredMsgListState extends State<AllStarredMsgList> {
                                       mainAxisAlignment:
                                           MainAxisAlignment.center,
                                       children: [
-                                        Image.asset(
-                                          "assets/images/empty_stared_list.png",
-                                          height: 200,
-                                          width: 200,
-                                        ),
-                                        // const SizedBox(height: 25),
-                                        Text(
-                                          languageController.textTranslate(
-                                              'No starred Messages'),
-                                          style: const TextStyle(
-                                              color: Color(0xff000000),
-                                              fontSize: 16,
-                                              fontFamily: "Poppins",
-                                              fontWeight: FontWeight.w400),
-                                        ),
-                                        const SizedBox(height: 4),
-                                        Text(
-                                          languageController.textTranslate(
+                                        commonImageTexts(
+                                          image:
+                                              "assets/images/empty_stared_list.png",
+                                          text1:
+                                              languageController.textTranslate(
+                                                  'No Starred Messages'),
+                                          text2: languageController.textTranslate(
                                               'Tap and hold on any message to star it, so you can easily find it later.'),
-                                          textAlign: TextAlign.center,
-                                          style: const TextStyle(
-                                              color: Color(0xff959595),
-                                              fontSize: 10,
-                                              fontFamily: "Poppins",
-                                              fontWeight: FontWeight.w400),
-                                        ).paddingSymmetric(horizontal: 50)
+                                        ),
                                       ],
                                     ),
                                   ),
@@ -270,8 +257,6 @@ class _AllStarredMsgListState extends State<AllStarredMsgList> {
                                     shrinkWrap: true,
                                     scrollDirection: Axis.vertical,
                                     controller: listScrollController,
-                                    // physics:
-                                    //     const BouncingScrollPhysics(),
                                     itemCount: allStaredMsgController
                                         .allStarred.length,
                                     itemBuilder: (context, index) {
@@ -344,8 +329,7 @@ class _AllStarredMsgListState extends State<AllStarredMsgList> {
         return data.chat!.replyId == 0
             ? getContactMessage(index, data)
             : getReplyMessage(index, data);
-      // case 'date':
-      //   return getDateWidget(index, data);
+
       default:
         return const SizedBox.shrink();
     }
@@ -419,7 +403,7 @@ class _AllStarredMsgListState extends State<AllStarredMsgList> {
                     borderRadius: BorderRadius.circular(100),
                     child: CachedNetworkImage(
                       imageUrl: data.chat!.user!.profileImage!,
-                      placeholder: (context, url) => const Center(
+                      placeholder: (context, url) => Center(
                           child: CircularProgressIndicator(
                         color: chatownColor,
                       )),
@@ -443,14 +427,9 @@ class _AllStarredMsgListState extends State<AllStarredMsgList> {
                     fontSize: 11,
                   ),
                 ),
-                // data.chat!.conversation!.isGroup == false
-                //     ? const SizedBox.shrink()
-                //     :
                 const Icon(Icons.arrow_right_rounded, size: 30),
                 data.chat!.conversation!.isGroup == false
-                    ?
-                    //  const SizedBox.shrink()
-                    Text(
+                    ? Text(
                         data.otherUserDetails![0].userId ==
                                 data.chat!.user!.userId
                             ? languageController.textTranslate('You')
@@ -519,7 +498,7 @@ class _AllStarredMsgListState extends State<AllStarredMsgList> {
                           borderRadius: BorderRadius.circular(10),
                           color: data.chat!.user!.userId ==
                                   Hive.box(userdata).get(userId)
-                              ? yellow1Color
+                              ? secondaryColor
                               : grey1Color,
                         ),
                         child: Center(
@@ -555,7 +534,7 @@ class _AllStarredMsgListState extends State<AllStarredMsgList> {
                               right: 3,
                               child: Icon(
                                 Icons.star_rate_rounded,
-                                color: Color(0xff000000),
+                                color: Color(0xFFFFC700),
                                 size: 15,
                               ),
                             ),
@@ -612,9 +591,7 @@ class _AllStarredMsgListState extends State<AllStarredMsgList> {
             Row(
               children: [
                 data.chat!.conversation!.isGroup == false
-                    ?
-                    // const SizedBox.shrink()
-                    Text(
+                    ? Text(
                         data.otherUserDetails![0].userId ==
                                 data.chat!.user!.userId
                             ? languageController.textTranslate('You')
@@ -657,7 +634,7 @@ class _AllStarredMsgListState extends State<AllStarredMsgList> {
                     borderRadius: BorderRadius.circular(100),
                     child: CachedNetworkImage(
                       imageUrl: data.chat!.user!.profileImage!,
-                      placeholder: (context, url) => const Center(
+                      placeholder: (context, url) => Center(
                           child: CircularProgressIndicator(
                         color: chatownColor,
                       )),
@@ -718,7 +695,7 @@ class _AllStarredMsgListState extends State<AllStarredMsgList> {
                           borderRadius: BorderRadius.circular(10),
                           color: data.chat!.user!.userId ==
                                   Hive.box(userdata).get(userId)
-                              ? yellow1Color
+                              ? secondaryColor
                               : grey1Color,
                         ),
                         child: Center(
@@ -754,7 +731,7 @@ class _AllStarredMsgListState extends State<AllStarredMsgList> {
                               right: 3,
                               child: Icon(
                                 Icons.star_rate_rounded,
-                                color: Color(0xff000000),
+                                color: Color(0xFFFFC700),
                                 size: 15,
                               ),
                             ),
@@ -831,127 +808,6 @@ class _AllStarredMsgListState extends State<AllStarredMsgList> {
           child: data.chat!.user!.userId == Hive.box(userdata).get(userId)
               ? myImage(index, data)
               : otherImage(index, data),
-          //  Column(
-          //   children: [
-          //     Row(
-          //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          //       children: [
-          //         Row(
-          //           children: [
-          //             Text(
-          //               data.chat!.user!.userId ==
-          //                       Hive.box(userdata).get(userId)
-          //                   ? languageController.textTranslate('You')
-          //                   : data.chat!.user!.firstName! +
-          //                       data.chat!.user!.lastName!,
-          //               style: const TextStyle(
-          //                 fontWeight: FontWeight.w500,
-          //                 fontSize: 11,
-          //               ),
-          //             ),
-          //             const Icon(Icons.arrow_right_rounded, size: 30),
-          //             data.chat!.conversation!.isGroup == false
-          //                 ? Text(
-          //                     data.otherUserDetails![0].userId ==
-          //                             data.chat!.user!.userId
-          //                         ? languageController.textTranslate('You')
-          //                         : data.otherUserDetails![0].firstName! +
-          //                             data.otherUserDetails![0].lastName!,
-          //                     style: const TextStyle(
-          //                       fontWeight: FontWeight.w500,
-          //                       fontSize: 11,
-          //                     ),
-          //                   )
-          //                 : Text(
-          //                     data.chat!.conversation!.groupName!,
-          //                     style: const TextStyle(
-          //                       fontWeight: FontWeight.w500,
-          //                       fontSize: 11,
-          //                     ),
-          //                   ),
-          //           ],
-          //         ),
-          //         Text(
-          //           date(convertToLocalDate(data.updatedAt!)),
-          //           style: TextStyle(
-          //               fontSize: 8.5,
-          //               fontWeight: FontWeight.w400,
-          //               color: Colors.grey.shade500),
-          //         )
-          //       ],
-          //     ),
-          //     const SizedBox(
-          //       height: 10,
-          //     ),
-          //     Row(
-          //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          //       children: [
-          //         Align(
-          //           alignment: Alignment.topLeft,
-          //           child:
-          // InkWell(
-          //             onTap: () {
-          //               Navigator.push(
-          //                 context,
-          //                 PageTransition(
-          //                     curve: Curves.linear,
-          //                     type: PageTransitionType.rightToLeft,
-          //                     child: ImageView(
-          //                       image: data.chat!.url!,
-          //                       userimg: "",
-          //                     )),
-          //               );
-          //             },
-          //             child: Container(
-          //               decoration: BoxDecoration(
-          //                 borderRadius: BorderRadius.circular(10),
-          //                 color: data.chat!.user!.userId ==
-          //                         Hive.box(userdata).get(userId)
-          //                     ? yellow1Color
-          //                     : Colors.grey.shade200,
-          //               ),
-          //               child: Padding(
-          //                 padding: const EdgeInsets.all(3.0),
-          //                 child: Container(
-          //                     height: 120,
-          //                     width: 120,
-          //                     decoration: BoxDecoration(
-          //                         borderRadius: BorderRadius.circular(10)),
-          //                     child: ClipRRect(
-          //                       borderRadius: BorderRadius.circular(10),
-          //                       child: Image.network(
-          //                         data.chat!.url!,
-          //                         fit: BoxFit.cover,
-          //                       ),
-          //                     )),
-          //               ),
-          //             ),
-          //           ),
-          //         ),
-          //         Icon(
-          //           Icons.arrow_forward_ios,
-          //           size: 15,
-          //           color: Colors.grey.shade500,
-          //         )
-          //       ],
-          //     ),
-          //     const SizedBox(height: 10),
-          //     Row(
-          //       mainAxisAlignment: MainAxisAlignment.start,
-          //       children: [
-          //         Text(
-          //           convertUTCTimeTo12HourFormat(data.createdAt!),
-          //           style: TextStyle(
-          //             fontSize: 11,
-          //             color: Colors.grey.shade500,
-          //             fontWeight: FontWeight.w400,
-          //           ),
-          //         ),
-          //       ],
-          //     ),
-          //     const SizedBox(height: 5),
-          //   ],
-          // ),
         ),
       ),
     ).paddingOnly(bottom: 10);
@@ -976,7 +832,7 @@ class _AllStarredMsgListState extends State<AllStarredMsgList> {
                     borderRadius: BorderRadius.circular(100),
                     child: CachedNetworkImage(
                       imageUrl: data.chat!.user!.profileImage!,
-                      placeholder: (context, url) => const Center(
+                      placeholder: (context, url) => Center(
                           child: CircularProgressIndicator(
                         color: chatownColor,
                       )),
@@ -1000,14 +856,9 @@ class _AllStarredMsgListState extends State<AllStarredMsgList> {
                     fontSize: 11,
                   ),
                 ),
-                // data.chat!.conversation!.isGroup == false
-                //     ? const SizedBox.shrink()
-                //     :
                 const Icon(Icons.arrow_right_rounded, size: 30),
                 data.chat!.conversation!.isGroup == false
-                    ?
-                    //  const SizedBox.shrink()
-                    Text(
+                    ? Text(
                         data.otherUserDetails![0].userId ==
                                 data.chat!.user!.userId
                             ? languageController.textTranslate('You')
@@ -1089,7 +940,7 @@ class _AllStarredMsgListState extends State<AllStarredMsgList> {
                             borderRadius: BorderRadius.circular(10),
                             color: data.chat!.user!.userId ==
                                     Hive.box(userdata).get(userId)
-                                ? yellow1Color
+                                ? secondaryColor
                                 : Colors.grey.shade200,
                           ),
                           child: Padding(
@@ -1116,7 +967,7 @@ class _AllStarredMsgListState extends State<AllStarredMsgList> {
                               right: 8,
                               child: Icon(
                                 Icons.star_rate_rounded,
-                                color: Color(0xff000000),
+                                color: Color(0xFFFFC700),
                                 size: 15,
                               ),
                             ),
@@ -1173,9 +1024,7 @@ class _AllStarredMsgListState extends State<AllStarredMsgList> {
             Row(
               children: [
                 data.chat!.conversation!.isGroup == false
-                    ?
-                    // const SizedBox.shrink()
-                    Text(
+                    ? Text(
                         data.otherUserDetails![0].userId ==
                                 data.chat!.user!.userId
                             ? languageController.textTranslate('You')
@@ -1218,7 +1067,7 @@ class _AllStarredMsgListState extends State<AllStarredMsgList> {
                     borderRadius: BorderRadius.circular(100),
                     child: CachedNetworkImage(
                       imageUrl: data.chat!.user!.profileImage!,
-                      placeholder: (context, url) => const Center(
+                      placeholder: (context, url) => Center(
                           child: CircularProgressIndicator(
                         color: chatownColor,
                       )),
@@ -1292,7 +1141,7 @@ class _AllStarredMsgListState extends State<AllStarredMsgList> {
                             borderRadius: BorderRadius.circular(10),
                             color: data.chat!.user!.userId ==
                                     Hive.box(userdata).get(userId)
-                                ? yellow1Color
+                                ? secondaryColor
                                 : Colors.grey.shade200,
                           ),
                           child: Padding(
@@ -1319,7 +1168,7 @@ class _AllStarredMsgListState extends State<AllStarredMsgList> {
                               right: 8,
                               child: Icon(
                                 Icons.star_rate_rounded,
-                                color: Color(0xff000000),
+                                color: Color(0xFFFFC700),
                                 size: 15,
                               ),
                             ),
@@ -1396,166 +1245,6 @@ class _AllStarredMsgListState extends State<AllStarredMsgList> {
           child: data.chat!.user!.userId == Hive.box(userdata).get(userId)
               ? myLocation(index, data)
               : otherLocation(index, data),
-          //  Column(
-          //   children: [
-          //     Row(
-          //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          //       children: [
-          //         Row(
-          //           children: [
-          //             Text(
-          //               data.chat!.user!.userId ==
-          //                       Hive.box(userdata).get(userId)
-          //                   ? languageController.textTranslate('You')
-          //                   : data.chat!.user!.firstName! +
-          //                       data.chat!.user!.lastName!,
-          //               style: const TextStyle(
-          //                 fontWeight: FontWeight.w500,
-          //                 fontSize: 11,
-          //               ),
-          //             ),
-          //             const Icon(Icons.arrow_right_rounded, size: 30),
-          //             data.chat!.conversation!.isGroup == false
-          //                 ? Text(
-          //                     data.otherUserDetails![0].userId ==
-          //                             data.chat!.user!.userId
-          //                         ? languageController.textTranslate('You')
-          //                         : data.otherUserDetails![0].firstName! +
-          //                             data.otherUserDetails![0].lastName!,
-          //                     style: const TextStyle(
-          //                       fontWeight: FontWeight.w500,
-          //                       fontSize: 11,
-          //                     ),
-          //                   )
-          //                 : Text(
-          //                     data.chat!.conversation!.groupName!,
-          //                     style: const TextStyle(
-          //                       fontWeight: FontWeight.w500,
-          //                       fontSize: 11,
-          //                     ),
-          //                   ),
-          //           ],
-          //         ),
-          //         Text(
-          //           date(convertToLocalDate(data.updatedAt!)),
-          //           style: TextStyle(
-          //               fontSize: 8.5,
-          //               fontWeight: FontWeight.w400,
-          //               color: Colors.grey.shade500),
-          //         )
-          //       ],
-          //     ),
-          //     const SizedBox(height: 10),
-          //     Row(
-          //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          //       children: [
-          //         Align(
-          //           alignment: Alignment.topLeft,
-          //           child: Container(
-          //             decoration: BoxDecoration(
-          //               borderRadius: BorderRadius.circular(10),
-          //               color: data.chat!.user!.userId ==
-          //                       Hive.box(userdata).get(userId)
-          //                   ? yellow1Color
-          //                   : Colors.grey.shade200,
-          //             ),
-          //             child: Padding(
-          //               padding: const EdgeInsets.all(3.0),
-          //               child: Container(
-          //                   decoration: BoxDecoration(
-          //                     borderRadius: BorderRadius.circular(10),
-          //                   ),
-          //                   constraints: const BoxConstraints(
-          //                       minHeight: 10.0,
-          //                       minWidth: 10.0,
-          //                       maxWidth: 250),
-          //                   child: InkWell(
-          //                     onTap: () {
-          //                       MapUtils.openMap(
-          //                           double.parse(data.chat!.latitude!),
-          //                           double.parse(data.chat!.longitude!));
-          //                     },
-          //                     child: Container(
-          //                       height: 130,
-          //                       width: 250,
-          //                       decoration: BoxDecoration(
-          //                           borderRadius:
-          //                               BorderRadius.circular(10)),
-          //                       child: ClipRRect(
-          //                         borderRadius: BorderRadius.circular(10),
-          //                         child: data.chat!.latitude.toString() ==
-          //                                     "" ||
-          //                                 data.chat!.longitude.toString() ==
-          //                                     ""
-          //                             ? Container(
-          //                                 decoration: const BoxDecoration(
-          //                                     borderRadius:
-          //                                         BorderRadius.only(
-          //                                             topLeft:
-          //                                                 Radius.circular(
-          //                                                     10),
-          //                                             topRight:
-          //                                                 Radius.circular(
-          //                                                     10)),
-          //                                     image: DecorationImage(
-          //                                         image: AssetImage(
-          //                                             "assets/images/map_Blurr.png"),
-          //                                         fit: BoxFit.cover)),
-          //                                 child: Icon(
-          //                                   Icons.error_outline,
-          //                                   color: chatownColor
-          //                                       .withOpacity(0.6),
-          //                                   size: 50,
-          //                                 ),
-          //                               )
-          //                             : GoogleMap(
-          //                                 zoomControlsEnabled: false,
-          //                                 zoomGesturesEnabled: false,
-          //                                 initialCameraPosition:
-          //                                     CameraPosition(
-          //                                         target: LatLng(
-          //                                             double.parse(data
-          //                                                 .chat!.latitude!),
-          //                                             double.parse(data
-          //                                                 .chat!
-          //                                                 .longitude!)),
-          //                                         zoom: 15),
-          //                                 mapType: MapType.normal,
-          //                                 onMapCreated: (GoogleMapController
-          //                                     controller111) {
-          //                                   // controller.complete();
-          //                                 },
-          //                               ),
-          //                       ),
-          //                     ),
-          //                   )),
-          //             ),
-          //           ),
-          //         ),
-          //         Icon(
-          //           Icons.arrow_forward_ios,
-          //           size: 15,
-          //           color: Colors.grey.shade500,
-          //         )
-          //       ],
-          //     ),
-          //     const SizedBox(height: 10),
-          //     Row(
-          //       mainAxisAlignment: MainAxisAlignment.start,
-          //       children: [
-          //         Text(
-          //           convertUTCTimeTo12HourFormat(data.createdAt!),
-          //           style: TextStyle(
-          //             fontSize: 11,
-          //             color: Colors.grey.shade500,
-          //             fontWeight: FontWeight.w400,
-          //           ),
-          //         ),
-          //       ],
-          //     ),
-          //     const SizedBox(height: 5),
-          //   ],
-          // ),
         ),
       ),
     ).paddingOnly(bottom: 10);
@@ -1580,7 +1269,7 @@ class _AllStarredMsgListState extends State<AllStarredMsgList> {
                     borderRadius: BorderRadius.circular(100),
                     child: CachedNetworkImage(
                       imageUrl: data.chat!.user!.profileImage!,
-                      placeholder: (context, url) => const Center(
+                      placeholder: (context, url) => Center(
                           child: CircularProgressIndicator(
                         color: chatownColor,
                       )),
@@ -1604,14 +1293,9 @@ class _AllStarredMsgListState extends State<AllStarredMsgList> {
                     fontSize: 11,
                   ),
                 ),
-                // data.chat!.conversation!.isGroup == false
-                //     ? const SizedBox.shrink()
-                //     :
                 const Icon(Icons.arrow_right_rounded, size: 30),
                 data.chat!.conversation!.isGroup == false
-                    ?
-                    //  const SizedBox.shrink()
-                    Text(
+                    ? Text(
                         data.otherUserDetails![0].userId ==
                                 data.chat!.user!.userId
                             ? languageController.textTranslate('You')
@@ -1769,46 +1453,7 @@ class _AllStarredMsgListState extends State<AllStarredMsgList> {
                                                   CupertinoActivityIndicator());
                                         }
                                       },
-                                    )
-
-                              // GoogleMap(
-                              //     zoomControlsEnabled: false,
-                              //     zoomGesturesEnabled: false,
-                              //     onTap: (argument) {
-                              //       MapUtils.openMap(
-                              //           double.parse(data.latitude!),
-                              //           double.parse(
-                              //               data.longitude!));
-                              //     },
-                              //     markers: {
-                              //       Marker(
-                              //         icon:
-                              //             BitmapDescriptor.fromBytes(
-                              //                 snapshot.data!),
-                              //         markerId: const MarkerId(
-                              //             'my_location'),
-                              //         position: LatLng(
-                              //             double.parse(
-                              //                 widget.latitude!),
-                              //             double.parse(
-                              //                 widget.longitude!)),
-                              //       ),
-                              //     },
-                              //     initialCameraPosition:
-                              //         CameraPosition(
-                              //             target: LatLng(
-                              //                 double.parse(
-                              //                     data.latitude!),
-                              //                 double.parse(
-                              //                     data.longitude!)),
-                              //             zoom: 15),
-                              //     mapType: MapType.normal,
-                              //     onMapCreated: (GoogleMapController
-                              //         controller111) {
-                              //       // controller.complete();
-                              //     },
-                              //   ),
-                              ),
+                                    )),
                         ).paddingOnly(
                           left: 4,
                           top: 4,
@@ -1902,9 +1547,7 @@ class _AllStarredMsgListState extends State<AllStarredMsgList> {
             Row(
               children: [
                 data.chat!.conversation!.isGroup == false
-                    ?
-                    // const SizedBox.shrink()
-                    Text(
+                    ? Text(
                         data.otherUserDetails![0].userId ==
                                 data.chat!.user!.userId
                             ? languageController.textTranslate('You')
@@ -1947,7 +1590,7 @@ class _AllStarredMsgListState extends State<AllStarredMsgList> {
                     borderRadius: BorderRadius.circular(100),
                     child: CachedNetworkImage(
                       imageUrl: data.chat!.user!.profileImage!,
-                      placeholder: (context, url) => const Center(
+                      placeholder: (context, url) => Center(
                           child: CircularProgressIndicator(
                         color: chatownColor,
                       )),
@@ -2004,7 +1647,7 @@ class _AllStarredMsgListState extends State<AllStarredMsgList> {
                   child: Container(
                     decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(15),
-                        color: yellow1Color),
+                        color: secondaryColor),
                     constraints: const BoxConstraints(
                         minHeight: 10.0, minWidth: 10.0, maxWidth: 250),
                     child: Column(
@@ -2099,7 +1742,7 @@ class _AllStarredMsgListState extends State<AllStarredMsgList> {
                                                           Icons
                                                               .star_rate_rounded,
                                                           color:
-                                                              Color(0xff000000),
+                                                              Color(0xFFFFC700),
                                                           size: 15,
                                                         ),
                                                       ),
@@ -2112,46 +1755,7 @@ class _AllStarredMsgListState extends State<AllStarredMsgList> {
                                                   CupertinoActivityIndicator());
                                         }
                                       },
-                                    )
-
-                              // GoogleMap(
-                              //     zoomControlsEnabled: false,
-                              //     zoomGesturesEnabled: false,
-                              //     onTap: (argument) {
-                              //       MapUtils.openMap(
-                              //           double.parse(data.latitude!),
-                              //           double.parse(
-                              //               data.longitude!));
-                              //     },
-                              //     markers: {
-                              //       Marker(
-                              //         icon:
-                              //             BitmapDescriptor.fromBytes(
-                              //                 snapshot.data!),
-                              //         markerId: const MarkerId(
-                              //             'my_location'),
-                              //         position: LatLng(
-                              //             double.parse(
-                              //                 widget.latitude!),
-                              //             double.parse(
-                              //                 widget.longitude!)),
-                              //       ),
-                              //     },
-                              //     initialCameraPosition:
-                              //         CameraPosition(
-                              //             target: LatLng(
-                              //                 double.parse(
-                              //                     data.latitude!),
-                              //                 double.parse(
-                              //                     data.longitude!)),
-                              //             zoom: 15),
-                              //     mapType: MapType.normal,
-                              //     onMapCreated: (GoogleMapController
-                              //         controller111) {
-                              //       // controller.complete();
-                              //     },
-                              //   ),
-                              ),
+                                    )),
                         ).paddingOnly(
                           left: 4,
                           top: 4,
@@ -2164,15 +1768,15 @@ class _AllStarredMsgListState extends State<AllStarredMsgList> {
                           },
                           child: Container(
                             width: Get.width,
-                            decoration: const BoxDecoration(
-                              borderRadius: BorderRadius.only(
+                            decoration: BoxDecoration(
+                              borderRadius: const BorderRadius.only(
                                 bottomLeft: Radius.circular(7),
                                 bottomRight: Radius.circular(7),
                               ),
                               gradient: LinearGradient(
                                 colors: [
-                                  Color(0xffFFEDAB),
-                                  Color(0xffFCC604),
+                                  secondaryColor,
+                                  chatownColor,
                                 ],
                                 begin: Alignment.topCenter,
                                 end: Alignment.bottomCenter,
@@ -2280,143 +1884,6 @@ class _AllStarredMsgListState extends State<AllStarredMsgList> {
           child: data.chat!.user!.userId == Hive.box(userdata).get(userId)
               ? myVideo(index, data)
               : otherVideo(index, data),
-
-          //  Column(
-          //   children: [
-          //     Row(
-          //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          //       children: [
-          //         Row(
-          //           children: [
-          //             Text(
-          //               data.chat!.user!.userId ==
-          //                       Hive.box(userdata).get(userId)
-          //                   ? languageController.textTranslate('You')
-          //                   : data.chat!.user!.firstName! +
-          //                       data.chat!.user!.lastName!,
-          //               style: const TextStyle(
-          //                 fontWeight: FontWeight.w500,
-          //                 fontSize: 11,
-          //               ),
-          //             ),
-          //             const Icon(Icons.arrow_right_rounded, size: 30),
-          //             data.chat!.conversation!.isGroup == false
-          //                 ? Text(
-          //                     data.otherUserDetails![0].userId ==
-          //                             data.chat!.user!.userId
-          //                         ? languageController.textTranslate('You')
-          //                         : data.otherUserDetails![0].firstName! +
-          //                             data.otherUserDetails![0].lastName!,
-          //                     style: const TextStyle(
-          //                       fontWeight: FontWeight.w500,
-          //                       fontSize: 11,
-          //                     ),
-          //                   )
-          //                 : Text(
-          //                     data.chat!.conversation!.groupName!,
-          //                     style: const TextStyle(
-          //                       fontWeight: FontWeight.w500,
-          //                       fontSize: 11,
-          //                     ),
-          //                   ),
-          //           ],
-          //         ),
-          //         Text(
-          //           date(convertToLocalDate(data.updatedAt!)),
-          //           style: TextStyle(
-          //               fontSize: 8.5,
-          //               fontWeight: FontWeight.w400,
-          //               color: Colors.grey.shade500),
-          //         )
-          //       ],
-          //     ),
-          //     const SizedBox(
-          //       height: 10,
-          //     ),
-          //     Row(
-          //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          //       children: [
-          //         Align(
-          //           alignment: Alignment.topLeft,
-          //           child: Stack(
-          //             alignment: Alignment.center,
-          //             children: [
-          //               Container(
-          //                 decoration: BoxDecoration(
-          //                   borderRadius: BorderRadius.circular(10),
-          //                   color: data.chat!.user!.userId ==
-          //                           Hive.box(userdata).get(userId)
-          //                       ? yellow1Color
-          //                       : Colors.grey.shade200,
-          //                 ),
-          //                 child: Padding(
-          //                   padding: const EdgeInsets.all(3.0),
-          //                   child: Container(
-          //                       height: 120,
-          //                       width: 120,
-          //                       decoration: BoxDecoration(
-          //                           borderRadius:
-          //                               BorderRadius.circular(10)),
-          //                       child: ClipRRect(
-          //                         borderRadius: BorderRadius.circular(10),
-          //                         child: Image.network(
-          //                           data.chat!.thumbnail!,
-          //                           fit: BoxFit.cover,
-          //                         ),
-          //                       )),
-          //                 ),
-          //               ),
-          //               InkWell(
-          //                 onTap: () {
-          //                   Navigator.push(
-          //                       context,
-          //                       MaterialPageRoute(
-          //                         builder: (context) => VideoViewFix(
-          //                             username: "",
-          //                             //"${capitalizeFirstLetter(data.senderData!.firstName!)} ${capitalizeFirstLetter(data.senderData!.lastName!)}",
-          //                             url: data.chat!.url!,
-          //                             play: true,
-          //                             mute: false,
-          //                             date: ""
-          //                             // convertUTCTimeTo12HourFormat(
-          //                             //     data.createdAt!),
-          //                             ),
-          //                       ));
-          //                 },
-          //                 child: CircleAvatar(
-          //                     radius: 18,
-          //                     backgroundColor: Colors.grey.shade300,
-          //                     foregroundColor: chatownColor,
-          //                     child: Image.asset("assets/images/play1.png",
-          //                         color: chatColor, height: 15)),
-          //               )
-          //             ],
-          //           ),
-          //         ),
-          //         Icon(
-          //           Icons.arrow_forward_ios,
-          //           size: 15,
-          //           color: Colors.grey.shade500,
-          //         )
-          //       ],
-          //     ),
-          //     const SizedBox(height: 10),
-          //     Row(
-          //       mainAxisAlignment: MainAxisAlignment.start,
-          //       children: [
-          //         Text(
-          //           convertUTCTimeTo12HourFormat(data.createdAt!),
-          //           style: TextStyle(
-          //             fontSize: 11,
-          //             color: Colors.grey.shade500,
-          //             fontWeight: FontWeight.w400,
-          //           ),
-          //         ),
-          //       ],
-          //     ),
-          //     const SizedBox(height: 5),
-          //   ],
-          // ),
         ),
       ),
     ).paddingOnly(bottom: 10);
@@ -2441,7 +1908,7 @@ class _AllStarredMsgListState extends State<AllStarredMsgList> {
                     borderRadius: BorderRadius.circular(100),
                     child: CachedNetworkImage(
                       imageUrl: data.chat!.user!.profileImage!,
-                      placeholder: (context, url) => const Center(
+                      placeholder: (context, url) => Center(
                           child: CircularProgressIndicator(
                         color: chatownColor,
                       )),
@@ -2465,14 +1932,9 @@ class _AllStarredMsgListState extends State<AllStarredMsgList> {
                     fontSize: 11,
                   ),
                 ),
-                // data.chat!.conversation!.isGroup == false
-                //     ? const SizedBox.shrink()
-                //     :
                 const Icon(Icons.arrow_right_rounded, size: 30),
                 data.chat!.conversation!.isGroup == false
-                    ?
-                    //  const SizedBox.shrink()
-                    Text(
+                    ? Text(
                         data.otherUserDetails![0].userId ==
                                 data.chat!.user!.userId
                             ? languageController.textTranslate('You')
@@ -2546,7 +2008,7 @@ class _AllStarredMsgListState extends State<AllStarredMsgList> {
                                 borderRadius: BorderRadius.circular(10),
                                 color: data.chat!.user!.userId ==
                                         Hive.box(userdata).get(userId)
-                                    ? yellow1Color
+                                    ? secondaryColor
                                     : grey1Color,
                               ),
                               child: Padding(
@@ -2573,14 +2035,10 @@ class _AllStarredMsgListState extends State<AllStarredMsgList> {
                                     MaterialPageRoute(
                                       builder: (context) => VideoViewFix(
                                           username: "",
-                                          //"${capitalizeFirstLetter(data.senderData!.firstName!)} ${capitalizeFirstLetter(data.senderData!.lastName!)}",
                                           url: data.chat!.url!,
                                           play: true,
                                           mute: false,
-                                          date: ""
-                                          // convertUTCTimeTo12HourFormat(
-                                          //     data.createdAt!),
-                                          ),
+                                          date: ""),
                                     ));
                               },
                               child: CircleAvatar(
@@ -2601,7 +2059,7 @@ class _AllStarredMsgListState extends State<AllStarredMsgList> {
                               right: 8,
                               child: Icon(
                                 Icons.star_rate_rounded,
-                                color: Color(0xff000000),
+                                color: Color(0xFFFFC700),
                                 size: 15,
                               ),
                             ),
@@ -2658,9 +2116,7 @@ class _AllStarredMsgListState extends State<AllStarredMsgList> {
             Row(
               children: [
                 data.chat!.conversation!.isGroup == false
-                    ?
-                    // const SizedBox.shrink()
-                    Text(
+                    ? Text(
                         data.otherUserDetails![0].userId ==
                                 data.chat!.user!.userId
                             ? languageController.textTranslate('You')
@@ -2703,7 +2159,7 @@ class _AllStarredMsgListState extends State<AllStarredMsgList> {
                     borderRadius: BorderRadius.circular(100),
                     child: CachedNetworkImage(
                       imageUrl: data.chat!.user!.profileImage!,
-                      placeholder: (context, url) => const Center(
+                      placeholder: (context, url) => Center(
                           child: CircularProgressIndicator(
                         color: chatownColor,
                       )),
@@ -2769,7 +2225,7 @@ class _AllStarredMsgListState extends State<AllStarredMsgList> {
                                 borderRadius: BorderRadius.circular(10),
                                 color: data.chat!.user!.userId ==
                                         Hive.box(userdata).get(userId)
-                                    ? yellow1Color
+                                    ? secondaryColor
                                     : grey1Color,
                               ),
                               child: Padding(
@@ -2796,14 +2252,10 @@ class _AllStarredMsgListState extends State<AllStarredMsgList> {
                                     MaterialPageRoute(
                                       builder: (context) => VideoViewFix(
                                           username: "",
-                                          //"${capitalizeFirstLetter(data.senderData!.firstName!)} ${capitalizeFirstLetter(data.senderData!.lastName!)}",
                                           url: data.chat!.url!,
                                           play: true,
                                           mute: false,
-                                          date: ""
-                                          // convertUTCTimeTo12HourFormat(
-                                          //     data.createdAt!),
-                                          ),
+                                          date: ""),
                                     ));
                               },
                               child: CircleAvatar(
@@ -2824,7 +2276,7 @@ class _AllStarredMsgListState extends State<AllStarredMsgList> {
                               right: 8,
                               child: Icon(
                                 Icons.star_rate_rounded,
-                                color: Color(0xff000000),
+                                color: Color(0xFFFFC700),
                                 size: 15,
                               ),
                             ),
@@ -2901,213 +2353,6 @@ class _AllStarredMsgListState extends State<AllStarredMsgList> {
           child: data.chat!.user!.userId == Hive.box(userdata).get(userId)
               ? myDocument(index, data)
               : otherDocument(index, data),
-          //  Column(
-          //   children: [
-          //     Row(
-          //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          //       children: [
-          //         Row(
-          //           children: [
-          //             Text(
-          //               data.chat!.user!.userId ==
-          //                       Hive.box(userdata).get(userId)
-          //                   ? languageController.textTranslate('You')
-          //                   : data.chat!.user!.firstName! +
-          //                       data.chat!.user!.lastName!,
-          //               style: const TextStyle(
-          //                 fontWeight: FontWeight.w500,
-          //                 fontSize: 11,
-          //               ),
-          //             ),
-          //             const Icon(Icons.arrow_right_rounded, size: 30),
-          //             data.chat!.conversation!.isGroup == false
-          //                 ? Text(
-          //                     data.otherUserDetails![0].userId ==
-          //                             data.chat!.user!.userId
-          //                         ? languageController.textTranslate('You')
-          //                         : data.otherUserDetails![0].firstName! +
-          //                             data.otherUserDetails![0].lastName!,
-          //                     style: const TextStyle(
-          //                       fontWeight: FontWeight.w500,
-          //                       fontSize: 11,
-          //                     ),
-          //                   )
-          //                 : Text(
-          //                     data.chat!.conversation!.groupName!,
-          //                     style: const TextStyle(
-          //                       fontWeight: FontWeight.w500,
-          //                       fontSize: 11,
-          //                     ),
-          //                   ),
-          //           ],
-          //         ),
-          //         Text(
-          //           date(convertToLocalDate(data.updatedAt!)),
-          //           style: TextStyle(
-          //               fontSize: 8.5,
-          //               fontWeight: FontWeight.w400,
-          //               color: Colors.grey.shade500),
-          //         )
-          //       ],
-          //     ),
-          //     const SizedBox(
-          //       height: 10,
-          //     ),
-          //     Row(
-          //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          //       children: [
-          //         Align(
-          //           alignment: Alignment.topLeft,
-          //           child:
-          //           InkWell(
-          //             onTap: () {
-          //               Navigator.push(
-          //                   context,
-          //                   PageTransition(
-          //                     curve: Curves.linear,
-          //                     type: PageTransitionType.rightToLeft,
-          //                     child: FileView(file: "${data.chat!.url}"),
-          //                   ));
-          //             },
-          //             child: Container(
-          //               decoration: BoxDecoration(
-          //                 borderRadius: BorderRadius.circular(10),
-          //                 color: data.chat!.user!.userId ==
-          //                         Hive.box(userdata).get(userId)
-          //                     ? yellow1Color
-          //                     : Colors.grey.shade200,
-          //               ),
-          //               child: Padding(
-          //                 padding: const EdgeInsets.only(
-          //                     top: 5, bottom: 5, left: 5, right: 5),
-          //                 child: Container(
-          //                   width: Get.width * 0.50,
-          //                   decoration: BoxDecoration(
-          //                     borderRadius: BorderRadius.circular(10),
-          //                     color: Colors.white,
-          //                   ),
-          //                   child: Padding(
-          //                     padding: const EdgeInsets.symmetric(
-          //                         horizontal: 10, vertical: 5),
-          //                     child: Row(
-          //                       children: [
-          //                         const Image(
-          //                           height: 30,
-          //                           image:
-          //                               AssetImage('assets/images/pdf.png'),
-          //                         ),
-          //                         FutureBuilder<Map<String, dynamic>>(
-          //                           future: getPdfInfo(data.chat!.url!),
-          //                           builder: (context, snapshot) {
-          //                             if (snapshot.connectionState ==
-          //                                 ConnectionState.waiting) {
-          //                               return Column(
-          //                                 mainAxisAlignment:
-          //                                     MainAxisAlignment.center,
-          //                                 crossAxisAlignment:
-          //                                     CrossAxisAlignment.start,
-          //                                 children: [
-          //                                   Text(
-          //                                     extractFilename(
-          //                                             data.chat!.url!)
-          //                                         .toString()
-          //                                         .split("-")
-          //                                         .last,
-          //                                     style: const TextStyle(
-          //                                       color: chatColor,
-          //                                       fontSize: 14,
-          //                                       fontWeight: FontWeight.w500,
-          //                                     ),
-          //                                   ),
-          //                                   const Text(
-          //                                     '0 Page - 0 KB',
-          //                                     style: TextStyle(
-          //                                       color: Colors.grey,
-          //                                       fontSize: 10,
-          //                                       fontWeight: FontWeight.w400,
-          //                                     ),
-          //                                   )
-          //                                 ],
-          //                               ).paddingOnly(left: 12);
-          //                             } else if (snapshot.hasError) {
-          //                               return const Text('');
-          //                             } else if (snapshot.hasData) {
-          //                               final int pageCount =
-          //                                   snapshot.data!['pageCount'];
-          //                               final String fileSize =
-          //                                   snapshot.data!['fileSize'];
-          //                               return Column(
-          //                                 mainAxisAlignment:
-          //                                     MainAxisAlignment.center,
-          //                                 crossAxisAlignment:
-          //                                     CrossAxisAlignment.start,
-          //                                 children: [
-          //                                   Container(
-          //                                     padding:
-          //                                         const EdgeInsets.only(
-          //                                             left: 11),
-          //                                     child: Text(
-          //                                       extractFilename(
-          //                                               data.chat!.url!)
-          //                                           .toString()
-          //                                           .split("-")
-          //                                           .last,
-          //                                       style: const TextStyle(
-          //                                         color: chatColor,
-          //                                         fontSize: 14,
-          //                                         fontWeight:
-          //                                             FontWeight.w500,
-          //                                       ),
-          //                                     ),
-          //                                   ),
-          //                                   Text(
-          //                                     '$pageCount Page - $fileSize',
-          //                                     style: const TextStyle(
-          //                                       color: Colors.grey,
-          //                                       fontSize: 10,
-          //                                       fontWeight: FontWeight.w400,
-          //                                     ),
-          //                                   ).paddingOnly(left: 12),
-          //                                 ],
-          //                               );
-          //                             } else {
-          //                               return const Text(
-          //                                   'No PDF info available');
-          //                             }
-          //                           },
-          //                         ),
-          //                       ],
-          //                     ),
-          //                   ),
-          //                 ),
-          //               ),
-          //             ),
-          //           ),
-          //         ),
-          //         Icon(
-          //           Icons.arrow_forward_ios,
-          //           size: 15,
-          //           color: Colors.grey.shade500,
-          //         )
-          //       ],
-          //     ),
-          //     const SizedBox(height: 10),
-          //     Row(
-          //       mainAxisAlignment: MainAxisAlignment.start,
-          //       children: [
-          //         Text(
-          //           convertUTCTimeTo12HourFormat(data.createdAt!),
-          //           style: TextStyle(
-          //             fontSize: 11,
-          //             color: Colors.grey.shade500,
-          //             fontWeight: FontWeight.w400,
-          //           ),
-          //         ),
-          //       ],
-          //     ),
-          //     const SizedBox(height: 5),
-          //   ],
-          // ),
         ),
       ),
     ).paddingOnly(bottom: 10);
@@ -3132,7 +2377,7 @@ class _AllStarredMsgListState extends State<AllStarredMsgList> {
                     borderRadius: BorderRadius.circular(100),
                     child: CachedNetworkImage(
                       imageUrl: data.chat!.user!.profileImage!,
-                      placeholder: (context, url) => const Center(
+                      placeholder: (context, url) => Center(
                           child: CircularProgressIndicator(
                         color: chatownColor,
                       )),
@@ -3156,14 +2401,9 @@ class _AllStarredMsgListState extends State<AllStarredMsgList> {
                     fontSize: 11,
                   ),
                 ),
-                // data.chat!.conversation!.isGroup == false
-                //     ? const SizedBox.shrink()
-                //     :
                 const Icon(Icons.arrow_right_rounded, size: 30),
                 data.chat!.conversation!.isGroup == false
-                    ?
-                    //  const SizedBox.shrink()
-                    Text(
+                    ? Text(
                         data.otherUserDetails![0].userId ==
                                 data.chat!.user!.userId
                             ? languageController.textTranslate('You')
@@ -3234,7 +2474,7 @@ class _AllStarredMsgListState extends State<AllStarredMsgList> {
                         color: data.chat!.user!.userId !=
                                 Hive.box(userdata).get(userId)
                             ? grey1Color
-                            : yellow1Color),
+                            : secondaryColor),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
@@ -3389,7 +2629,7 @@ class _AllStarredMsgListState extends State<AllStarredMsgList> {
                                   right: 3,
                                   child: Icon(
                                     Icons.star_rate_rounded,
-                                    color: Color(0xff000000),
+                                    color: Color(0xFFFFC700),
                                     size: 15,
                                   ),
                                 ),
@@ -3448,9 +2688,7 @@ class _AllStarredMsgListState extends State<AllStarredMsgList> {
             Row(
               children: [
                 data.chat!.conversation!.isGroup == false
-                    ?
-                    // const SizedBox.shrink()
-                    Text(
+                    ? Text(
                         data.otherUserDetails![0].userId ==
                                 data.chat!.user!.userId
                             ? languageController.textTranslate('You')
@@ -3493,7 +2731,7 @@ class _AllStarredMsgListState extends State<AllStarredMsgList> {
                     borderRadius: BorderRadius.circular(100),
                     child: CachedNetworkImage(
                       imageUrl: data.chat!.user!.profileImage!,
-                      placeholder: (context, url) => const Center(
+                      placeholder: (context, url) => Center(
                           child: CircularProgressIndicator(
                         color: chatownColor,
                       )),
@@ -3556,7 +2794,7 @@ class _AllStarredMsgListState extends State<AllStarredMsgList> {
                         color: data.chat!.user!.userId !=
                                 Hive.box(userdata).get(userId)
                             ? grey1Color
-                            : yellow1Color),
+                            : secondaryColor),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
@@ -3708,7 +2946,7 @@ class _AllStarredMsgListState extends State<AllStarredMsgList> {
                               ? const SizedBox.shrink()
                               : const Icon(
                                   Icons.star_rate_rounded,
-                                  color: Color(0xff000000),
+                                  color: Color(0xFFFFC700),
                                   size: 15,
                                 ).paddingOnly(bottom: 4, right: 2),
                         )
@@ -3786,95 +3024,6 @@ class _AllStarredMsgListState extends State<AllStarredMsgList> {
           child: data.chat!.user!.userId == Hive.box(userdata).get(userId)
               ? myVoice(index, data)
               : otherVoice(index, data),
-          //  Column(
-          //   children: [
-          //     Row(
-          //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          //       children: [
-          //         Row(
-          //           children: [
-          //             Text(
-          //               data.chat!.user!.userId ==
-          //                       Hive.box(userdata).get(userId)
-          //                   ? languageController.textTranslate('You')
-          //                   : data.chat!.user!.firstName! +
-          //                       data.chat!.user!.lastName!,
-          //               style: const TextStyle(
-          //                 fontWeight: FontWeight.w500,
-          //                 fontSize: 11,
-          //               ),
-          //             ),
-          //             const Icon(Icons.arrow_right_rounded, size: 30),
-          //             data.chat!.conversation!.isGroup == false
-          //                 ? Text(
-          //                     data.otherUserDetails![0].userId ==
-          //                             data.chat!.user!.userId
-          //                         ? languageController.textTranslate('You')
-          //                         : data.otherUserDetails![0].firstName! +
-          //                             data.otherUserDetails![0].lastName!,
-          //                     style: const TextStyle(
-          //                       fontWeight: FontWeight.w500,
-          //                       fontSize: 11,
-          //                     ),
-          //                   )
-          //                 : Text(
-          //                     data.chat!.conversation!.groupName!,
-          //                     style: const TextStyle(
-          //                       fontWeight: FontWeight.w500,
-          //                       fontSize: 11,
-          //                     ),
-          //                   ),
-          //           ],
-          //         ),
-          //         Text(
-          //           date(convertToLocalDate(data.updatedAt!)),
-          //           style: TextStyle(
-          //               fontSize: 8.5,
-          //               fontWeight: FontWeight.w400,
-          //               color: Colors.grey.shade500),
-          //         )
-          //       ],
-          //     ),
-          //     const SizedBox(
-          //       height: 10,
-          //     ),
-          //     Row(
-          //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          //       children: [
-          //         Row(
-          //           mainAxisAlignment: MainAxisAlignment.start,
-          //           children: [
-          //             _audio(
-          //                 message: data.chat!.url!,
-          //                 index: index,
-          //                 duration: data.chat!.audioTime!,
-          //                 data: data),
-          //           ],
-          //         ),
-          //         Icon(
-          //           Icons.arrow_forward_ios,
-          //           size: 15,
-          //           color: Colors.grey.shade500,
-          //         )
-          //       ],
-          //     ),
-          //     const SizedBox(height: 10),
-          //     Row(
-          //       mainAxisAlignment: MainAxisAlignment.start,
-          //       children: [
-          //         Text(
-          //           convertUTCTimeTo12HourFormat(data.createdAt!),
-          //           style: TextStyle(
-          //             fontSize: 11,
-          //             color: Colors.grey.shade500,
-          //             fontWeight: FontWeight.w400,
-          //           ),
-          //         ),
-          //       ],
-          //     ),
-          //     const SizedBox(height: 5),
-          //   ],
-          // ),
         ),
       ),
     ).paddingOnly(bottom: 10);
@@ -3899,7 +3048,7 @@ class _AllStarredMsgListState extends State<AllStarredMsgList> {
                     borderRadius: BorderRadius.circular(100),
                     child: CachedNetworkImage(
                       imageUrl: data.chat!.user!.profileImage!,
-                      placeholder: (context, url) => const Center(
+                      placeholder: (context, url) => Center(
                           child: CircularProgressIndicator(
                         color: chatownColor,
                       )),
@@ -3923,14 +3072,9 @@ class _AllStarredMsgListState extends State<AllStarredMsgList> {
                     fontSize: 11,
                   ),
                 ),
-                // data.chat!.conversation!.isGroup == false
-                //     ? const SizedBox.shrink()
-                //     :
                 const Icon(Icons.arrow_right_rounded, size: 30),
                 data.chat!.conversation!.isGroup == false
-                    ?
-                    //  const SizedBox.shrink()
-                    Text(
+                    ? Text(
                         data.otherUserDetails![0].userId ==
                                 data.chat!.user!.userId
                             ? languageController.textTranslate('You')
@@ -4048,9 +3192,7 @@ class _AllStarredMsgListState extends State<AllStarredMsgList> {
             Row(
               children: [
                 data.chat!.conversation!.isGroup == false
-                    ?
-                    // const SizedBox.shrink()
-                    Text(
+                    ? Text(
                         data.otherUserDetails![0].userId ==
                                 data.chat!.user!.userId
                             ? languageController.textTranslate('You')
@@ -4093,7 +3235,7 @@ class _AllStarredMsgListState extends State<AllStarredMsgList> {
                     borderRadius: BorderRadius.circular(100),
                     child: CachedNetworkImage(
                       imageUrl: data.chat!.user!.profileImage!,
-                      placeholder: (context, url) => const Center(
+                      placeholder: (context, url) => Center(
                           child: CircularProgressIndicator(
                         color: chatownColor,
                       )),
@@ -4223,126 +3365,6 @@ class _AllStarredMsgListState extends State<AllStarredMsgList> {
           child: data.chat!.user!.userId == Hive.box(userdata).get(userId)
               ? myGif(index, data)
               : otherGif(index, data),
-          //  Column(
-          //   children: [
-          //     Row(
-          //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          //       children: [
-          //         Row(
-          //           children: [
-          //             Text(
-          //               data.chat!.user!.userId ==
-          //                       Hive.box(userdata).get(userId)
-          //                   ? languageController.textTranslate('You')
-          //                   : data.chat!.user!.firstName! +
-          //                       data.chat!.user!.lastName!,
-          //               style: const TextStyle(
-          //                 fontWeight: FontWeight.w500,
-          //                 fontSize: 11,
-          //               ),
-          //             ),
-          //             const Icon(Icons.arrow_right_rounded, size: 30),
-          //             data.chat!.conversation!.isGroup == false
-          //                 ? Text(
-          //                     data.otherUserDetails![0].userId ==
-          //                             data.chat!.user!.userId
-          //                         ? languageController.textTranslate('You')
-          //                         : data.otherUserDetails![0].firstName! +
-          //                             data.otherUserDetails![0].lastName!,
-          //                     style: const TextStyle(
-          //                       fontWeight: FontWeight.w500,
-          //                       fontSize: 11,
-          //                     ),
-          //                   )
-          //                 : Text(
-          //                     data.chat!.conversation!.groupName!,
-          //                     style: const TextStyle(
-          //                       fontWeight: FontWeight.w500,
-          //                       fontSize: 11,
-          //                     ),
-          //                   ),
-          //           ],
-          //         ),
-          //         Text(
-          //           date(convertToLocalDate(data.updatedAt!)),
-          //           style: TextStyle(
-          //               fontSize: 8.5,
-          //               fontWeight: FontWeight.w400,
-          //               color: Colors.grey.shade500),
-          //         )
-          //       ],
-          //     ),
-          //     const SizedBox(
-          //       height: 10,
-          //     ),
-          //     Row(
-          //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          //       children: [
-          //         Align(
-          //           alignment: Alignment.topLeft,
-          //           child: InkWell(
-          //             onTap: () {
-          //               Navigator.push(
-          //                 context,
-          //                 PageTransition(
-          //                     curve: Curves.linear,
-          //                     type: PageTransitionType.rightToLeft,
-          //                     child: ImageView(
-          //                       image: data.chat!.url!,
-          //                       userimg: "",
-          //                     )),
-          //               );
-          //             },
-          //             child: Container(
-          //               decoration: BoxDecoration(
-          //                 borderRadius: BorderRadius.circular(10),
-          //                 color: data.chat!.user!.userId ==
-          //                         Hive.box(userdata).get(userId)
-          //                     ? yellow1Color
-          //                     : Colors.grey.shade200,
-          //               ),
-          //               child: Padding(
-          //                 padding: const EdgeInsets.all(3.0),
-          //                 child: Container(
-          //                     height: 120,
-          //                     width: 120,
-          //                     decoration: BoxDecoration(
-          //                         borderRadius: BorderRadius.circular(10)),
-          //                     child: ClipRRect(
-          //                       borderRadius: BorderRadius.circular(10),
-          //                       child: Image.network(
-          //                         data.chat!.url!,
-          //                         fit: BoxFit.cover,
-          //                       ),
-          //                     )),
-          //               ),
-          //             ),
-          //           ),
-          //         ),
-          //         Icon(
-          //           Icons.arrow_forward_ios,
-          //           size: 15,
-          //           color: Colors.grey.shade500,
-          //         )
-          //       ],
-          //     ),
-          //     const SizedBox(height: 10),
-          //     Row(
-          //       mainAxisAlignment: MainAxisAlignment.start,
-          //       children: [
-          //         Text(
-          //           convertUTCTimeTo12HourFormat(data.createdAt!),
-          //           style: TextStyle(
-          //             fontSize: 11,
-          //             color: Colors.grey.shade500,
-          //             fontWeight: FontWeight.w400,
-          //           ),
-          //         ),
-          //       ],
-          //     ),
-          //     const SizedBox(height: 5),
-          //   ],
-          // ),
         ),
       ),
     ).paddingOnly(bottom: 10);
@@ -4367,7 +3389,7 @@ class _AllStarredMsgListState extends State<AllStarredMsgList> {
                     borderRadius: BorderRadius.circular(100),
                     child: CachedNetworkImage(
                       imageUrl: data.chat!.user!.profileImage!,
-                      placeholder: (context, url) => const Center(
+                      placeholder: (context, url) => Center(
                           child: CircularProgressIndicator(
                         color: chatownColor,
                       )),
@@ -4391,14 +3413,9 @@ class _AllStarredMsgListState extends State<AllStarredMsgList> {
                     fontSize: 11,
                   ),
                 ),
-                // data.chat!.conversation!.isGroup == false
-                //     ? const SizedBox.shrink()
-                //     :
                 const Icon(Icons.arrow_right_rounded, size: 30),
                 data.chat!.conversation!.isGroup == false
-                    ?
-                    //  const SizedBox.shrink()
-                    Text(
+                    ? Text(
                         data.otherUserDetails![0].userId ==
                                 data.chat!.user!.userId
                             ? languageController.textTranslate('You')
@@ -4480,7 +3497,7 @@ class _AllStarredMsgListState extends State<AllStarredMsgList> {
                             borderRadius: BorderRadius.circular(10),
                             color: data.chat!.user!.userId ==
                                     Hive.box(userdata).get(userId)
-                                ? yellow1Color
+                                ? secondaryColor
                                 : grey1Color,
                           ),
                           child: Padding(
@@ -4507,7 +3524,7 @@ class _AllStarredMsgListState extends State<AllStarredMsgList> {
                               right: 6,
                               child: Icon(
                                 Icons.star_rate_rounded,
-                                color: Color(0xff000000),
+                                color: Color(0xFFFFC700),
                                 size: 15,
                               ),
                             ),
@@ -4564,9 +3581,7 @@ class _AllStarredMsgListState extends State<AllStarredMsgList> {
             Row(
               children: [
                 data.chat!.conversation!.isGroup == false
-                    ?
-                    // const SizedBox.shrink()
-                    Text(
+                    ? Text(
                         data.otherUserDetails![0].userId ==
                                 data.chat!.user!.userId
                             ? languageController.textTranslate('You')
@@ -4609,7 +3624,7 @@ class _AllStarredMsgListState extends State<AllStarredMsgList> {
                     borderRadius: BorderRadius.circular(100),
                     child: CachedNetworkImage(
                       imageUrl: data.chat!.user!.profileImage!,
-                      placeholder: (context, url) => const Center(
+                      placeholder: (context, url) => Center(
                           child: CircularProgressIndicator(
                         color: chatownColor,
                       )),
@@ -4683,7 +3698,7 @@ class _AllStarredMsgListState extends State<AllStarredMsgList> {
                             borderRadius: BorderRadius.circular(10),
                             color: data.chat!.user!.userId ==
                                     Hive.box(userdata).get(userId)
-                                ? yellow1Color
+                                ? secondaryColor
                                 : grey1Color,
                           ),
                           child: Padding(
@@ -4710,7 +3725,7 @@ class _AllStarredMsgListState extends State<AllStarredMsgList> {
                               right: 6,
                               child: Icon(
                                 Icons.star_rate_rounded,
-                                color: Color(0xff000000),
+                                color: Color(0xFFFFC700),
                                 size: 15,
                               ),
                             ),
@@ -4787,248 +3802,6 @@ class _AllStarredMsgListState extends State<AllStarredMsgList> {
           child: data.chat!.user!.userId == Hive.box(userdata).get(userId)
               ? myLink(index, data)
               : otherLink(index, data),
-
-          // Column(
-          //   children: [
-          //     Row(
-          //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          //       children: [
-          //         Row(
-          //           children: [
-          //             Text(
-          //               data.chat!.user!.userId ==
-          //                       Hive.box(userdata).get(userId)
-          //                   ? languageController.textTranslate('You')
-          //                   : data.chat!.user!.firstName! +
-          //                       data.chat!.user!.lastName!,
-          //               style: const TextStyle(
-          //                 fontWeight: FontWeight.w500,
-          //                 fontSize: 11,
-          //               ),
-          //             ),
-          //             const Icon(Icons.arrow_right_rounded, size: 30),
-          //             data.chat!.conversation!.isGroup == false
-          //                 ? Text(
-          //                     data.otherUserDetails![0].userId ==
-          //                             data.chat!.user!.userId
-          //                         ? languageController.textTranslate('You')
-          //                         : data.otherUserDetails![0].firstName! +
-          //                             data.otherUserDetails![0].lastName!,
-          //                     style: const TextStyle(
-          //                       fontWeight: FontWeight.w500,
-          //                       fontSize: 11,
-          //                     ),
-          //                   )
-          //                 : Text(
-          //                     data.chat!.conversation!.groupName!,
-          //                     style: const TextStyle(
-          //                       fontWeight: FontWeight.w500,
-          //                       fontSize: 11,
-          //                     ),
-          //                   ),
-          //           ],
-          //         ),
-          //         Text(
-          //           date(convertToLocalDate(data.updatedAt!)),
-          //           style: TextStyle(
-          //               fontSize: 8.5,
-          //               fontWeight: FontWeight.w400,
-          //               color: Colors.grey.shade500),
-          //         )
-          //       ],
-          //     ),
-          //     const SizedBox(
-          //       height: 10,
-          //     ),
-          //     Row(
-          //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          //       children: [
-          //         Align(
-          //           alignment: Alignment.topLeft,
-          //           child:
-          // Container(
-          //             decoration: BoxDecoration(
-          //               borderRadius: BorderRadius.circular(10),
-          //               color: data.chat!.user!.userId ==
-          //                       Hive.box(userdata).get(userId)
-          //                   ? yellow1Color
-          //                   : Colors.grey.shade200,
-          //             ),
-          //             child: Padding(
-          //               padding: const EdgeInsets.only(
-          //                   top: 3, left: 3, right: 3),
-          //               child: Container(
-          //                 constraints: BoxConstraints(
-          //                     maxHeight:
-          //                         MediaQuery.of(context).size.height / 8.3,
-          //                     maxWidth:
-          //                         MediaQuery.of(context).size.width * .7),
-          //                 decoration: BoxDecoration(
-          //                   border: Border.all(color: Colors.grey.shade200),
-          //                   borderRadius: BorderRadius.circular(10),
-          //                 ),
-          //                 child: InkWell(
-          //                   onTap: () {
-          //                     launchURL(data.chat!.message!);
-          //                   },
-          //                   child: Column(
-          //                     crossAxisAlignment: CrossAxisAlignment.start,
-          //                     children: [
-          //                       Container(
-          //                         padding: const EdgeInsets.only(
-          //                             left: 5, right: 5, top: 5, bottom: 5),
-          //                         decoration: BoxDecoration(
-          //                             color: Colors.white,
-          //                             borderRadius:
-          //                                 BorderRadius.circular(10)),
-          //                         child: FlutterLinkPreview(
-          //                           url: data.chat!.message!,
-          //                           builder: (info) {
-          //                             if (info is WebInfo) {
-          //                               return info.title == null &&
-          //                                       info.description == null
-          //                                   ? Text(
-          //                                       data.chat!.message!,
-          //                                       style: const TextStyle(
-          //                                           fontSize: 14,
-          //                                           fontWeight:
-          //                                               FontWeight.w400,
-          //                                           color: Colors.white),
-          //                                     )
-          //                                   : Row(
-          //                                       mainAxisAlignment:
-          //                                           MainAxisAlignment.start,
-          //                                       crossAxisAlignment:
-          //                                           CrossAxisAlignment
-          //                                               .center,
-          //                                       children: [
-          //                                         if (info.image != null)
-          //                                           Container(
-          //                                             height: 50,
-          //                                             width: 50,
-          //                                             decoration: BoxDecoration(
-          //                                                 borderRadius:
-          //                                                     BorderRadius
-          //                                                         .circular(
-          //                                                             10)),
-          //                                             child: ClipRRect(
-          //                                               borderRadius:
-          //                                                   BorderRadius
-          //                                                       .circular(
-          //                                                           10),
-          //                                               child:
-          //                                                   Image.network(
-          //                                                       info.image!,
-          //                                                       fit: BoxFit
-          //                                                           .cover),
-          //                                             ),
-          //                                           ),
-          //                                         const SizedBox(width: 5),
-          //                                         Expanded(
-          //                                           child: Column(
-          //                                             mainAxisAlignment:
-          //                                                 MainAxisAlignment
-          //                                                     .start,
-          //                                             crossAxisAlignment:
-          //                                                 CrossAxisAlignment
-          //                                                     .start,
-          //                                             children: [
-          //                                               if (info.title !=
-          //                                                   null)
-          //                                                 Text(
-          //                                                   info.title!,
-          //                                                   maxLines: 1,
-          //                                                   overflow:
-          //                                                       TextOverflow
-          //                                                           .ellipsis,
-          //                                                   style:
-          //                                                       const TextStyle(
-          //                                                     fontSize: 14,
-          //                                                     fontWeight:
-          //                                                         FontWeight
-          //                                                             .w600,
-          //                                                   ),
-          //                                                 ).paddingAll(2),
-          //                                               info.image == null
-          //                                                   ? const SizedBox(
-          //                                                       height: 5)
-          //                                                   : const SizedBox
-          //                                                       .shrink(),
-          //                                               if (info.description !=
-          //                                                   null)
-          //                                                 Text(
-          //                                                   info.description!,
-          //                                                   maxLines: 2,
-          //                                                   overflow:
-          //                                                       TextOverflow
-          //                                                           .ellipsis,
-          //                                                   style: const TextStyle(
-          //                                                       color: Color
-          //                                                           .fromRGBO(
-          //                                                               68,
-          //                                                               68,
-          //                                                               68,
-          //                                                               1),
-          //                                                       fontSize: 9,
-          //                                                       fontWeight:
-          //                                                           FontWeight
-          //                                                               .w400),
-          //                                                 ),
-          //                                             ],
-          //                                           ),
-          //                                         ),
-          //                                       ],
-          //                                     );
-          //                             }
-          //                             return const CircularProgressIndicator();
-          //                           },
-          //                           titleStyle: const TextStyle(
-          //                             color: Colors.black,
-          //                             fontWeight: FontWeight.bold,
-          //                           ),
-          //                         ),
-          //                       ),
-          //                       const SizedBox(height: 3),
-          //                       Text(
-          //                         data.chat!.message!,
-          //                         maxLines: 1,
-          //                         overflow: TextOverflow.ellipsis,
-          //                         style: TextStyle(
-          //                             color: linkColor,
-          //                             fontSize: 10,
-          //                             fontWeight: FontWeight.w400),
-          //                       ).paddingOnly(left: 10)
-          //                     ],
-          //                   ),
-          //                 ),
-          //               ),
-          //             ),
-          //           ),
-          //         ),
-          //         Icon(
-          //           Icons.arrow_forward_ios,
-          //           size: 15,
-          //           color: Colors.grey.shade500,
-          //         )
-          //       ],
-          //     ),
-          //     const SizedBox(height: 10),
-          //     Row(
-          //       mainAxisAlignment: MainAxisAlignment.start,
-          //       children: [
-          //         Text(
-          //           convertUTCTimeTo12HourFormat(data.createdAt!),
-          //           style: TextStyle(
-          //             fontSize: 11,
-          //             color: Colors.grey.shade500,
-          //             fontWeight: FontWeight.w400,
-          //           ),
-          //         ),
-          //       ],
-          //     ),
-          //     const SizedBox(height: 5),
-          //   ],
-          // ),
         ),
       ),
     ).paddingOnly(bottom: 10);
@@ -5053,7 +3826,7 @@ class _AllStarredMsgListState extends State<AllStarredMsgList> {
                     borderRadius: BorderRadius.circular(100),
                     child: CachedNetworkImage(
                       imageUrl: data.chat!.user!.profileImage!,
-                      placeholder: (context, url) => const Center(
+                      placeholder: (context, url) => Center(
                           child: CircularProgressIndicator(
                         color: chatownColor,
                       )),
@@ -5077,14 +3850,9 @@ class _AllStarredMsgListState extends State<AllStarredMsgList> {
                     fontSize: 11,
                   ),
                 ),
-                // data.chat!.conversation!.isGroup == false
-                //     ? const SizedBox.shrink()
-                //     :
                 const Icon(Icons.arrow_right_rounded, size: 30),
                 data.chat!.conversation!.isGroup == false
-                    ?
-                    //  const SizedBox.shrink()
-                    Text(
+                    ? Text(
                         data.otherUserDetails![0].userId ==
                                 data.chat!.user!.userId
                             ? languageController.textTranslate('You')
@@ -5153,7 +3921,7 @@ class _AllStarredMsgListState extends State<AllStarredMsgList> {
                           borderRadius: BorderRadius.circular(10),
                           color: data.chat!.user!.userId ==
                                   Hive.box(userdata).get(userId)
-                              ? yellow1Color
+                              ? secondaryColor
                               : grey1Color,
                         ),
                         child: Padding(
@@ -5294,7 +4062,7 @@ class _AllStarredMsgListState extends State<AllStarredMsgList> {
                                     overflow: TextOverflow.ellipsis,
                                     style: TextStyle(
                                         color: linkColor,
-                                        fontSize: 10,
+                                        fontSize: 12,
                                         fontWeight: FontWeight.w400),
                                   ).paddingOnly(left: 10)
                                 ],
@@ -5310,7 +4078,7 @@ class _AllStarredMsgListState extends State<AllStarredMsgList> {
                               right: 3,
                               child: Icon(
                                 Icons.star_rate_rounded,
-                                color: Color(0xff000000),
+                                color: Color(0xFFFFC700),
                                 size: 15,
                               ),
                             ),
@@ -5367,9 +4135,7 @@ class _AllStarredMsgListState extends State<AllStarredMsgList> {
             Row(
               children: [
                 data.chat!.conversation!.isGroup == false
-                    ?
-                    // const SizedBox.shrink()
-                    Text(
+                    ? Text(
                         data.otherUserDetails![0].userId ==
                                 data.chat!.user!.userId
                             ? languageController.textTranslate('You')
@@ -5412,7 +4178,7 @@ class _AllStarredMsgListState extends State<AllStarredMsgList> {
                     borderRadius: BorderRadius.circular(100),
                     child: CachedNetworkImage(
                       imageUrl: data.chat!.user!.profileImage!,
-                      placeholder: (context, url) => const Center(
+                      placeholder: (context, url) => Center(
                           child: CircularProgressIndicator(
                         color: chatownColor,
                       )),
@@ -5473,7 +4239,7 @@ class _AllStarredMsgListState extends State<AllStarredMsgList> {
                           borderRadius: BorderRadius.circular(10),
                           color: data.chat!.user!.userId ==
                                   Hive.box(userdata).get(userId)
-                              ? yellow1Color
+                              ? secondaryColor
                               : grey1Color,
                         ),
                         child: Padding(
@@ -5614,7 +4380,7 @@ class _AllStarredMsgListState extends State<AllStarredMsgList> {
                                     overflow: TextOverflow.ellipsis,
                                     style: TextStyle(
                                         color: linkColor,
-                                        fontSize: 10,
+                                        fontSize: 12,
                                         fontWeight: FontWeight.w400),
                                   ).paddingOnly(left: 10)
                                 ],
@@ -5630,7 +4396,7 @@ class _AllStarredMsgListState extends State<AllStarredMsgList> {
                               right: 3,
                               child: Icon(
                                 Icons.star_rate_rounded,
-                                color: Color(0xff000000),
+                                color: Color(0xFFFFC700),
                                 size: 15,
                               ),
                             ),
@@ -5707,180 +4473,6 @@ class _AllStarredMsgListState extends State<AllStarredMsgList> {
           child: data.chat!.user!.userId == Hive.box(userdata).get(userId)
               ? myContact(index, data)
               : otherContact(index, data),
-          // Column(
-          //   children: [
-          //     Row(
-          //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          //       children: [
-          //         Row(
-          //           children: [
-          //             Text(
-          //               data.chat!.user!.userId ==
-          //                       Hive.box(userdata).get(userId)
-          //                   ? languageController.textTranslate('You')
-          //                   : data.chat!.user!.firstName! +
-          //                       data.chat!.user!.lastName!,
-          //               style: const TextStyle(
-          //                 fontWeight: FontWeight.w500,
-          //                 fontSize: 11,
-          //               ),
-          //             ),
-          //             const Icon(Icons.arrow_right_rounded, size: 30),
-          //             data.chat!.conversation!.isGroup == false
-          //                 ? Text(
-          //                     data.otherUserDetails![0].userId ==
-          //                             data.chat!.user!.userId
-          //                         ? languageController.textTranslate('You')
-          //                         : data.otherUserDetails![0].firstName! +
-          //                             data.otherUserDetails![0].lastName!,
-          //                     style: const TextStyle(
-          //                       fontWeight: FontWeight.w500,
-          //                       fontSize: 11,
-          //                     ),
-          //                   )
-          //                 : Text(
-          //                     data.chat!.conversation!.groupName!,
-          //                     style: const TextStyle(
-          //                       fontWeight: FontWeight.w500,
-          //                       fontSize: 11,
-          //                     ),
-          //                   ),
-          //           ],
-          //         ),
-          //         Text(
-          //           date(convertToLocalDate(data.updatedAt!)),
-          //           style: TextStyle(
-          //               fontSize: 8.5,
-          //               fontWeight: FontWeight.w400,
-          //               color: Colors.grey.shade500),
-          //         )
-          //       ],
-          //     ),
-          //     const SizedBox(
-          //       height: 10,
-          //     ),
-          //     Row(
-          //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          //       children: [
-          //         Container(
-          //           constraints: BoxConstraints(
-          //               maxWidth: MediaQuery.of(context).size.width * .6),
-          //           decoration: BoxDecoration(
-          //             borderRadius: BorderRadius.circular(10),
-          //             color: data.chat!.user!.userId ==
-          //                     Hive.box(userdata).get(userId)
-          //                 ? yellow1Color
-          //                 : Colors.grey.shade200,
-          //           ),
-          //           padding: const EdgeInsets.all(3),
-          //           child: Column(
-          //             children: [
-          //               Container(
-          //                 height: 50,
-          //                 width: 200,
-          //                 decoration: const BoxDecoration(
-          //                     borderRadius: BorderRadius.only(
-          //                         topLeft: Radius.circular(10),
-          //                         topRight: Radius.circular(10)),
-          //                     color: Colors.white),
-          //                 child: Row(
-          //                   mainAxisAlignment: MainAxisAlignment.center,
-          //                   children: [
-          //                     Container(
-          //                       height: 30,
-          //                       width: 30,
-          //                       decoration: BoxDecoration(
-          //                           borderRadius:
-          //                               BorderRadius.circular(35)),
-          //                       child: ClipRRect(
-          //                         borderRadius: BorderRadius.circular(35),
-          //                         child: CustomCachedNetworkImage(
-          //                             imageUrl: data
-          //                                 .chat!.sharedContactProfileImage!,
-          //                             placeholderColor: chatownColor,
-          //                             errorWidgeticon: const Icon(
-          //                               Icons.groups,
-          //                               size: 30,
-          //                             )),
-          //                       ),
-          //                     ),
-          //                     const SizedBox(width: 5),
-          //                     Column(
-          //                       mainAxisAlignment: MainAxisAlignment.center,
-          //                       crossAxisAlignment:
-          //                           CrossAxisAlignment.start,
-          //                       children: [
-          //                         Text(
-          //                           capitalizeFirstLetter(
-          //                               data.chat!.sharedContactName!),
-          //                           style: const TextStyle(
-          //                               fontSize: 12,
-          //                               fontWeight: FontWeight.w500,
-          //                               color: chatColor),
-          //                         ),
-          //                         Text(
-          //                           capitalizeFirstLetter(
-          //                               data.chat!.sharedContactNumber!),
-          //                           style: const TextStyle(
-          //                               fontSize: 12,
-          //                               fontWeight: FontWeight.w500,
-          //                               color: chatColor),
-          //                         ),
-          //                       ],
-          //                     ),
-          //                   ],
-          //                 ),
-          //               ),
-          //               const SizedBox(height: 3),
-          //               Container(
-          //                 height: 30,
-          //                 width: 200,
-          //                 decoration: const BoxDecoration(
-          //                     borderRadius: BorderRadius.only(
-          //                         bottomLeft: Radius.circular(10),
-          //                         bottomRight: Radius.circular(10)),
-          //                     color: Colors.white),
-          //                 child: const Column(
-          //                   children: [
-          //                     SizedBox(height: 3),
-          //                     Text(
-          //                       "Message",
-          //                       textAlign: TextAlign.center,
-          //                       style: TextStyle(
-          //                           fontSize: 14,
-          //                           fontWeight: FontWeight.w400,
-          //                           color: chatColor),
-          //                     ),
-          //                   ],
-          //                 ),
-          //               )
-          //             ],
-          //           ),
-          //         ),
-          //         Icon(
-          //           Icons.arrow_forward_ios,
-          //           size: 15,
-          //           color: Colors.grey.shade500,
-          //         )
-          //       ],
-          //     ),
-          //     const SizedBox(height: 10),
-          //     Row(
-          //       mainAxisAlignment: MainAxisAlignment.start,
-          //       children: [
-          //         Text(
-          //           convertUTCTimeTo12HourFormat(data.createdAt!),
-          //           style: TextStyle(
-          //             fontSize: 11,
-          //             color: Colors.grey.shade500,
-          //             fontWeight: FontWeight.w400,
-          //           ),
-          //         ),
-          //       ],
-          //     ),
-          //     const SizedBox(height: 5),
-          //   ],
-          // ),
         ),
       ),
     ).paddingOnly(bottom: 10);
@@ -5905,7 +4497,7 @@ class _AllStarredMsgListState extends State<AllStarredMsgList> {
                     borderRadius: BorderRadius.circular(100),
                     child: CachedNetworkImage(
                       imageUrl: data.chat!.user!.profileImage!,
-                      placeholder: (context, url) => const Center(
+                      placeholder: (context, url) => Center(
                           child: CircularProgressIndicator(
                         color: chatownColor,
                       )),
@@ -5929,14 +4521,9 @@ class _AllStarredMsgListState extends State<AllStarredMsgList> {
                     fontSize: 11,
                   ),
                 ),
-                // data.chat!.conversation!.isGroup == false
-                //     ? const SizedBox.shrink()
-                //     :
                 const Icon(Icons.arrow_right_rounded, size: 30),
                 data.chat!.conversation!.isGroup == false
-                    ?
-                    //  const SizedBox.shrink()
-                    Text(
+                    ? Text(
                         data.otherUserDetails![0].userId ==
                                 data.chat!.user!.userId
                             ? languageController.textTranslate('You')
@@ -6006,7 +4593,7 @@ class _AllStarredMsgListState extends State<AllStarredMsgList> {
                         color: data.chat!.user!.userId !=
                                 Hive.box(userdata).get(userId)
                             ? grey1Color
-                            : yellow1Color),
+                            : secondaryColor),
                     padding: const EdgeInsets.all(3),
                     child: Column(
                       children: [
@@ -6082,7 +4669,7 @@ class _AllStarredMsgListState extends State<AllStarredMsgList> {
                                       right: 3,
                                       child: Icon(
                                         Icons.star_rate_rounded,
-                                        color: Color(0xff000000),
+                                        color: Color(0xFFFFC700),
                                         size: 15,
                                       ),
                                     ),
@@ -6107,8 +4694,8 @@ class _AllStarredMsgListState extends State<AllStarredMsgList> {
                                 colors: data.chat!.user!.userId ==
                                         Hive.box(userdata).get(userId)
                                     ? [
-                                        const Color(0xffFFEDAB),
-                                        const Color(0xffFCC604),
+                                        secondaryColor,
+                                        chatownColor,
                                       ]
                                     : [
                                         const Color(0xffDDDDDD),
@@ -6188,9 +4775,7 @@ class _AllStarredMsgListState extends State<AllStarredMsgList> {
             Row(
               children: [
                 data.chat!.conversation!.isGroup == false
-                    ?
-                    // const SizedBox.shrink()
-                    Text(
+                    ? Text(
                         data.otherUserDetails![0].userId ==
                                 data.chat!.user!.userId
                             ? languageController.textTranslate('You')
@@ -6233,7 +4818,7 @@ class _AllStarredMsgListState extends State<AllStarredMsgList> {
                     borderRadius: BorderRadius.circular(100),
                     child: CachedNetworkImage(
                       imageUrl: data.chat!.user!.profileImage!,
-                      placeholder: (context, url) => const Center(
+                      placeholder: (context, url) => Center(
                           child: CircularProgressIndicator(
                         color: chatownColor,
                       )),
@@ -6295,7 +4880,7 @@ class _AllStarredMsgListState extends State<AllStarredMsgList> {
                         color: data.chat!.user!.userId !=
                                 Hive.box(userdata).get(userId)
                             ? grey1Color
-                            : yellow1Color),
+                            : secondaryColor),
                     padding: const EdgeInsets.all(3),
                     child: Column(
                       children: [
@@ -6371,7 +4956,7 @@ class _AllStarredMsgListState extends State<AllStarredMsgList> {
                                       right: 3,
                                       child: Icon(
                                         Icons.star_rate_rounded,
-                                        color: Color(0xff000000),
+                                        color: Color(0xFFFFC700),
                                         size: 15,
                                       ),
                                     ),
@@ -6396,8 +4981,8 @@ class _AllStarredMsgListState extends State<AllStarredMsgList> {
                                 colors: data.chat!.user!.userId ==
                                         Hive.box(userdata).get(userId)
                                     ? [
-                                        const Color(0xffFFEDAB),
-                                        const Color(0xffFCC604),
+                                        secondaryColor,
+                                        chatownColor,
                                       ]
                                     : [
                                         const Color(0xffDDDDDD),
@@ -6478,32 +5063,8 @@ class _AllStarredMsgListState extends State<AllStarredMsgList> {
     );
   }
 
-  //=============================================================                      =======================================================================
 //============================================================= REPLY MESSAGE DESIGN =======================================================================
 //=============================================================                      =======================================================================
-
-  // String isUserMatch(String msgID, int userID) {
-  //   for (var i = 0; i < allStaredMsgController.allStarred.length; i++) {
-  //     if (allStaredMsgController.allStarred[i].messageId == int.parse(msgID)) {
-  //       if (allStaredMsgController.allStarred[i].chat!.user!.userId == userID) {
-  //         if ("${allStaredMsgController.allStarred[i].chat!.user!.firstName!} ${allStaredMsgController.allStarred[i].chat!.user!.lastName!}" ==
-  //             "${Hive.box(userdata).get(firstName)} ${Hive.box(userdata).get(lastName)}") {
-  //           return 'You';
-  //         } else {
-  //           return "${allStaredMsgController.allStarred[i].chat!.user!.firstName!} ${allStaredMsgController.allStarred[i].chat!.user!.lastName!}";
-  //         }
-  //       } else {
-  //         if ("${allStaredMsgController.allStarred[i].chat!.user!.firstName!} ${allStaredMsgController.allStarred[i].chat!.user!.lastName!}" ==
-  //             "${Hive.box(userdata).get(firstName)} ${Hive.box(userdata).get(lastName)}") {
-  //           return 'You';
-  //         } else {
-  //           return "${allStaredMsgController.allStarred[i].chat!.user!.firstName!} ${allStaredMsgController.allStarred[i].chat!.user!.lastName!}";
-  //         }
-  //       }
-  //     }
-  //   }
-  //   return languageController.textTranslate('You'); // This return might be a default case if no match is found
-  // }
 
   Widget replyMSGWidget(int index, StarMessageList data) {
     String isMatching(String msgID) {
@@ -6697,7 +5258,7 @@ class _AllStarredMsgListState extends State<AllStarredMsgList> {
                               decoration: BoxDecoration(
                                   color: data.chat!.user!.userId ==
                                           Hive.box(userdata).get(userId)
-                                      ? yellow1Color
+                                      ? secondaryColor
                                       : Colors.grey.shade200,
                                   borderRadius: const BorderRadius.all(
                                       Radius.circular(10))),
@@ -7000,15 +5561,17 @@ class _AllStarredMsgListState extends State<AllStarredMsgList> {
                                                                   context,
                                                                   MaterialPageRoute(
                                                                     builder: (context) => VideoViewFix(
-                                                                        username: "",
-                                                                        //"${capitalizeFirstLetter(data.senderData!.firstName!)} ${capitalizeFirstLetter(data.senderData!.lastName!)}",
-                                                                        url: data.chat!.url!,
-                                                                        play: true,
-                                                                        mute: false,
-                                                                        date: ""
-                                                                        // convertUTCTimeTo12HourFormat(
-                                                                        //     data.createdAt!),
-                                                                        ),
+                                                                        username:
+                                                                            "",
+                                                                        url: data
+                                                                            .chat!
+                                                                            .url!,
+                                                                        play:
+                                                                            true,
+                                                                        mute:
+                                                                            false,
+                                                                        date:
+                                                                            ""),
                                                                   ));
                                                             },
                                                             child: CircleAvatar(
@@ -7096,9 +5659,7 @@ class _AllStarredMsgListState extends State<AllStarredMsgList> {
                                                                           mapType:
                                                                               MapType.normal,
                                                                           onMapCreated:
-                                                                              (GoogleMapController controller111) {
-                                                                            // controller.complete();
-                                                                          },
+                                                                              (GoogleMapController controller111) {},
                                                                         ),
                                                                 ),
                                                               ),
@@ -7225,7 +5786,7 @@ class _AllStarredMsgListState extends State<AllStarredMsgList> {
                                                                                 TextOverflow.ellipsis,
                                                                             style: TextStyle(
                                                                                 color: linkColor,
-                                                                                fontSize: 10,
+                                                                                fontSize: 12,
                                                                                 fontWeight: FontWeight.w400),
                                                                           ).paddingOnly(
                                                                               left: 10)
@@ -7315,7 +5876,7 @@ class _AllStarredMsgListState extends State<AllStarredMsgList> {
                                                                                   children: [
                                                                                     const SizedBox(height: 3),
                                                                                     Text(
-                                                                                     languageController.textTranslate('Message'),
+                                                                                      languageController.textTranslate('Message'),
                                                                                       textAlign: TextAlign.center,
                                                                                       style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: chatColor),
                                                                                     ),
@@ -7404,7 +5965,7 @@ class _AllStarredMsgListState extends State<AllStarredMsgList> {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(10),
         color: data.chat!.user!.userId == Hive.box(userdata).get(userId)
-            ? yellow1Color
+            ? secondaryColor
             : grey1Color,
       ),
       child: Column(
@@ -7433,14 +5994,14 @@ class _AllStarredMsgListState extends State<AllStarredMsgList> {
                             CupertinoIcons.pause_circle_fill,
                             color: data.chat!.user!.userId ==
                                     Hive.box(userdata).get(userId)
-                                ? yellow1Color
+                                ? secondaryColor
                                 : grey1Color,
                           )
                         : Icon(
                             CupertinoIcons.play_circle_fill,
                             color: data.chat!.user!.userId ==
                                     Hive.box(userdata).get(userId)
-                                ? yellow1Color
+                                ? secondaryColor
                                 : grey1Color,
                           ),
                   ),
@@ -7489,7 +6050,7 @@ class _AllStarredMsgListState extends State<AllStarredMsgList> {
                 ? const SizedBox.shrink()
                 : const Icon(
                     Icons.star_rate_rounded,
-                    color: Color(0xff000000),
+                    color: Color(0xFFFFC700),
                     size: 15,
                   ),
           ),
@@ -7579,7 +6140,6 @@ class _AllStarredMsgListState extends State<AllStarredMsgList> {
         "Accept": "application/json",
       };
 
-      //add headers
       request.headers.addAll(headers);
       request.fields['message_id'] = iD.toString();
       request.fields['remove_from_star'] = true.toString();

@@ -1,10 +1,10 @@
-// ignore_for_file: camel_case_types, unused_local_variable, avoid_print, use_build_context_synchronously, avoid_returning_null_for_void, prefer_if_null_operators
+// ignore_for_file: camel_case_types, unused_local_variable, avoid_print, use_build_context_synchronously, avoid_returning_null_for_void, prefer_if_null_operators, deprecated_member_use
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:meyaoo_new/app.dart';
-import 'package:meyaoo_new/src/global/global.dart';
+import 'package:whoxachat/app.dart';
+import 'package:whoxachat/src/global/global.dart';
 
 class about2 extends StatefulWidget {
   final String initialText;
@@ -19,12 +19,6 @@ class _about2State extends State<about2> {
   String selectedabouttext = "";
   @override
   void initState() {
-    // aboutController.text = Hive.box(userdata).get(userBio) == null
-    //     ? ""
-    //     : Hive.box(userdata).get(userBio);
-    // selectedabouttext = Hive.box(userdata).get(userBio) == null
-    //     ? ""
-    //     : Hive.box(userdata).get(userBio);
     aboutController = TextEditingController(text: widget.initialText);
     super.initState();
   }
@@ -33,49 +27,10 @@ class _about2State extends State<about2> {
   Widget build(BuildContext context) {
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle(
-        statusBarColor: const Color(0xffFFEDAB).withOpacity(0.05),
+        statusBarColor: secondaryColor.withOpacity(0.05),
       ),
       child: Scaffold(
         backgroundColor: appColorWhite,
-        // appBar: AppBar(
-        //   shape: RoundedRectangleBorder(
-        //     borderRadius: BorderRadius.circular(0),
-        //     side: BorderSide(color: Colors.grey.shade200),
-        //   ),
-        //   elevation: 0,
-        //   backgroundColor: Colors.white,
-        //   leading: InkWell(
-        //     onTap: () {
-        //       Get.back();
-        //     },
-        //     child: const Icon(
-        //       Icons.arrow_back_ios_new_rounded,
-        //       size: 18,
-        //       color: Colors.black,
-        //     ),
-        //   ),
-        //   title: const Text(
-        //     'About',
-        //     style: TextStyle(
-        //         color: Colors.black,
-        //         fontSize: 20,
-        //         fontFamily: "Poppins",
-        //         fontWeight: FontWeight.w500),
-        //   ),
-        //   actions: [
-        //     Padding(
-        //       padding: const EdgeInsets.only(right: 12),
-        //       child: InkWell(
-        //         onTap: () {
-        //           Get.back(result: aboutController.text);
-        //         },
-        //         child: aboutController.text.isEmpty
-        //             ? const SizedBox.shrink()
-        //             : const Icon(Icons.check, color: Colors.black),
-        //       ),
-        //     ),
-        //   ],
-        // ),
         body: SingleChildScrollView(
           child: Column(
             children: [
@@ -84,8 +39,8 @@ class _about2State extends State<about2> {
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
-                      const Color(0xffFFEDAB).withOpacity(0.04),
-                      const Color(0xffFCC604).withOpacity(0.04),
+                      secondaryColor.withOpacity(0.04),
+                      chatownColor.withOpacity(0.04),
                     ],
                   ),
                 ),
@@ -136,7 +91,6 @@ class _about2State extends State<about2> {
                     mainAxisAlignment: MainAxisAlignment.start,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // const SizedBox(height: 20),
                       const SizedBox(
                         height: 20,
                       ),
@@ -159,7 +113,6 @@ class _about2State extends State<about2> {
                             autofocus: false,
                             maxLength: 120,
                             maxLines: 4,
-                            // minLines: 5,
                             style: const TextStyle(
                                 color: Colors.black,
                                 fontSize: 12,
@@ -190,8 +143,6 @@ class _about2State extends State<about2> {
                                   fontWeight: FontWeight.w400),
                               filled: true,
                               fillColor: Colors.white,
-
-                              // ),
                             )),
                       ),
                       const SizedBox(

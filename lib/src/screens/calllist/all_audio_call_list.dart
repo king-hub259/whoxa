@@ -4,9 +4,9 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:get/get.dart';
-import 'package:meyaoo_new/Models/get_all_audiocall_list_model.dart';
-import 'package:meyaoo_new/controller/call_history_controller.dart';
-import 'package:meyaoo_new/src/global/global.dart';
+import 'package:whoxachat/Models/get_all_audiocall_list_model.dart';
+import 'package:whoxachat/controller/call_history_controller.dart';
+import 'package:whoxachat/src/global/global.dart';
 
 class AllAudioCallList extends StatefulWidget {
   const AllAudioCallList({super.key});
@@ -55,8 +55,6 @@ class _AllAudioCallListState extends State<AllAudioCallList> {
         log("ALL NUMBER ${allNumbers[i].trim()}");
         log("index $i");
         log("Name ${_contacts![i].id}");
-
-        // log("Name ${_contacts![i].phones.first.number}");
       }
     }
   }
@@ -69,7 +67,7 @@ class _AllAudioCallListState extends State<AllAudioCallList> {
         }
       }
     }
-    return -1; // Return -1 if name is not found
+    return -1;
   }
 
   @override
@@ -146,7 +144,6 @@ class _AllAudioCallListState extends State<AllAudioCallList> {
                 Text(
                   allNumbers.contains(missCallList.mobileNumber!)
                       ? allNames[getIndexFromNumber(missCallList.mobileNumber!)]
-                      // allNames[index]
                       : capitalizeFirstLetter(missCallList.username!),
                   style: const TextStyle(
                       fontSize: 14,

@@ -6,14 +6,14 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:lecle_flutter_link_preview/lecle_flutter_link_preview.dart';
-import 'package:meyaoo_new/app.dart';
-import 'package:meyaoo_new/controller/single_chat_media_controller.dart';
-import 'package:meyaoo_new/model/chat_profile_model.dart';
-import 'package:meyaoo_new/src/global/global.dart';
-import 'package:meyaoo_new/src/global/pdf.dart';
-import 'package:meyaoo_new/src/screens/chat/FileView.dart';
-import 'package:meyaoo_new/src/screens/chat/chatvideo.dart';
-import 'package:meyaoo_new/src/screens/chat/imageView.dart';
+import 'package:whoxachat/app.dart';
+import 'package:whoxachat/controller/single_chat_media_controller.dart';
+import 'package:whoxachat/model/chat_profile_model.dart';
+import 'package:whoxachat/src/global/global.dart';
+import 'package:whoxachat/src/global/pdf.dart';
+import 'package:whoxachat/src/screens/chat/FileView.dart';
+import 'package:whoxachat/src/screens/chat/chatvideo.dart';
+import 'package:whoxachat/src/screens/chat/imageView.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:video_thumbnail/video_thumbnail.dart';
 
@@ -30,9 +30,11 @@ class _MediaState extends State<Media> {
   ChatProfileController chatProfileController = Get.find();
   @override
   void initState() {
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      chatProfileController.getProfileDATA(widget.peeid!);
-    });
+    if (widget.peeid!.isNotEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        chatProfileController.getProfileDATA(widget.peeid!);
+      });
+    }
     super.initState();
   }
 
@@ -82,7 +84,7 @@ class _MediaState extends State<Media> {
                           color: Colors.grey,
                           fontWeight: FontWeight.w500,
                           fontSize: 15),
-                      labelStyle: const TextStyle(
+                      labelStyle: TextStyle(
                           color: chatownColor,
                           fontWeight: FontWeight.w500,
                           fontSize: 15),
@@ -215,7 +217,6 @@ class _MediaState extends State<Media> {
                                           ),
                                         ),
                                       ),
-                                //_____________________________ LINS TABBAR ______________________________________
                                 Column(
                                   children: [
                                     Center(
@@ -281,10 +282,6 @@ class _MediaState extends State<Media> {
                                               ),
                                             )
                                           : Container(
-                                              // height: MediaQuery.of(context)
-                                              //         .size
-                                              //         .height *
-                                              //     0.77,
                                               width: MediaQuery.of(context)
                                                   .size
                                                   .width,
@@ -320,7 +317,6 @@ class _MediaState extends State<Media> {
                                     )
                                   ],
                                 ),
-                                //__________________________DOC TABBAR_____________________________________
                                 Container(
                                   child: chatProfileController.profileModel
                                           .value!.documentData!.isEmpty
@@ -437,8 +433,6 @@ class _MediaState extends State<Media> {
                         play: true,
                         mute: false,
                         date: "",
-
-                        ///convertUTCTimeTo12HourFormat(data.createdAt!),
                       ),
                     ));
               },
@@ -497,10 +491,9 @@ class _MediaState extends State<Media> {
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 3),
       child: Container(
         decoration: BoxDecoration(
-            color: yellow1Color,
+            color: secondaryColor,
             borderRadius: BorderRadius.circular(10),
             border: Border.all(width: 1, color: const Color(0xffE8E8E8))),
-        // height: 90,
         width: MediaQuery.of(context).size.width * 0.90,
         child: InkWell(
           onTap: () {
@@ -597,7 +590,7 @@ class _MediaState extends State<Media> {
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
                     color: linkColor,
-                    fontSize: 10,
+                    fontSize: 12,
                     fontWeight: FontWeight.w400),
               ).paddingOnly(left: 10)
             ],
@@ -624,7 +617,7 @@ class _MediaState extends State<Media> {
         child: Container(
           padding: const EdgeInsets.all(7),
           decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10), color: yellow1Color),
+              borderRadius: BorderRadius.circular(10), color: secondaryColor),
           child: Container(
             width: Get.width * 0.50,
             height: 58,
@@ -723,7 +716,6 @@ class _MediaState extends State<Media> {
 //=======================================================
   Widget getUrlWidget(String url) {
     if (url.endsWith('.mp4')) {
-      // If URL ends with '.mp4', fetch its thumbnail
       return FutureBuilder<Uint8List?>(
         future: getThumbnail(url),
         builder: (context, snapshot) {
@@ -734,12 +726,11 @@ class _MediaState extends State<Media> {
               fit: BoxFit.fill,
             );
           } else {
-            return Container(); // Placeholder or loading indicator can be used here
+            return Container();
           }
         },
       );
     } else {
-      // Otherwise, it's an image URL, return Image.network
       return CachedNetworkImage(
         imageUrl: url,
         fit: BoxFit.fill,

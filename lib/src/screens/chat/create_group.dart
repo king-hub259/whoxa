@@ -4,9 +4,9 @@ import 'dart:io';
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:meyaoo_new/app.dart';
-import 'package:meyaoo_new/controller/group_create_controller.dart';
-import 'package:meyaoo_new/src/global/global.dart';
+import 'package:whoxachat/app.dart';
+import 'package:whoxachat/controller/group_create_controller.dart';
+import 'package:whoxachat/src/global/global.dart';
 
 class create_group extends StatefulWidget {
   const create_group({super.key});
@@ -34,7 +34,6 @@ class _create_groupState extends State<create_group> {
               height: 100,
               width: 100,
               decoration: BoxDecoration(
-                // shape: BoxShape.circle,
                 borderRadius: BorderRadius.circular(300),
                 color: const Color.fromARGB(255, 245, 243, 243),
               ),
@@ -85,10 +84,7 @@ class _create_groupState extends State<create_group> {
                       padding: const EdgeInsets.only(top: 18, bottom: 25),
                       child: Image.asset("assets/images/group_user.png",
                           color: chatColor),
-                    )
-
-                    // ),
-                    )),
+                    ))),
           ),
           const SizedBox(
             height: 10,
@@ -167,7 +163,7 @@ class _create_groupState extends State<create_group> {
                         getImageFromCamera();
                       },
                       style: ButtonStyle(
-                        shape: MaterialStateProperty.all(RoundedRectangleBorder(
+                        shape: WidgetStateProperty.all(RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8.0))),
                       ),
                       child: Text(
@@ -184,7 +180,7 @@ class _create_groupState extends State<create_group> {
                         getImageFromGallery();
                       },
                       style: ButtonStyle(
-                        shape: MaterialStateProperty.all(
+                        shape: WidgetStateProperty.all(
                           RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8.0),
                           ),
@@ -205,9 +201,9 @@ class _create_groupState extends State<create_group> {
                   child: ClipOval(
                     child: Material(
                       elevation: 5,
-                      color: chatownColor, // button color
+                      color: chatownColor,
                       child: InkWell(
-                        splashColor: chatColor, // inkwell color
+                        splashColor: chatColor,
                         child: const SizedBox(
                             width: 25,
                             height: 25,
@@ -236,7 +232,6 @@ class _create_groupState extends State<create_group> {
   final picker = ImagePicker();
 
   Future getImageFromCamera() async {
-    // ignore: deprecated_member_use
     final pickedFile = await picker.pickImage(source: ImageSource.camera);
     setState(() {
       if (pickedFile != null) {
@@ -248,7 +243,6 @@ class _create_groupState extends State<create_group> {
   }
 
   Future getImageFromGallery() async {
-    // ignore: deprecated_member_use
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
     setState(() {
       if (pickedFile != null) {

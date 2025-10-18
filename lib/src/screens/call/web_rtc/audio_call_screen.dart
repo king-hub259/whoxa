@@ -1,28 +1,36 @@
-// ignore_for_file: must_be_immutable, depend_on_referenced_packages, constant_identifier_names, avoid_print, non_constant_identifier_names
+// ignore_for_file: must_be_immutable, depend_on_referenced_packages, constant_identifier_names, avoid_print, non_constant_identifier_names, unused_field, deprecated_member_use
 
-// // ignore_for_file: avoid_print, use_build_context_synchronously
+//
 import 'dart:async';
+import 'dart:developer';
+import 'dart:io';
 import 'dart:ui';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:get/get.dart' as getx;
 import 'package:hive/hive.dart';
 import 'package:lottie/lottie.dart';
-import 'package:meyaoo_new/app.dart';
-import 'package:meyaoo_new/controller/call_controller.dart/get_roomId_controller.dart';
-import 'package:meyaoo_new/controller/user_chatlist_controller.dart';
-import 'package:meyaoo_new/main.dart';
-import 'package:meyaoo_new/src/global/common_widget.dart';
-import 'package:meyaoo_new/src/global/global.dart';
-import 'package:meyaoo_new/src/global/strings.dart';
-import 'package:meyaoo_new/src/screens/layout/bottombar.dart';
+import 'package:whoxachat/app.dart';
+import 'package:whoxachat/controller/call_controller.dart/get_roomId_controller.dart';
+import 'package:whoxachat/controller/user_chatlist_controller.dart';
+import 'package:whoxachat/main.dart';
+import 'package:whoxachat/native_controller/audio_native_controller.dart';
+import 'package:whoxachat/src/Notification/one_signal_service.dart';
+import 'package:whoxachat/src/global/api_helper.dart';
+import 'package:whoxachat/src/global/common_widget.dart';
+import 'package:whoxachat/src/global/global.dart';
+import 'package:whoxachat/src/global/strings.dart';
+import 'package:whoxachat/src/screens/call/web_rtc/joiend_users.dart';
+import 'package:whoxachat/src/screens/layout/bottombar.dart';
 import 'package:peerdart/peerdart.dart';
 import 'package:uuid/uuid.dart';
 
 class AudioCallScreen extends StatefulWidget {
   String? roomID;
+  String? isGroupCall;
   String conversation_id;
   String receiverImage;
   String receiverUserName;
@@ -30,6 +38,7 @@ class AudioCallScreen extends StatefulWidget {
   AudioCallScreen(
       {super.key,
       this.roomID,
+      this.isGroupCall,
       required this.conversation_id,
       required this.receiverImage,
       required this.receiverUserName,
@@ -42,28 +51,102 @@ class AudioCallScreen extends StatefulWidget {
 class _AudioCallScreenState extends State<AudioCallScreen> {
   Peer? myPeer;
   Map<String, MediaConnection> peers = {};
-  // MediaStream? localStream;
-  // MediaStream? remoteStream;
+
   RTCVideoRenderer localRenderer = RTCVideoRenderer();
-  // List<RTCVideoRenderer> remoteRenderer = [];
+
   final Map<String, RTCVideoRenderer> remoteRenderers = {};
 
   final RoomIdController roomIdController = getx.Get.put(RoomIdController());
 
-  // RTCVideoRenderer remoteRenderer = RTCVideoRenderer();
-  // RTCVideoRenderer remote2Renderer = RTCVideoRenderer();
-
-  // late RTCPeerConnection _peerConnection;
   String? peerid;
   bool inCall = false;
   bool isScreenBig = true;
   bool isReciverConnect = false;
   bool isCallCutByMe = false;
+  bool isCallCutCall = false;
 
   @override
   void initState() {
     super.initState();
+    callingRingtone();
     _initializeRenderers();
+    checkIsRemoteUsersJoined();
+    roomIdController.joinUsers(
+      isCaller: widget.isCaller,
+      isGroupCall: bool.parse(widget.isGroupCall!),
+      callback: () {
+        log("callback call");
+        if (roomIdController.connnectdUsersData.length == 1) {
+          log("remoteRenderers length first ${remoteRenderers.length}");
+
+          Future.delayed(
+            const Duration(seconds: 2),
+            () {
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (context.mounted) {
+                  endedCall(context);
+                }
+              });
+              disposeLocalRender();
+              disposeRemoteRender();
+              getx.Get.find<ChatListController>().forChatList();
+            },
+          );
+        }
+      },
+    );
+  }
+
+  late Future _delayedCheckFuture;
+
+  checkIsRemoteUsersJoined() async {
+    _delayedCheckFuture = Future.delayed(
+      const Duration(seconds: 45),
+      () {
+        if (remoteRenderers.isEmpty) {
+          if (widget.isCaller == true) {
+            stopRingtone();
+          }
+          if (isReciverConnect == false &&
+              widget.isCaller == true &&
+              isCallCutCall == false) {
+            print("callCutByMe calling...");
+            roomIdController.callCutByMe(
+                conversationID: widget.conversation_id, callType: "audio_call");
+          }
+
+          setState(() {
+            inCall = false;
+          });
+          disposeLocalRender();
+          disposeRemoteRender();
+          getx.Get.find<ChatListController>().forChatList();
+          getx.Get.offAll(
+            TabbarScreen(
+              currentTab: 0,
+            ),
+          );
+        }
+      },
+    );
+  }
+
+  callingRingtone() async {
+    if (widget.isCaller == true && remoteRenderers.isEmpty) {
+      await Helper.setSpeakerphoneOn(false);
+      AudioManager.setEarpiece();
+
+      if (Platform.isAndroid) {
+        FlutterRingtonePlayer().play(
+          fromAsset: 'assets/audio/calling.mp3',
+          looping: true,
+        );
+      } else {
+        AudioManager.playAudio(
+          audioFile: 'calling.mp3',
+        );
+      }
+    }
   }
 
   Future<void> _initializeRenderers() async {
@@ -72,14 +155,14 @@ class _AudioCallScreenState extends State<AudioCallScreen> {
     await _initPeer();
   }
 
-  static const CLOUD_HOST = "62.72.36.245";
+  static const CLOUD_HOST = ApiHelper.baseUrlIp;
   static const CLOUD_PORT = 4001;
-  // ignore: unused_field
+
   static const defaultConfig = {
     'iceServers': [
       {'urls': 'stun:stun.l.google.com:19302'},
       {
-        'urls': "turn:62.72.36.245:4001",
+        'urls': "turn:$CLOUD_HOST:4001",
         'username': "peerjs",
         'credential': "peerjsp"
       }
@@ -95,8 +178,6 @@ class _AudioCallScreenState extends State<AudioCallScreen> {
           host: CLOUD_HOST,
           secure: false,
           path: '/',
-          // config: defaultConfig,
-          // pingInterval: 50,
         ),
       );
     } catch (e) {
@@ -149,10 +230,11 @@ class _AudioCallScreenState extends State<AudioCallScreen> {
       print("peers $peers");
     }
 
-    navigator.mediaDevices
-        .getUserMedia({"video": false, "audio": true}).then((mediaStream) {
+    navigator.mediaDevices.getUserMedia({"video": false, "audio": true}).then(
+        (mediaStream) async {
       localRenderer.srcObject = mediaStream;
       print('my stream $mediaStream');
+      await Helper.setSpeakerphoneOn(false);
 
       myPeer!.on<MediaConnection>("call").listen((call) {
         print("call from ${call.peer} to $peerid");
@@ -160,7 +242,6 @@ class _AudioCallScreenState extends State<AudioCallScreen> {
         call.answer(mediaStream);
 
         call.on<MediaStream>("stream").listen((remoteStream) async {
-          // remoteRenderer.srcObject = remoteStream;
           if (!remoteRenderers.containsKey(call.peer)) {
             RTCVideoRenderer renderer = RTCVideoRenderer();
 
@@ -185,10 +266,13 @@ class _AudioCallScreenState extends State<AudioCallScreen> {
       socketIntilized.socket!.on(
         "user-connected-to-call",
         (userId) {
+          if (widget.isCaller == true) {
+            stopRingtone();
+          }
           print("PEERID☺☺☺☺☺☺☺ remote: $userId");
+
           connectNewUser(userId, mediaStream);
           isReciverConnect = true;
-          // setState(() {});
         },
       );
     });
@@ -208,26 +292,18 @@ class _AudioCallScreenState extends State<AudioCallScreen> {
                       remoteRenderers.remove(userId),
                       if (remoteRenderers.isEmpty)
                         {
+                          socketIntilized.socket!.emit("leave-call", {
+                            "room_id": widget.roomID,
+                            "user_id": myPeer!.id
+                          }),
                           disposeLocalRender(),
                           disposeRemoteRender(),
+                          getx.Get.find<ChatListController>().forChatList(),
                           getx.Get.offAll(
                             TabbarScreen(
                               currentTab: 0,
                             ),
                           ),
-                          getx.Get.find<ChatListController>().forChatList(),
-                          // if (widget.isCaller == true)
-                          //   {
-                          //     getx.Get.back(),
-                          //   }
-                          // else
-                          //   {
-                          //     getx.Get.to(
-                          //       TabbarScreen(
-                          //         currentTab: 0,
-                          //       ),
-                          //     ),
-                          //   }
                         }
                     },
                   setState(() {}),
@@ -242,7 +318,9 @@ class _AudioCallScreenState extends State<AudioCallScreen> {
 
     socketIntilized.socket!.on("call_decline", (data) {
       print("call_decline data : $data");
-      // getx.Get.back();
+
+      stopRingtone();
+      getx.Get.find<ChatListController>().forChatList();
       getx.Get.offAll(
         TabbarScreen(
           currentTab: 0,
@@ -253,174 +331,37 @@ class _AudioCallScreenState extends State<AudioCallScreen> {
       setState(() {
         myPeer!.dispose();
       });
-      getx.Get.find<ChatListController>().forChatList();
     });
   }
 
-  // Future<void> _initPeer() async {
-  //   try {
-  //     myPeer = Peer(
-  //       id: "${const Uuid().v4()}/${Hive.box(userdata).get(userId).toString()}",
-  //       options: PeerOptions(
-  //         port: CLOUD_PORT,
-  //         host: CLOUD_HOST,
-  //         secure: false,
-  //         path: '/',
-  //         // config: defaultConfig,
-  //         // pingInterval: 50,
-  //       ),
-  //     );
-  //   } catch (e) {
-  //     print('Unhandled exception in _initPeer: $e');
-  //   }
-
-  //   myPeer!.on("open").listen((event) {
-  //     setState(() {
-  //       peerid = event.toString();
-  //     });
-  //     print("PEERID☺☺☺☺☺☺☺:$event");
-  //     socketIntilized.socket!
-  //         .emit("join-call", {"room_id": widget.roomID, "user_id": event});
-  //   });
-
-  //   connectNewUser(userId, MediaStream mediaStream) async {
-  //     print('new connected userid $userId');
-  //     print('new connected stream $mediaStream');
-
-  //     final call = myPeer!.call(userId, mediaStream);
-  //     print('new connected user... ${call.connectionId}');
-
-  //     call.on<MediaStream>("stream").listen((stream) async {
-  //       print("call.peer ${call.peer}");
-  //       if (!remoteRenderers.containsKey(call.peer)) {
-  //         RTCVideoRenderer renderer = RTCVideoRenderer();
-  //         await renderer.initialize();
-  //         setState(() {
-  //           remoteRenderers[call.peer] = renderer;
-  //         });
-  //       }
-  //       remoteRenderers[userId]!.srcObject = stream;
-  //       startTimer();
-  //       print("remoteStream $stream");
-  //       print("remoteRenderers length ${remoteRenderers.length}");
-  //     });
-
-  //     call.on("close").listen((onData) {
-  //       print("call closed");
-  //       if (remoteRenderers[userId] != null) {
-  //         remoteRenderers[userId]!.dispose();
-  //         remoteRenderers.remove(userId);
-  //         print("remoteRenderers length ${remoteRenderers.length}");
-  //       }
-  //     });
-
-  //     peers[userId] = call;
-  //     print("peers $peers");
-  //   }
-
-  //   navigator.mediaDevices
-  //       .getUserMedia({"video": false, "audio": true}).then((mediaStream) {
-  //     localRenderer.srcObject = mediaStream;
-  //     print('my stream $mediaStream');
-
-  //     myPeer!.on<MediaConnection>("call").listen((call) {
-  //       print("call from ${call.peer} to $peerid");
-  //       print('my stream $mediaStream');
-  //       call.answer(mediaStream);
-
-  //       call.on<MediaStream>("stream").listen((remoteStream) async {
-  //         // remoteRenderer.srcObject = remoteStream;
-  //         if (!remoteRenderers.containsKey(call.peer)) {
-  //           RTCVideoRenderer renderer = RTCVideoRenderer();
-
-  //           await renderer.initialize();
-  //           setState(() {
-  //             remoteRenderers[call.peer] = renderer;
-  //           });
-  //         }
-  //         setState(() {
-  //           remoteRenderers[call.peer]!.srcObject = remoteStream;
-  //         });
-  //         print("remoteRenderers length ${remoteRenderers.length}");
-  //         print("remoteStream $remoteStream");
-  //         startTimer();
-  //       });
-  //       print("call peer ${call.peer}");
-  //       peers[call.peer] = call;
-  //     });
-  //     socketIntilized.socket!.on(
-  //       "user-connected-to-call",
-  //       (userId) {
-  //         print("PEERID☺☺☺☺☺☺☺ remote: $userId");
-  //         connectNewUser(userId, mediaStream);
-  //         isReciverConnect = true;
-  //         // setState(() {});
-  //       },
-  //     );
-  //   });
-
-  //   socketIntilized.socket!.on(
-  //       "user-disconnected-from-call",
-  //       (userId) => {
-  //             print("disconnected  $userId"),
-  //             print("peers $peers"),
-  //             if (peers[userId] != null)
-  //               {
-  //                 print("disconnected userid $userId"),
-  //                 peers[userId]!.close(),
-  //                 if (remoteRenderers[userId] != null)
-  //                   {
-  //                     remoteRenderers[userId]!.dispose(),
-  //                     remoteRenderers.remove(userId),
-  //                     if (remoteRenderers.isEmpty)
-  //                       {
-  //                         getx.Get.back(),
-  //                       }
-  //                   },
-  //                 setState(() {}),
-  //                 print("disconnected peers[userId] ${peers[userId]}"),
-  //                 print("remoteRenderers length ${remoteRenderers.length}"),
-  //               }
-  //             else
-  //               {
-  //                 print("peers else $peers"),
-  //               }
-  //           });
-
-  //   socketIntilized.socket!.on("call_decline", (data) {
-  //     print("call_decline data : $data");
-  //     getx.Get.back();
-  //     setState(() {
-  //       localRenderer.dispose();
-  //       myPeer!.dispose();
-  //     });
-  //   });
-  // }
-
   void _endCall() {
+    if (widget.isCaller == true) {
+      isCallCutCall = true;
+      setState(() {});
+      stopRingtone();
+    }
     if (isReciverConnect == false && widget.isCaller == true) {
       print("callCutByMe calling...");
       roomIdController.callCutByMe(
           conversationID: widget.conversation_id, callType: "audio_call");
     }
+    peers = {};
     socketIntilized.socket!
         .emit("leave-call", {"room_id": widget.roomID, "user_id": myPeer!.id});
 
     setState(() {
       inCall = false;
     });
-    // if (widget.isCaller == true) {
-    //   getx.Get.back();
-    // } else {
+
     disposeLocalRender();
     disposeRemoteRender();
+
     getx.Get.find<ChatListController>().forChatList();
     getx.Get.offAll(
       TabbarScreen(
         currentTab: 0,
       ),
     );
-    // }
   }
 
   bool microphone = false;
@@ -432,16 +373,7 @@ class _AudioCallScreenState extends State<AudioCallScreen> {
     setState(() {});
   }
 
-  bool camera = false;
-  void _toggleCamera() {
-    camera = !camera;
-    localRenderer.srcObject!.getVideoTracks()[0].enabled == true
-        ? localRenderer.srcObject!.getVideoTracks()[0].enabled = false
-        : localRenderer.srcObject!.getVideoTracks()[0].enabled = true;
-    setState(() {});
-  }
-
-  bool specker = true;
+  bool specker = false;
   void _toggleSpecker() async {
     specker == true
         ? await Helper.setSpeakerphoneOn(false)
@@ -482,7 +414,6 @@ class _AudioCallScreenState extends State<AudioCallScreen> {
         body: Stack(
           children: [
             forTwo(),
-
             Positioned(
                 top: 145,
                 left: 20,
@@ -551,9 +482,6 @@ class _AudioCallScreenState extends State<AudioCallScreen> {
                     ),
                   ],
                 )),
-            // forThree(),
-            // forFour(),
-            // forFive(),
             Positioned(
               top: 40,
               left: 20,
@@ -572,23 +500,29 @@ class _AudioCallScreenState extends State<AudioCallScreen> {
                       fontFamily: "Poppins",
                     ),
                   ),
-                  ClipRRect(
-                    borderRadius: const BorderRadius.all(Radius.circular(100)),
-                    child: BackdropFilter(
-                      filter: ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: appColorBlack.withOpacity(0.07),
+                  GestureDetector(
+                    onTap: () {
+                      joinUsers();
+                    },
+                    child: ClipRRect(
+                      borderRadius:
+                          const BorderRadius.all(Radius.circular(100)),
+                      child: BackdropFilter(
+                        filter: ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: appColorBlack.withOpacity(0.07),
+                            ),
+                            color: appColorBlack.withOpacity(0.10),
                           ),
-                          color: appColorBlack.withOpacity(0.10),
+                          child: Image.asset(
+                            "assets/icons/profile-add.png",
+                            height: 16,
+                            width: 16,
+                          ).paddingAll(9),
                         ),
-                        child: Image.asset(
-                          "assets/icons/profile-add.png",
-                          height: 16,
-                          width: 16,
-                        ).paddingAll(9),
                       ),
                     ),
                   )
@@ -597,8 +531,8 @@ class _AudioCallScreenState extends State<AudioCallScreen> {
             ),
             Positioned(
               bottom: 20,
-              left: 20,
-              right: 20,
+              left: 40,
+              right: 40,
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(38),
                 child: BackdropFilter(
@@ -611,26 +545,15 @@ class _AudioCallScreenState extends State<AudioCallScreen> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         callOptionsContainer(
-                          image: camera == false
-                              ? "assets/icons/camera_on.png"
-                              : "assets/icons/camera_off.png",
-                          onTap: _toggleCamera,
-                        ),
-                        callOptionsContainer(
                           image: microphone == false
                               ? "assets/icons/mice_off.png"
                               : "assets/icons/mice_on.png",
                           onTap: _toggleMicrophone,
                         ),
                         callOptionsContainer(
-                          image:
-                              // localRenderer.srcObject!
-                              //             .getAudioTracks()[0]
-                              //             .enabled ==
-                              //         false
-                              specker == false
-                                  ? "assets/icons/volume_off.png"
-                                  : "assets/icons/volume_on.png",
+                          image: specker == false
+                              ? "assets/icons/volume_off.png"
+                              : "assets/icons/volume_on.png",
                           onTap: _toggleSpecker,
                         ),
                         GestureDetector(
@@ -654,6 +577,15 @@ class _AudioCallScreenState extends State<AudioCallScreen> {
         ),
       ),
     );
+  }
+
+  joinUsers() {
+    return showDialog(
+        context: context,
+        barrierColor: const Color.fromRGBO(30, 30, 30, 0.37),
+        builder: (BuildContext context) {
+          return const JoinedUsers();
+        });
   }
 
   Widget forTwo() {
@@ -680,41 +612,170 @@ class _AudioCallScreenState extends State<AudioCallScreen> {
         BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
           child: Container(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.white.withOpacity(0.053),
           ),
         ),
       ],
     );
   }
 
-  // IconButton(
-  //   icon: const Icon(Icons.call_end),
-  //   onPressed: _endCall,
-  // ),
-  // IconButton(
-  //   icon: const Icon(Icons.mic),
-  //   onPressed: () {},
-  // ),
-  // IconButton(
-  //   icon: const Icon(Icons.videocam),
-  //   onPressed: () {},
-  // ),
-
-  disposeLocalRender() {
-    localRenderer.srcObject!.getTracks().forEach((track) => track.stop());
-    localRenderer.srcObject!.getAudioTracks().forEach((track) => track.stop());
-    localRenderer.srcObject!.getVideoTracks().forEach((track) => track.stop());
-    localRenderer.srcObject = null;
-    localRenderer.dispose();
+  endedCall(BuildContext context) {
+    return showDialog(
+      barrierColor: const Color.fromRGBO(30, 30, 30, 0.37),
+      context: context,
+      builder: (BuildContext context) {
+        return BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 5.0, sigmaY: 5.0),
+          child: AlertDialog(
+            insetPadding: const EdgeInsets.all(8),
+            alignment: Alignment.bottomCenter,
+            backgroundColor: Colors.white,
+            elevation: 0,
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(
+                Radius.circular(20),
+              ),
+            ),
+            content: SizedBox(
+              width: getx.Get.width,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const SizedBox(height: 10),
+                  Text(
+                    languageController
+                        .textTranslate('This call has already ended.'),
+                    style: const TextStyle(
+                        fontWeight: FontWeight.w600, fontSize: 16),
+                  ),
+                  Text(
+                    languageController.textTranslate('Please call again.'),
+                    style: const TextStyle(
+                        fontWeight: FontWeight.w600, fontSize: 16),
+                  ),
+                  const SizedBox(height: 30),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      Expanded(
+                        child: InkWell(
+                          onTap: () {
+                            getx.Get.offAll(
+                              TabbarScreen(
+                                currentTab: 0,
+                              ),
+                            );
+                          },
+                          child: Container(
+                            height: 40,
+                            decoration: BoxDecoration(
+                                border:
+                                    Border.all(color: chatownColor, width: 1),
+                                borderRadius: BorderRadius.circular(12)),
+                            child: Center(
+                                child: Text(
+                              languageController.textTranslate('Cancel'),
+                              style: const TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w400,
+                                  color: chatColor),
+                            )),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(
+                        width: 10,
+                      ),
+                      Expanded(
+                        child: InkWell(
+                          onTap: () {
+                            getx.Get.offAll(
+                              TabbarScreen(
+                                currentTab: 0,
+                              ),
+                            );
+                          },
+                          child: Container(
+                            height: 40,
+                            decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(12),
+                                gradient: LinearGradient(
+                                    colors: [secondaryColor, chatownColor],
+                                    begin: Alignment.topCenter,
+                                    end: Alignment.bottomCenter)),
+                            child: Center(
+                                child: Text(
+                              languageController.textTranslate('Call Again'),
+                              style: const TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w400,
+                                  color: chatColor),
+                            )),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
   }
 
-  disposeRemoteRender() {
-    remoteRenderers.forEach((key, renderer) {
-      renderer.srcObject!.getTracks().forEach((track) => track.stop());
-      renderer.srcObject!.getAudioTracks().forEach((track) => track.stop());
-      renderer.srcObject!.getVideoTracks().forEach((track) => track.stop());
-      renderer.srcObject = null;
-      renderer.dispose();
+  Future<void> disposeLocalRender() async {
+    if (localRenderer.srcObject != null) {
+      final audioTracks = localRenderer.srcObject!.getAudioTracks();
+      if (audioTracks.isNotEmpty) {
+        for (var track in audioTracks) {
+          track.stop();
+        }
+      }
+
+      final videoTracks = localRenderer.srcObject!.getVideoTracks();
+      if (videoTracks.isNotEmpty) {
+        for (var track in videoTracks) {
+          track.stop();
+        }
+      }
+
+      localRenderer.srcObject!.getAudioTracks().clear();
+      localRenderer.srcObject!.getVideoTracks().clear();
+    }
+
+    await localRenderer.dispose();
+  }
+
+  Future<void> disposeRemoteRender() async {
+    remoteRenderers.forEach((key, renderer) async {
+      if (renderer.srcObject != null) {
+        final audioTracks = renderer.srcObject!.getAudioTracks();
+        if (audioTracks.isNotEmpty) {
+          for (var track in audioTracks) {
+            print('Stopping audio track for renderer $key');
+            track.stop();
+          }
+        }
+
+        final videoTracks = renderer.srcObject!.getVideoTracks();
+        if (videoTracks.isNotEmpty) {
+          for (var track in videoTracks) {
+            print('Stopping video track for renderer $key');
+            track.stop();
+          }
+        }
+
+        renderer.srcObject!.getAudioTracks().clear();
+        renderer.srcObject!.getVideoTracks().clear();
+      } else {
+        print('No srcObject found for renderer $key');
+      }
+
+      await renderer.dispose();
+      print('Renderer $key disposed');
     });
   }
 
@@ -723,6 +784,7 @@ class _AudioCallScreenState extends State<AudioCallScreen> {
     disposeLocalRender();
     disposeRemoteRender();
     myPeer!.dispose();
+    _delayedCheckFuture = Future.value();
     _timer?.cancel();
     super.dispose();
   }

@@ -7,19 +7,21 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hive/hive.dart';
 import 'package:intl/intl.dart';
-import 'package:meyaoo_new/app.dart';
-import 'package:meyaoo_new/controller/online_controller.dart';
-import 'package:meyaoo_new/controller/single_chat_media_controller.dart';
-import 'package:meyaoo_new/controller/user_chatlist_controller.dart';
-import 'package:meyaoo_new/model/common_widget.dart';
-import 'package:meyaoo_new/model/userchatlist_model/userchatlist_model.dart';
-import 'package:meyaoo_new/src/global/global.dart';
-import 'package:meyaoo_new/src/global/strings.dart';
-import 'package:meyaoo_new/src/screens/Group/add_gp_member.dart';
-import 'package:meyaoo_new/src/screens/chat/ArchivedChat.dart';
-import 'package:meyaoo_new/src/screens/chat/group_chat_temp.dart';
-import 'package:meyaoo_new/src/screens/chat/single_chat.dart';
-import 'package:meyaoo_new/src/screens/layout/contact_new.dart';
+import 'package:whoxachat/app.dart';
+import 'package:whoxachat/controller/online_controller.dart';
+import 'package:whoxachat/controller/single_chat_controller.dart';
+import 'package:whoxachat/controller/single_chat_media_controller.dart';
+import 'package:whoxachat/controller/user_chatlist_controller.dart';
+import 'package:whoxachat/model/common_widget.dart';
+import 'package:whoxachat/model/userchatlist_model/userchatlist_model.dart';
+import 'package:whoxachat/src/global/common_widget.dart';
+import 'package:whoxachat/src/global/global.dart';
+import 'package:whoxachat/src/global/strings.dart';
+import 'package:whoxachat/src/screens/Group/add_gp_member.dart';
+import 'package:whoxachat/src/screens/chat/ArchivedChat.dart';
+import 'package:whoxachat/src/screens/chat/group_chat_temp.dart';
+import 'package:whoxachat/src/screens/chat/single_chat.dart';
+import 'package:whoxachat/src/screens/layout/contact_new.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -33,42 +35,57 @@ class Chats extends StatefulWidget {
 class _ChatsState extends State<Chats> with WidgetsBindingObserver {
   ChatListController chatListController = Get.put(ChatListController());
   OnlineOfflineController onlieController = Get.find();
-  // LanguageController languageController = Get.find();
+
   TextEditingController controller = TextEditingController();
   ChatProfileController chatProfileController =
       Get.put(ChatProfileController());
 
   Future<void> requestPermissions() async {
-    // Request notification permission
     await Permission.notification.request();
 
-    // Request location permission
-    await Permission.location.request();
-
-    // Request camera permission
     await Permission.camera.request();
 
-    // Request microphone permission
     await Permission.microphone.request();
 
-    // Request storage permission
     await Permission.storage.request();
 
-    // Request photo library permission
     await Permission.photos.request();
 
     await Permission.contacts.request();
   }
 
+  // @override
+  // void initState() {
+  //   super.initState();
+  //   requestPermissions();
+  //   chatListController.isChatListLoading(true);
+  //   WidgetsBinding.instance.addPostFrameCallback((_) async {
+  //     // await chatListController.forChatList();
+  //     chatListController.forArchiveChatList();
+  //   });
+  //   Future.delayed(
+  //     const Duration(seconds: 2),
+  //     () async {
+  //       debugPrint("HOME API CALL AFTER 2 SECONDS");
+  //       await chatListController.forChatList();
+  //     },
+  //   );
+  // }
   @override
   void initState() {
     super.initState();
     requestPermissions();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      chatListController.forChatList();
-      chatListController.forArchiveChatList();
-    });
-    //chatListController.forArchiveChatList();
+
+    // Only call once with proper sequencing
+    chatListController.isChatListLoading(true);
+
+    Future.delayed(
+      const Duration(seconds: 1),
+      () async {
+        await chatListController.forArchiveChatList();
+        await chatListController.forChatList();
+      },
+    );
   }
 
   bool? isonline;
@@ -99,133 +116,286 @@ class _ChatsState extends State<Chats> with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: appColorWhite,
+      appBar: AppBar(
+        scrolledUnderElevation: 0,
         backgroundColor: Colors.white,
-        appBar: AppBar(
-          scrolledUnderElevation: 0,
-          backgroundColor: Colors.white,
-          elevation: 0,
-          automaticallyImplyLeading: false,
-          centerTitle: false,
-          title: Image.asset("assets/images/logo.png", height: 45),
+        elevation: 0,
+        automaticallyImplyLeading: false,
+        centerTitle: false,
+        title: Image.network(
+          languageController.appSettingsData[0].appLogo!,
+          height: 45,
         ),
-        body: Obx(() {
-          return Container(
-            color: Colors.white,
-            child: Column(
-              children: [
-                chatWidget(context),
-                Expanded(
-                    child:
-                        chatListController.userChatListModel.value!.chatList ==
-                                    null ||
-                                chatListController.userArchiveListModel.value!
-                                        .archiveList ==
-                                    null ||
-                                chatListController.isChatListLoading.value ||
-                                chatListController.isArchive.value
-                            ? loader(context)
-                            : SingleChildScrollView(child: chatListScreen1()))
-              ],
-            ),
-          );
-        }));
+      ),
+      body: Obx(() {
+        return Container(
+          color: appColorWhite,
+          child: Column(
+            children: [
+              chatWidget(context),
+              // Expanded(
+              //     child: (chatListController
+              //                         .userChatListModel.value!.chatList ==
+              //                     null ||
+              //                 chatListController.userArchiveListModel.value!
+              //                         .archiveList ==
+              //                     null ||
+              //                 chatListController.isChatListLoading.value ||
+              //                 chatListController.isArchive.value) &&
+              //             (chatListController
+              //                         .userChatListModel.value!.chatList ==
+              //                     null ||
+              //                 (chatListController.userChatListModel.value!
+              //                         .chatList!.isEmpty &&
+              //                     chatListController
+              //                             .isChatListLoading.value ==
+              //                         false))
+              //         ? loader(context)
+              //         : chatListScreen1())
+              Expanded(child: Obx(() {
+                // Simple loading check
+                if (chatListController.isChatListLoading.value) {
+                  return loader(context);
+                }
+
+                // Check if we have data
+                final hasChatList =
+                    chatListController.userChatListModel.value?.chatList !=
+                        null;
+
+                if (!hasChatList ||
+                    chatListController
+                        .userChatListModel.value!.chatList!.isEmpty) {
+                  return commonImageTexts(
+                    image: "assets/images/no_contact_found_1.png",
+                    text1: languageController.textTranslate("No Chat Found"),
+                    text2: languageController.textTranslate(
+                        "You can find contact from contact list, and start chatting."),
+                  );
+                }
+
+                // Show chat list
+                return chatListScreen1();
+              }))
+            ],
+          ),
+        );
+      }),
+    );
   }
 
 //_________________________________________________________________________________________________________________________________________________________
+  // Widget chatListScreen1() {
+  //   return chatListController.userChatListModel.value!.chatList!.isNotEmpty
+  //       ? _searchResult.length != 0 ||
+  //               controller.text.trim().toLowerCase().isNotEmpty
+  //           ? _searchResult.isEmpty &&
+  //                   controller.text.trim().toLowerCase().isNotEmpty
+  //               ? Expanded(
+  //                   child: commonImageTexts(
+  //                     image: "assets/images/no_contact_found_1.png",
+  //                     text1: languageController.textTranslate("No Users found"),
+  //                     text2: languageController
+  //                         .textTranslate("Invite more users or add them"),
+  //                   ),
+  //                 )
+  //               : SingleChildScrollView(
+  //                   child: ListView.builder(
+  //                     shrinkWrap: true,
+  //                     scrollDirection: Axis.vertical,
+  //                     physics: const NeverScrollableScrollPhysics(),
+  //                     itemCount: _searchResult.length,
+  //                     itemBuilder: (context, index) {
+  //                       List chatlist = _searchResult;
+  //                       return chatsWidget(chatlist[index], index);
+  //                     },
+  //                   ),
+  //                 )
+  //           : SingleChildScrollView(
+  //               child: ListView.builder(
+  //                 shrinkWrap: true,
+  //                 scrollDirection: Axis.vertical,
+  //                 physics: const NeverScrollableScrollPhysics(),
+  //                 itemCount: chatListController
+  //                     .userChatListModel.value!.chatList!.length,
+  //                 itemBuilder: (context, index) {
+  //                   isOnline = chatListController.onlineUsers
+  //                       .contains(chatListController
+  //                           .userChatListModel.value!.chatList![index].userId
+  //                           .toString())
+  //                       .toString();
+  //                   return chatsWidget(
+  //                       chatListController
+  //                           .userChatListModel.value!.chatList![index],
+  //                       index);
+  //                 },
+  //               ),
+  //             )
+  //       : Expanded(
+  //           child: commonImageTexts(
+  //             image: "assets/images/no_contact_found_1.png",
+  //             text1: languageController.textTranslate("No Chat Found"),
+  //             text2: languageController.textTranslate(
+  //                 "You can find contact from contact list, and start chatting."),
+  //           ),
+  //         );
+  // }
+
   Widget chatListScreen1() {
-    return chatListController.userChatListModel.value!.chatList!.length > 0
-        ? _searchResult.length != 0 ||
-                controller.text.trim().toLowerCase().isNotEmpty
-            ? ListView.builder(
-                shrinkWrap: true,
-                scrollDirection: Axis.vertical,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: _searchResult.length,
-                itemBuilder: (context, index) {
-                  List chatlist = _searchResult;
-                  return chatsWidget(chatlist[index], index);
-                },
-              )
-            : ListView.builder(
-                shrinkWrap: true,
-                scrollDirection: Axis.vertical,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: chatListController
-                    .userChatListModel.value!.chatList!.length,
-                itemBuilder: (context, index) {
-                  isOnline = chatListController.onlineUsers
-                      .contains(chatListController
-                          .userChatListModel.value!.chatList![index].userId
-                          .toString())
-                      .toString();
-                  return chatsWidget(
-                      chatListController
-                          .userChatListModel.value!.chatList![index],
-                      index);
-                },
-              )
-        : Center(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                SizedBox(height: Get.height * 0.04),
-                Image.asset(
-                  "assets/images/no_contact_found.png",
-                  height: 250,
-                ),
-              ],
+    if (chatListController.userChatListModel.value!.chatList!.isNotEmpty) {
+      // Has chat list
+      if (_searchResult.length != 0 ||
+          controller.text.trim().toLowerCase().isNotEmpty) {
+        // Search is active
+        if (_searchResult.isEmpty &&
+            controller.text.trim().toLowerCase().isNotEmpty) {
+          // No search results
+          return Container(
+            // Changed from Expanded to Container
+            child: commonImageTexts(
+              image: "assets/images/no_contact_found_1.png",
+              text1: languageController.textTranslate("No Users found"),
+              text2: languageController
+                  .textTranslate("Invite more users or add them"),
             ),
           );
+        } else {
+          // Has search results
+          return SingleChildScrollView(
+            child: ListView.builder(
+              shrinkWrap: true,
+              scrollDirection: Axis.vertical,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: _searchResult.length,
+              itemBuilder: (context, index) {
+                List chatlist = _searchResult;
+                return chatsWidget(chatlist[index], index);
+              },
+            ),
+          );
+        }
+      } else {
+        // No search active, showing all chats
+        return SingleChildScrollView(
+          child: ListView.builder(
+            shrinkWrap: true,
+            scrollDirection: Axis.vertical,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount:
+                chatListController.userChatListModel.value!.chatList!.length,
+            itemBuilder: (context, index) {
+              isOnline = chatListController.onlineUsers
+                  .contains(chatListController
+                      .userChatListModel.value!.chatList![index].userId
+                      .toString())
+                  .toString();
+              return chatsWidget(
+                  chatListController.userChatListModel.value!.chatList![index],
+                  index);
+            },
+          ),
+        );
+      }
+    } else {
+      // No chats at all
+      return Container(
+        // Changed from Expanded to Container
+        child: commonImageTexts(
+          image: "assets/images/no_contact_found_1.png",
+          text1: languageController.textTranslate("No Chat Found"),
+          text2: languageController.textTranslate(
+              "You can find contact from contact list, and start chatting."),
+        ),
+      );
+    }
   }
 
   Widget chatsWidget(ChatList data, index) {
-    // Split the lastMessage string into a list
     final messageList = data.lastMessage!.split(',');
 
-    // Check if the userId is in the messageList
     final isUserInList = messageList.contains(Hive.box(userdata).get(userId));
 
     return Container(
-      color: Colors.white,
+      color: appColorWhite,
       child: Column(
         children: [
           InkWell(
             onLongPress: () {
-              // data.isGroup == false
-              //     ? dialogBox(data.isBlock.toString(), data.userId.toString())
-              //     : null;
               dialogBox(data.isBlock!, data.conversationId.toString(),
                   data.isGroup!, data.userName!, data.groupName!, data);
             },
+            // onTap: () {
+            //   Get.find<SingleChatContorller>()
+            //       .userdetailschattModel
+            //       .value!
+            //       .messageList = [];
+            //   if (data.isGroup == true) {
+            //     chatProfileController
+            //         .getProfileDATA(data.conversationId.toString());
+            //   }
+            //   Navigator.push(
+            //     context,
+            //     PageTransition(
+            //         curve: Curves.linear,
+            //         type: PageTransitionType.rightToLeft,
+            //         child: data.isGroup == false
+            //             ? SingleChatMsg(
+            //                 conversationID: data.conversationId.toString(),
+            //                 username: data.userName,
+            //                 userPic: data.profileImage,
+            //                 index: 0,
+            //                 isMsgHighLight: false,
+            //                 isBlock: data.isBlock,
+            //                 userID: data.userId.toString(),
+            //               )
+            //             : GroupChatMsg(
+            //                 conversationID: data.conversationId.toString(),
+            //                 gPusername: data.groupName,
+            //                 gPPic: data.groupProfileImage,
+            //                 index: 0,
+            //                 isMsgHighLight: false,
+            //               )),
+            //   ).then((value) {});
+            // },
             onTap: () {
+              Get.find<SingleChatContorller>()
+                  .userdetailschattModel
+                  .value!
+                  .messageList = [];
+
               if (data.isGroup == true) {
                 chatProfileController
                     .getProfileDATA(data.conversationId.toString());
               }
-              Navigator.push(
-                context,
-                PageTransition(
-                    curve: Curves.linear,
-                    type: PageTransitionType.rightToLeft,
-                    child: data.isGroup == false
-                        ? SingleChatMsg(
-                            conversationID: data.conversationId.toString(),
-                            username: data.userName,
-                            userPic: data.profileImage,
-                            index: 0,
-                            isMsgHighLight: false,
-                            isBlock: data.isBlock,
-                            userID: data.userId.toString(),
-                          )
-                        //____________________navigate to group chat_________________________
-                        : GroupChatMsg(
-                            conversationID: data.conversationId.toString(),
-                            gPusername: data.groupName,
-                            gPPic: data.groupProfileImage,
-                            index: 0,
-                            isMsgHighLight: false,
-                          )),
-              ).then((value) {});
+
+              if (data.isGroup == false) {
+                Get.to(
+                  () => SingleChatMsg(
+                    conversationID: data.conversationId.toString(),
+                    username: data.userName,
+                    userPic: data.profileImage,
+                    index: 0,
+                    isMsgHighLight: false,
+                    isBlock: data.isBlock,
+                    userID: data.userId.toString(),
+                  ),
+                  transition: Transition.rightToLeft,
+                  curve: Curves.linear,
+                );
+              } else {
+                Get.to(
+                  () => GroupChatMsg(
+                    conversationID: data.conversationId.toString(),
+                    gPusername: data.groupName,
+                    gPPic: data.groupProfileImage,
+                    index: 0,
+                    isMsgHighLight: false,
+                  ),
+                  transition: Transition.rightToLeft,
+                  curve: Curves.linear,
+                );
+              }
             },
             child: Stack(
               children: [
@@ -322,80 +492,67 @@ class _ChatsState extends State<Chats> with WidgetsBindingObserver {
                                               fontSize: 15),
                                         ),
                                       ),
-                                Text(
-                                  data.updatedAt!.isEmpty
-                                      ? ''
-                                      : "${CommonWidget.convertDateForm(data.updatedAt!)}",
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.w400,
-                                      color: Colors.grey),
+                                SizedBox(
+                                  width: Get.width * 0.19,
+                                  child: Text(
+                                    data.updatedAt!.isEmpty
+                                        ? ''
+                                        : "${CommonWidget.convertDateForm(data.updatedAt!)}",
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                    textAlign: TextAlign.end,
+                                    style: const TextStyle(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w400,
+                                        color: Colors.grey),
+                                  ),
                                 ),
                               ],
                             ),
-                            onlieController.typingList.isNotEmpty
-                                ? Obx(() {
-                                    return Text(
-                                      isUserTyping(
-                                          data.conversationId.toString()),
-                                      style: const TextStyle(
-                                          fontSize: 12, color: chatownColor),
-                                    );
-                                  })
-                                : data.lastMessageType == "text"
-                                    ? SizedBox(
-                                        width: Get.width * 0.60,
-                                        child: Text(
-                                          capitalizeFirstLetter(
-                                              data.lastMessage!),
-                                          maxLines: 2,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: const TextStyle(
-                                              fontSize: 12, color: Colors.grey),
-                                        ),
-                                      )
-                                    : data.lastMessageType == "image"
-                                        ? Row(
-                                            children: [
-                                              Image.asset(
-                                                "assets/icons/image_icon.png",
-                                                height: 15,
-                                                color: Colors.grey,
-                                              ),
-                                              Text(
-                                                  " ${languageController.textTranslate('Photo')}",
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Obx(
+                                  () {
+                                    return onlieController
+                                                .typingList.isNotEmpty &&
+                                            (onlieController.typingList.where(
+                                                (p0) =>
+                                                    p0.conversationId ==
+                                                    data.conversationId
+                                                        .toString())).isNotEmpty
+                                        ? Text(
+                                            isUserTyping(
+                                                data.conversationId.toString()),
+                                            style: TextStyle(
+                                                fontSize: 12,
+                                                color: chatownColor),
+                                          )
+                                        : data.lastMessageType == "text"
+                                            ? SizedBox(
+                                                width: Get.width * 0.55,
+                                                child: Text(
+                                                  capitalizeFirstLetter(
+                                                      data.lastMessage!),
+                                                  maxLines: 2,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
                                                   style: const TextStyle(
                                                       fontSize: 12,
-                                                      color: Colors.grey))
-                                            ],
-                                          )
-                                        : data.lastMessageType == "location"
-                                            ? Row(
-                                                children: [
-                                                  Image.asset(
-                                                    "assets/icons/location_icon.png",
-                                                    height: 15,
-                                                    color: Colors.grey,
-                                                  ),
-                                                  Text(
-                                                      " ${languageController.textTranslate('Location')}",
-                                                      style: const TextStyle(
-                                                          fontSize: 12,
-                                                          color: Colors.grey))
-                                                ],
+                                                      color: Colors.grey),
+                                                ),
                                               )
-                                            : data.lastMessageType == "video"
+                                            : data.lastMessageType == "image"
                                                 ? Row(
                                                     children: [
                                                       Image.asset(
-                                                        "assets/icons/video_icon.png",
+                                                        "assets/icons/image_icon.png",
                                                         height: 15,
                                                         color: Colors.grey,
                                                       ),
                                                       Text(
-                                                          " ${languageController.textTranslate('Video')}",
+                                                          " ${languageController.textTranslate('Photo')}",
                                                           style:
                                                               const TextStyle(
                                                                   fontSize: 12,
@@ -403,176 +560,222 @@ class _ChatsState extends State<Chats> with WidgetsBindingObserver {
                                                                       .grey))
                                                     ],
                                                   )
-                                                : data.lastMessageType == "gif"
+                                                : data.lastMessageType ==
+                                                        "location"
                                                     ? Row(
                                                         children: [
-                                                          const Icon(
-                                                            Icons
-                                                                .gif_box_outlined,
+                                                          Image.asset(
+                                                            "assets/icons/location_icon.png",
+                                                            height: 15,
                                                             color: Colors.grey,
                                                           ),
                                                           Text(
-                                                            languageController
-                                                                .textTranslate(
-                                                                    'GIF'),
-                                                            maxLines: 1,
-                                                            overflow:
-                                                                TextOverflow
-                                                                    .ellipsis,
-                                                            style:
-                                                                const TextStyle(
-                                                                    color: Colors
-                                                                        .grey,
-                                                                    fontSize:
-                                                                        13),
-                                                          ),
+                                                              " ${languageController.textTranslate('Location')}",
+                                                              style: const TextStyle(
+                                                                  fontSize: 12,
+                                                                  color: Colors
+                                                                      .grey))
                                                         ],
                                                       )
                                                     : data.lastMessageType ==
-                                                            "link"
+                                                            "video"
                                                         ? Row(
                                                             children: [
-                                                              const Icon(
-                                                                  CupertinoIcons
-                                                                      .link,
-                                                                  size: 15,
-                                                                  color: Colors
-                                                                      .grey),
+                                                              Image.asset(
+                                                                "assets/icons/video_icon.png",
+                                                                height: 15,
+                                                                color:
+                                                                    Colors.grey,
+                                                              ),
                                                               Text(
-                                                                  " ${languageController.textTranslate('Link')}",
+                                                                  " ${languageController.textTranslate('Video')}",
                                                                   style: const TextStyle(
-                                                                      color: Colors
-                                                                          .grey,
                                                                       fontSize:
-                                                                          13))
+                                                                          12,
+                                                                      color: Colors
+                                                                          .grey))
                                                             ],
                                                           )
                                                         : data.lastMessageType ==
-                                                                "audio"
+                                                                "gif"
                                                             ? Row(
                                                                 children: [
-                                                                  Image.asset(
-                                                                      "assets/images/microphone-2.png",
-                                                                      height:
-                                                                          15,
-                                                                      color: Colors
-                                                                          .grey),
+                                                                  const Icon(
+                                                                    Icons
+                                                                        .gif_box_outlined,
+                                                                    color: Colors
+                                                                        .grey,
+                                                                  ),
                                                                   Text(
-                                                                      " ${languageController.textTranslate('Voice message')}",
-                                                                      style: const TextStyle(
-                                                                          color: Colors
-                                                                              .grey,
-                                                                          fontSize:
-                                                                              13))
+                                                                    languageController
+                                                                        .textTranslate(
+                                                                            'GIF'),
+                                                                    maxLines: 1,
+                                                                    overflow:
+                                                                        TextOverflow
+                                                                            .ellipsis,
+                                                                    style: const TextStyle(
+                                                                        color: Colors
+                                                                            .grey,
+                                                                        fontSize:
+                                                                            13),
+                                                                  ),
                                                                 ],
                                                               )
                                                             : data.lastMessageType ==
-                                                                    "contact"
+                                                                    "link"
                                                                 ? Row(
                                                                     children: [
-                                                                      Image.asset(
-                                                                          'assets/icons/profile_outline.png',
-                                                                          height:
+                                                                      const Icon(
+                                                                          CupertinoIcons
+                                                                              .link,
+                                                                          size:
                                                                               15,
                                                                           color:
                                                                               Colors.grey),
                                                                       Text(
-                                                                          " ${languageController.textTranslate('Contact')}",
+                                                                          " ${languageController.textTranslate('Link')}",
                                                                           style: const TextStyle(
                                                                               color: Colors.grey,
                                                                               fontSize: 13))
                                                                     ],
                                                                   )
                                                                 : data.lastMessageType ==
-                                                                        "document"
+                                                                        "audio"
                                                                     ? Row(
                                                                         children: [
-                                                                          Image
-                                                                              .asset(
-                                                                            "assets/icons/file_icon.png",
-                                                                            height:
-                                                                                15,
-                                                                            color:
-                                                                                Colors.grey,
-                                                                          ),
+                                                                          Image.asset(
+                                                                              "assets/images/microphone-2.png",
+                                                                              height: 15,
+                                                                              color: Colors.grey),
                                                                           Text(
-                                                                              " ${languageController.textTranslate('Document')}",
+                                                                              " ${languageController.textTranslate('Voice message')}",
                                                                               style: const TextStyle(color: Colors.grey, fontSize: 13))
                                                                         ],
                                                                       )
                                                                     : data.lastMessageType ==
-                                                                            "video_call"
+                                                                            "contact"
                                                                         ? Row(
                                                                             children: [
-                                                                              Image.asset(
-                                                                                data.lastMessage!.split(',')[0] == "1"
-                                                                                    ? "assets/icons/missed_video_call.png"
-                                                                                    : data.lastMessage!.split(',')[2] == "1"
-                                                                                        ? "assets/icons/missed_video_call.png"
-                                                                                        : data.lastMessage!.split(',')[3] == Hive.box(userdata).get(userId)
-                                                                                            ? "assets/icons/outgoing_video_call.png"
-                                                                                            : "assets/icons/incoming_video_call.png",
-                                                                                height: 14,
-                                                                              ),
-                                                                              const SizedBox(
-                                                                                width: 4,
-                                                                              ),
-                                                                              Text(
-                                                                                data.lastMessage!.split(',')[0] == "1"
-                                                                                    ? "Missed Video Call"
-                                                                                    : data.lastMessage!.split(',')[2] == "1"
-                                                                                        ? "Video Call Declined"
-                                                                                        : data.lastMessage!.split(',')[3] == Hive.box(userdata).get(userId)
-                                                                                            ?
-                                                                                            //  isUserInList
-                                                                                            //     ? ""
-                                                                                            //     :
-                                                                                            "Outgoing Video Call"
-                                                                                            : "Incoming Video Call",
-                                                                                style: const TextStyle(
-                                                                                  fontFamily: 'Poppins',
-                                                                                  fontWeight: FontWeight.w400,
-                                                                                  fontSize: 12,
-                                                                                  color: Color(0xffA4A4A4),
-                                                                                ),
-                                                                              )
+                                                                              Image.asset('assets/icons/profile_outline.png', height: 15, color: Colors.grey),
+                                                                              Text(" ${languageController.textTranslate('Contact')}", style: const TextStyle(color: Colors.grey, fontSize: 13))
                                                                             ],
                                                                           )
                                                                         : data.lastMessageType ==
-                                                                                "audio_call"
+                                                                                "document"
                                                                             ? Row(
                                                                                 children: [
                                                                                   Image.asset(
-                                                                                    data.lastMessage!.split(',')[0] == "1"
-                                                                                        ? "assets/icons/missed_audio_call.png"
-                                                                                        : data.lastMessage!.split(',')[2] == "1"
-                                                                                            ? "assets/icons/missed_audio_call.png"
-                                                                                            : data.lastMessage!.split(',')[3] == Hive.box(userdata).get(userId).toString()
-                                                                                                ? "assets/icons/outgoing_audio_call.png"
-                                                                                                : "assets/icons/incoming_audio_call.png",
-                                                                                    height: 14,
+                                                                                    "assets/icons/file_icon.png",
+                                                                                    height: 15,
+                                                                                    color: Colors.grey,
                                                                                   ),
-                                                                                  const SizedBox(
-                                                                                    width: 4,
-                                                                                  ),
-                                                                                  Text(
-                                                                                    data.lastMessage!.split(',')[0] == "1"
-                                                                                        ? "Missed Audio Call"
-                                                                                        : data.lastMessage!.split(',')[2] == "1"
-                                                                                            ? "Audio Call Declined"
-                                                                                            : data.lastMessage!.split(',')[3] == Hive.box(userdata).get(userId)
-                                                                                                ? "Outgoing Audio Call"
-                                                                                                : "Incoming Audio Call",
-                                                                                    style: const TextStyle(
-                                                                                      fontFamily: 'Poppins',
-                                                                                      fontWeight: FontWeight.w400,
-                                                                                      fontSize: 12,
-                                                                                      color: Color(0xffA4A4A4),
-                                                                                    ),
-                                                                                  )
+                                                                                  Text(" ${languageController.textTranslate('Document')}", style: const TextStyle(color: Colors.grey, fontSize: 13))
                                                                                 ],
                                                                               )
-                                                                            : const SizedBox.shrink()
+                                                                            : data.lastMessageType == "video_call"
+                                                                                ? Row(
+                                                                                    children: [
+                                                                                      Image.asset(
+                                                                                        data.lastMessage!.split(',')[0] == "1"
+                                                                                            ? "assets/icons/missed_video_call.png"
+                                                                                            : data.lastMessage!.split(',')[2] == "1"
+                                                                                                ? data.lastMessage!.split(',')[3] == Hive.box(userdata).get(userId).toString()
+                                                                                                    ? "assets/icons/outgoing_video_call.png"
+                                                                                                    : "assets/icons/incoming_video_call.png"
+                                                                                                : data.lastMessage!.split(',')[3] == Hive.box(userdata).get(userId).toString()
+                                                                                                    ? "assets/icons/outgoing_video_call.png"
+                                                                                                    : "assets/icons/incoming_video_call.png",
+                                                                                        height: 14,
+                                                                                      ),
+                                                                                      const SizedBox(
+                                                                                        width: 4,
+                                                                                      ),
+                                                                                      Text(
+                                                                                        data.lastMessage!.split(',')[0] == "1"
+                                                                                            ? "Missed Video Call"
+                                                                                            : data.lastMessage!.split(',')[2] == "1"
+                                                                                                ? "Video Call"
+                                                                                                : data.lastMessage!.split(',')[3] == Hive.box(userdata).get(userId).toString()
+                                                                                                    ? "Video Call"
+                                                                                                    : "Video Call",
+                                                                                        style: const TextStyle(
+                                                                                          fontFamily: 'Poppins',
+                                                                                          fontWeight: FontWeight.w400,
+                                                                                          fontSize: 12,
+                                                                                          color: Color(0xffA4A4A4),
+                                                                                        ),
+                                                                                      )
+                                                                                    ],
+                                                                                  )
+                                                                                : data.lastMessageType == "audio_call"
+                                                                                    ? Row(
+                                                                                        children: [
+                                                                                          Image.asset(
+                                                                                            data.lastMessage!.split(',')[0] == "1"
+                                                                                                ? "assets/icons/missed_audio_call.png"
+                                                                                                : data.lastMessage!.split(',')[2] == "1"
+                                                                                                    ? data.lastMessage!.split(',')[3] == Hive.box(userdata).get(userId).toString()
+                                                                                                        ? "assets/icons/outgoing_audio_call.png"
+                                                                                                        : "assets/icons/incoming_audio_call.png"
+                                                                                                    : data.lastMessage!.split(',')[3] == Hive.box(userdata).get(userId).toString()
+                                                                                                        ? "assets/icons/outgoing_audio_call.png"
+                                                                                                        : "assets/icons/incoming_audio_call.png",
+                                                                                            height: 14,
+                                                                                          ),
+                                                                                          const SizedBox(
+                                                                                            width: 4,
+                                                                                          ),
+                                                                                          Text(
+                                                                                            data.lastMessage!.split(',')[0] == "1"
+                                                                                                ? "Missed Audio Call"
+                                                                                                : data.lastMessage!.split(',')[2] == "1"
+                                                                                                    ? "Audio Call"
+                                                                                                    : data.lastMessage!.split(',')[3] == Hive.box(userdata).get(userId).toString()
+                                                                                                        ? "Audio Call"
+                                                                                                        : "Audio Call",
+                                                                                            style: const TextStyle(
+                                                                                              fontFamily: 'Poppins',
+                                                                                              fontWeight: FontWeight.w400,
+                                                                                              fontSize: 12,
+                                                                                              color: Color(0xffA4A4A4),
+                                                                                            ),
+                                                                                          )
+                                                                                        ],
+                                                                                      )
+                                                                                    : data.lastMessageType == "text"
+                                                                                        ? SizedBox(
+                                                                                            width: Get.width * 0.55,
+                                                                                            child: Text(
+                                                                                              capitalizeFirstLetter(data.lastMessage!),
+                                                                                              maxLines: 2,
+                                                                                              overflow: TextOverflow.ellipsis,
+                                                                                              style: const TextStyle(fontSize: 12, color: Colors.grey),
+                                                                                            ),
+                                                                                          )
+                                                                                        : const SizedBox.shrink();
+                                  },
+                                ),
+                                data.unreadCount == 0
+                                    ? const SizedBox.shrink()
+                                    : Container(
+                                        height: 25,
+                                        width: 25,
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          color: secondaryColor,
+                                        ),
+                                        child: Center(
+                                          child: Text(
+                                            data.unreadCount.toString(),
+                                            style: const TextStyle(
+                                                fontSize: 8,
+                                                color: Colors.black),
+                                          ),
+                                        ),
+                                      ),
+                              ],
+                            )
                           ],
                         ),
                       ),
@@ -631,8 +834,8 @@ class _ChatsState extends State<Chats> with WidgetsBindingObserver {
                     builder: (context) =>
                         FlutterContactsExample(isValue: true)));
           },
-          child: const Padding(
-            padding: EdgeInsets.only(right: 17),
+          child: Padding(
+            padding: const EdgeInsets.only(right: 17),
             child: Icon(
               Icons.add_circle_outline,
               size: 26,
@@ -665,7 +868,9 @@ class _ChatsState extends State<Chats> with WidgetsBindingObserver {
                 height: 32,
                 width: 105,
                 decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10), color: chatYColor),
+                  borderRadius: BorderRadius.circular(10),
+                  color: secondaryColor,
+                ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -685,37 +890,43 @@ class _ChatsState extends State<Chats> with WidgetsBindingObserver {
           ],
         ).paddingSymmetric(horizontal: 15),
         const SizedBox(height: 15),
-        SizedBox(
-          height: 45,
-          width: MediaQuery.of(context).size.width * 0.94,
-          child: TextField(
-              style: const TextStyle(color: Colors.black),
-              controller: controller,
-              onChanged: onSearchTextChanged,
-              readOnly: false,
-              autofocus: false,
-              decoration: InputDecoration(
-                enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(15),
-                    borderSide: BorderSide(color: Colors.grey.shade100)),
-                focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: Colors.grey.shade100),
-                    borderRadius: BorderRadius.circular(15)),
-                contentPadding: EdgeInsets.zero,
-                hintText: languageController.textTranslate('Search User'),
-                hintStyle: const TextStyle(
-                    fontSize: 13,
-                    color: Colors.grey,
-                    fontWeight: FontWeight.w400),
-                prefixIcon: Padding(
-                  padding: const EdgeInsets.all(13.0),
-                  child: Image.asset("assets/images/search-normal.png",
-                      color: Colors.grey),
-                ),
-                filled: true,
-                fillColor: Colors.grey.shade100,
-              )),
+        commonSearchField(
+          context: context,
+          controller: controller,
+          onChanged: onSearchTextChanged,
+          hintText: languageController.textTranslate('Search User'),
         ),
+        // SizedBox(
+        //   height: 45,
+        //   width: MediaQuery.of(context).size.width * 0.94,
+        //   child: TextField(
+        //       style: const TextStyle(color: Colors.black),
+        //       controller: controller,
+        //       onChanged: onSearchTextChanged,
+        //       readOnly: false,
+        //       autofocus: false,
+        //       decoration: InputDecoration(
+        //         enabledBorder: OutlineInputBorder(
+        //             borderRadius: BorderRadius.circular(15),
+        //             borderSide: BorderSide(color: Colors.grey.shade100)),
+        //         focusedBorder: OutlineInputBorder(
+        //             borderSide: BorderSide(color: Colors.grey.shade100),
+        //             borderRadius: BorderRadius.circular(15)),
+        //         contentPadding: EdgeInsets.zero,
+        //         hintText: languageController.textTranslate('Search User'),
+        //         hintStyle: const TextStyle(
+        //             fontSize: 13,
+        //             color: Colors.grey,
+        //             fontWeight: FontWeight.w400),
+        //         prefixIcon: Padding(
+        //           padding: const EdgeInsets.all(13.0),
+        //           child: Image.asset("assets/images/search-normal.png",
+        //               color: Colors.grey),
+        //         ),
+        //         filled: true,
+        //         fillColor: Colors.grey.shade100,
+        //       )),
+        // ),
         const SizedBox(height: 10),
         InkWell(
           onTap: () {
@@ -737,7 +948,11 @@ class _ChatsState extends State<Chats> with WidgetsBindingObserver {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
-                Image.asset("assets/images/archive2.png", height: 20),
+                Image.asset(
+                  "assets/images/archive2.png",
+                  height: 20,
+                  color: chatownColor,
+                ),
                 const SizedBox(width: 10),
                 Row(
                   children: [
@@ -767,7 +982,7 @@ class _ChatsState extends State<Chats> with WidgetsBindingObserver {
                                   width: 15,
                                   decoration: BoxDecoration(
                                       borderRadius: BorderRadius.circular(20),
-                                      color: chatownColor),
+                                      color: secondaryColor),
                                   child: Center(
                                     child: Text(
                                         chatListController.userArchiveListModel
@@ -787,7 +1002,6 @@ class _ChatsState extends State<Chats> with WidgetsBindingObserver {
           ),
         ),
         Divider(color: Colors.grey.shade300).paddingSymmetric(horizontal: 10),
-        //const SizedBox(height: 5),
       ],
     );
   }

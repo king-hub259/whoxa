@@ -29,6 +29,7 @@ class ResData {
       this.userId,
       this.phoneNumber,
       this.country,
+      this.countryFullName,
       this.firstName,
       this.lastName,
       this.deviceToken,
@@ -37,13 +38,15 @@ class ResData {
       this.dob,
       this.countryCode,
       this.password,
-      this.gender});
+      this.gender,
+      this.email});
 
   ResData.fromJson(Map<String, dynamic> json) {
     profileImage = json['profile_image'];
     userId = json['user_id'];
     phoneNumber = json['phone_number'];
     country = json['country'];
+    countryFullName = json['country_full_name'];
     firstName = json['first_name'];
     lastName = json['last_name'];
     deviceToken = json['device_token'];
@@ -53,10 +56,12 @@ class ResData {
     countryCode = json['country_code'];
     password = json['password'];
     gender = json['gender'];
+    email = json['email_id'];
   }
 
   String? bio;
   String? country;
+  String? countryFullName;
   String? countryCode;
   String? deviceToken;
   String? dob;
@@ -68,6 +73,7 @@ class ResData {
   String? profileImage;
   int? userId;
   String? userName;
+  String? email;
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
@@ -75,6 +81,7 @@ class ResData {
     data['user_id'] = userId;
     data['phone_number'] = phoneNumber;
     data['country'] = country;
+    data['country_full_name'] = countryFullName;
     data['first_name'] = firstName;
     data['last_name'] = lastName;
     data['device_token'] = deviceToken;
@@ -84,6 +91,7 @@ class ResData {
     data['country_code'] = countryCode;
     data['password'] = password;
     data['gender'] = gender;
+    data['email_id'] = email;
     return data;
   }
 }

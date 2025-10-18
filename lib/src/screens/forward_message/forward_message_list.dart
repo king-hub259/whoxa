@@ -6,13 +6,13 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'package:meyaoo_new/app.dart';
-import 'package:meyaoo_new/controller/single_chat_controller.dart';
-import 'package:meyaoo_new/controller/user_chatlist_controller.dart';
-import 'package:meyaoo_new/model/chatdetails/single_chat_list_model.dart';
-import 'package:meyaoo_new/src/global/global.dart';
-import 'package:meyaoo_new/model/userchatlist_model/userchatlist_model.dart';
-import 'package:meyaoo_new/src/screens/layout/bottombar.dart';
+import 'package:whoxachat/app.dart';
+import 'package:whoxachat/controller/single_chat_controller.dart';
+import 'package:whoxachat/controller/user_chatlist_controller.dart';
+import 'package:whoxachat/model/chatdetails/single_chat_list_model.dart';
+import 'package:whoxachat/src/global/global.dart';
+import 'package:whoxachat/model/userchatlist_model/userchatlist_model.dart';
+import 'package:whoxachat/src/screens/layout/bottombar.dart';
 
 class ForwardMessage extends StatefulWidget {
   String chatid;
@@ -75,8 +75,6 @@ class _ForwardMessageState extends State<ForwardMessage> {
                   children: [
                     SizedBox(
                       height: 20,
-
-                      // width: 0.5,
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.start,
                         children: [
@@ -145,7 +143,6 @@ class _ForwardMessageState extends State<ForwardMessage> {
                 children: [
                   appBarWidget(context),
                   chatWidget(context),
-                  // searchBarWidget(context),
                   Expanded(
                       child: SingleChildScrollView(child: chatListScreen()))
                 ],
@@ -160,26 +157,9 @@ class _ForwardMessageState extends State<ForwardMessage> {
   onTap() {
     try {
       chatContorller.isSendMsg.value = true;
-
-// if (widget.isMsgType == true) {
-      //   forwardmessageuser.isNotEmpty ||
-      //           groupUSERID.isNotEmpty
-      //       ? sendfrowardmessage()
-      //       : Fluttertoast.showToast(
-      //           msg:
-      //               "Please select whom you want to send message");
-      // } else {
-      //   forwardmessageuser.isNotEmpty ||
-      //           groupUSERID.isNotEmpty
-      //       ? sendfrowardmessageGroup()
-      //       : Fluttertoast.showToast(
-      //           msg:
-      //               "Please select whom you want to send message");
-      // }
       if (forwardmessageuser.isNotEmpty) {
         for (var i = 0; i < forwardmessageuser.length; i++) {
           for (var j = 0; j < widget.forwardMsgList.length; j++) {
-            //=============  TEXT MESSAGE FORWARD ======================
             if (widget.forwardMsgList[j].messageType == 'text') {
               chatContorller.sendMessageText(
                   widget.forwardMsgList[j].message!,
@@ -188,7 +168,6 @@ class _ForwardMessageState extends State<ForwardMessage> {
                   '',
                   widget.forwardMsgList[j].messageId.toString(),
                   '');
-              //=============  IMAGE MESSAGE FORWARD ======================
             } else if (widget.forwardMsgList[j].messageType == 'image') {
               chatContorller.sendMessageIMGDoc(
                   forwardmessageuser[i].toString(),
@@ -198,7 +177,6 @@ class _ForwardMessageState extends State<ForwardMessage> {
                   widget.forwardMsgList[j].messageId.toString(),
                   '',
                   true);
-              //=============  LOCATION MESSAGE FORWARD ======================
             } else if (widget.forwardMsgList[j].messageType == 'location') {
               chatContorller.sendMessageLocation(
                   forwardmessageuser[i].toString(),
@@ -208,7 +186,6 @@ class _ForwardMessageState extends State<ForwardMessage> {
                   '',
                   widget.forwardMsgList[j].messageId.toString(),
                   '');
-              //=============  VIDEO MESSAGE FORWARD ======================
             } else if (widget.forwardMsgList[j].messageType == 'video') {
               chatContorller.sendMessageVideo(
                   forwardmessageuser[i].toString(),
@@ -218,7 +195,6 @@ class _ForwardMessageState extends State<ForwardMessage> {
                   widget.forwardMsgList[j].messageId.toString(),
                   '',
                   true);
-              //=============  DOCUMENT MESSAGE FORWARD ======================
             } else if (widget.forwardMsgList[j].messageType == 'document') {
               chatContorller.sendMessageIMGDoc(
                   forwardmessageuser[i].toString(),
@@ -228,7 +204,6 @@ class _ForwardMessageState extends State<ForwardMessage> {
                   widget.forwardMsgList[j].messageId.toString(),
                   '',
                   true);
-              //=============  AUDIO MESSAGE FORWARD ======================
             } else if (widget.forwardMsgList[j].messageType == 'audio') {
               chatContorller.sendMessageVoice(
                   forwardmessageuser[i].toString(),
@@ -240,7 +215,6 @@ class _ForwardMessageState extends State<ForwardMessage> {
                   widget.forwardMsgList[j].messageId.toString(),
                   '',
                   true);
-              //=============  GIF MESSAGE FORWARD ======================
             } else if (widget.forwardMsgList[j].messageType == 'gif') {
               chatContorller.sendMessageGIF(
                   forwardmessageuser[i].toString(),
@@ -250,7 +224,6 @@ class _ForwardMessageState extends State<ForwardMessage> {
                   '',
                   widget.forwardMsgList[j].messageId.toString(),
                   '');
-              //=============  LINK MESSAGE FORWARD ======================
             } else if (widget.forwardMsgList[j].messageType == 'link') {
               chatContorller.sendMessageText(
                   widget.forwardMsgList[j].message!,
@@ -259,7 +232,6 @@ class _ForwardMessageState extends State<ForwardMessage> {
                   '',
                   widget.forwardMsgList[j].messageId.toString(),
                   '');
-              //=============  CONTACT MESSAGE FORWARD ======================
             } else if (widget.forwardMsgList[j].messageType == 'contact') {
               chatContorller.sendMessageContact(
                   forwardmessageuser[i].toString(),
@@ -316,7 +288,7 @@ class _ForwardMessageState extends State<ForwardMessage> {
                             chatlist[index].userName.toString().isEmpty
                                 ? chatlist[index].groupName.toString()
                                 : chatlist[index].userName.toString());
-                    //_________________________________________________________________________
+
                     if (chatlist[index].conversationId != null) {
                       forwardmessageuser
                               .contains(chatlist[index].conversationId)

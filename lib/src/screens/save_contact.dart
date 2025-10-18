@@ -2,8 +2,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:get/get.dart';
-import 'package:meyaoo_new/controller/add_contact_controller.dart';
-import 'package:meyaoo_new/src/global/global.dart';
+import 'package:whoxachat/controller/add_contact_controller.dart';
+import 'package:whoxachat/src/global/global.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -23,12 +23,10 @@ class _SaveContactState extends State<SaveContact> {
     final String name = contactData['name']!;
     final String number = contactData['number']!;
 
-    // Creating the Contact object within the isolate
     final Contact newContact = Contact()
       ..name.first = name
       ..phones = [Phone(number)];
 
-    // Inserting the contact
     await newContact.insert();
   }
 
@@ -36,25 +34,10 @@ class _SaveContactState extends State<SaveContact> {
   Widget build(BuildContext context) {
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle(
-        statusBarColor: const Color(0xffFFEDAB).withOpacity(0.05),
+        statusBarColor: secondaryColor.withOpacity(0.05),
       ),
       child: Scaffold(
         backgroundColor: appColorWhite,
-        // appBar: AppBar(
-        //   shape: Border(bottom: BorderSide(color: Colors.grey.shade400)),
-        //   titleSpacing: -10,
-        //   leadingWidth: 50,
-        //   leading: InkWell(
-        //     onTap: () {
-        //       Get.back();
-        //     },
-        //     child: const Icon(Icons.arrow_back_ios, size: 18),
-        //   ),
-        //   title: const Text(
-        //     "View Contact",
-        //     style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
-        //   ),
-        // ),
         body: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -63,8 +46,8 @@ class _SaveContactState extends State<SaveContact> {
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    const Color(0xffFFEDAB).withOpacity(0.04),
-                    const Color(0xffFCC604).withOpacity(0.04),
+                    secondaryColor.withOpacity(0.04),
+                    chatownColor.withOpacity(0.04),
                   ],
                 ),
               ),
@@ -121,13 +104,6 @@ class _SaveContactState extends State<SaveContact> {
                     )
                   ],
                 ),
-                //  containerWidget(
-                //         onTap: () async {
-                //           print("@@@@@@@@@@@@@@@@@@@@@");
-                //           inviteMe(widget.number);
-                //         },
-                //         title: "Invite")
-                //     :
                 addContactController.mobileContacts
                             .where(
                                 (element) => element["number"] == widget.number)
@@ -140,7 +116,6 @@ class _SaveContactState extends State<SaveContact> {
                         },
                         title: "Add")
                     : const SizedBox.shrink(),
-                // : containerWidget(onTap: () async {}, title: "Chat"),
               ],
             ).paddingSymmetric(horizontal: 20),
             Row(
@@ -164,26 +139,11 @@ class _SaveContactState extends State<SaveContact> {
   }
 
   inviteMe(phone) async {
-    // Android
     String url = "tel:$phone";
     if (await canLaunch(url)) {
       await launch(url);
     } else {
       throw 'Could not launch $url';
     }
-    // String uri =
-    //     'sms:$phone?body=${"‎Hey there! Join me on our Whoxa app!\nChat with friends, share photos & videos instantly.\nDownload now.\nLet's stay connected!"}';
-    // if (await canLaunch(uri)) {
-    //   await launch(uri);
-    // } else {
-    //   // iOS
-    //   String uri =
-    //       'sms:$phone?body=${"‎Hey there! Join me on our Whoxa app!\nChat with friends, share photos & videos instantly.\nDownload now.\nLet's stay connected!"}';
-    //   if (await canLaunch(uri)) {
-    //     await launch(uri);
-    //   } else {
-    //     throw 'Could not launch $uri';
-    //   }
-    // }
   }
 }

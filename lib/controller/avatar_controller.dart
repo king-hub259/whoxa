@@ -3,9 +3,9 @@ import 'dart:developer';
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:hive/hive.dart';
-import 'package:meyaoo_new/Models/get_avatars_model.dart';
-import 'package:meyaoo_new/src/global/api_helper.dart';
-import 'package:meyaoo_new/src/global/strings.dart';
+import 'package:whoxachat/Models/get_avatars_model.dart';
+import 'package:whoxachat/src/global/api_helper.dart';
+import 'package:whoxachat/src/global/strings.dart';
 
 class AvatarController extends GetxController {
   ApiHelper apiHelper = ApiHelper();
@@ -22,7 +22,7 @@ class AvatarController extends GetxController {
   getAvatars() async {
     try {
       isGetAvatarLoading.value = true;
-      // final token = "${Hive.box(userdata).get(authToken)}";
+
       await Hive.openBox(userdata);
       log("token: ${Hive.box(userdata).get(authToken)}");
       final responseJson = await apiHelper.postMethod(

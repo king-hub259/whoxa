@@ -7,19 +7,15 @@ import 'package:pdf_render/pdf_render.dart' as pdf_render;
 
 Future<Map<String, dynamic>> getPdfInfo(String url) async {
   try {
-    // Fetch the PDF from the URL
     final response = await http.get(Uri.parse(url));
 
     if (response.statusCode == 200) {
       final Uint8List pdfData = response.bodyBytes;
 
-      // Calculate the file size in bytes
       final int fileSize = pdfData.lengthInBytes;
 
-      // Convert file size to human-readable format (KB, MB, etc.)
       final String readableFileSize = _formatFileSize(fileSize);
 
-      // Use pdf_render.PdfDocument to read the PDF and count pages
       final document = await pdf_render.PdfDocument.openData(pdfData);
       final int pageCount = document.pageCount;
 

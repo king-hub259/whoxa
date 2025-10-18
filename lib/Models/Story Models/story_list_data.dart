@@ -281,14 +281,22 @@ class StatusMedia2 {
   String? url;
   int? statusMediaId;
   String? updatedAt;
+  int? statusMediaViewCount;
 
-  StatusMedia2({this.statusText, this.url, this.statusMediaId, this.updatedAt});
+  StatusMedia2({
+    this.statusText,
+    this.url,
+    this.statusMediaId,
+    this.updatedAt,
+    this.statusMediaViewCount,
+  });
 
   StatusMedia2.fromJson(Map<String, dynamic> json) {
     statusText = json["status_text"];
     url = json["url"];
     statusMediaId = json["status_media_id"];
     updatedAt = json["updatedAt"];
+    statusMediaViewCount = json["status_media_view_count"];
   }
 
   Map<String, dynamic> toJson() {
@@ -297,6 +305,7 @@ class StatusMedia2 {
     data["url"] = url;
     data["status_media_id"] = statusMediaId;
     data["updatedAt"] = updatedAt;
+    data["status_media_view_count"] = statusMediaViewCount;
     return data;
   }
 }

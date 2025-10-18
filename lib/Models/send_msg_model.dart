@@ -19,6 +19,8 @@ class SendMsgModel {
   int? senderId;
   int? conversationId;
   bool? isStarMessage;
+  bool? deleteFromEveryone;
+  String? deleteForMe;
   bool? myMessage;
   List<StatusData>? statusData;
   SenderData? senderData;
@@ -44,6 +46,8 @@ class SendMsgModel {
       this.senderId,
       this.conversationId,
       this.isStarMessage,
+      this.deleteFromEveryone,
+      this.deleteForMe,
       this.myMessage,
       this.statusData,
       this.senderData});
@@ -69,6 +73,8 @@ class SendMsgModel {
     senderId = json['senderId'];
     conversationId = json['conversation_id'];
     isStarMessage = json['is_star_message'];
+    deleteFromEveryone = json['delete_from_everyone'];
+    deleteForMe = json['delete_for_me'];
     myMessage = json['myMessage'];
     if (json['statusData'] != null) {
       statusData = <StatusData>[];
@@ -103,6 +109,8 @@ class SendMsgModel {
     data['senderId'] = senderId;
     data['conversation_id'] = conversationId;
     data['is_star_message'] = isStarMessage;
+    data['delete_from_everyone'] = deleteFromEveryone;
+    data['delete_for_me'] = deleteForMe;
     data['myMessage'] = myMessage;
     if (statusData != null) {
       data['statusData'] = statusData!.map((v) => v.toJson()).toList();

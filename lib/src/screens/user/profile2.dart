@@ -9,11 +9,11 @@ import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:meyaoo_new/Models/user_profile_model.dart';
-import 'package:meyaoo_new/app.dart';
-import 'package:meyaoo_new/src/global/api_helper.dart';
-import 'package:meyaoo_new/src/global/global.dart';
-import 'package:meyaoo_new/src/global/strings.dart';
+import 'package:whoxachat/Models/user_profile_model.dart';
+import 'package:whoxachat/app.dart';
+import 'package:whoxachat/src/global/api_helper.dart';
+import 'package:whoxachat/src/global/global.dart';
+import 'package:whoxachat/src/global/strings.dart';
 
 final ApiHelper apiHelper = ApiHelper();
 
@@ -87,8 +87,6 @@ class _profile2State extends State<profile2> {
     textController1.text = userProfileModel.resData!.lastName!;
 
     if (response.statusCode == 200) {
-      //Set data in hive
-
       await Hive.box(userdata)
           .put(userImage, userProfileModel.resData!.profileImage.toString());
       await Hive.box(userdata)
@@ -132,7 +130,7 @@ class _profile2State extends State<profile2> {
       'Authorization': 'Bearer ${Hive.box(userdata).get(authToken)}'
     };
     request.headers.addAll(headers);
-    //request.fields['user_id'] = Hive.box(userdata).get(userId);
+
     request.fields['first_name'] = textController.text;
     request.fields['last_name'] = textController1.text;
 
@@ -201,18 +199,6 @@ class _profile2State extends State<profile2> {
           ),
         ),
       ),
-      // bottomNavigationBar: BottomAppBar(
-      //   color: Colors.white,
-      //   elevation: 0,
-      //   child: Padding(
-      //     padding: const EdgeInsets.symmetric(horizontal: 25),
-      //     child: Row(
-      //       children: [
-      //         Expanded(child: _submitButton(context)),
-      //       ],
-      //     ),
-      //   ),
-      // ),
       body: Center(
         child: Column(
           children: [
@@ -265,8 +251,6 @@ class _profile2State extends State<profile2> {
                                     top: 1, left: 15, bottom: 1),
                                 filled: true,
                                 fillColor: Colors.grey.shade100,
-
-                                // ),
                               )),
                         ),
                       ],
@@ -305,8 +289,6 @@ class _profile2State extends State<profile2> {
                                     top: 1, left: 15, bottom: 1),
                                 filled: true,
                                 fillColor: Colors.grey.shade100,
-
-                                // ),
                               )),
                         ),
                       ],
@@ -369,7 +351,6 @@ class _profile2State extends State<profile2> {
                                 errorWidgeticon: const Icon(Icons.person),
                               ),
                             )),
-              //userProfileModel.userData!.profilePic != null &&
             ),
           ),
           Positioned(
@@ -382,7 +363,7 @@ class _profile2State extends State<profile2> {
               child: Container(
                 width: 35,
                 height: 35,
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   color: chatownColor,
                   shape: BoxShape.circle,
                 ),
@@ -426,7 +407,6 @@ class _profile2State extends State<profile2> {
               height: 50,
               width: MediaQuery.of(context).size.width * 0.87,
               decoration: BoxDecoration(
-                // border: Border.all(color:  Colors.black, width: 1),
                 borderRadius: BorderRadius.circular(10),
                 color: chatownColor,
               ),
@@ -480,7 +460,7 @@ class _profile2State extends State<profile2> {
                         getImageFromCamera();
                       },
                       style: ButtonStyle(
-                        shape: MaterialStateProperty.all(RoundedRectangleBorder(
+                        shape: WidgetStateProperty.all(RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8.0))),
                       ),
                       child: Text(
@@ -497,7 +477,7 @@ class _profile2State extends State<profile2> {
                         getImageFromGallery();
                       },
                       style: ButtonStyle(
-                        shape: MaterialStateProperty.all(
+                        shape: WidgetStateProperty.all(
                           RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8.0),
                           ),
@@ -518,9 +498,9 @@ class _profile2State extends State<profile2> {
                   child: ClipOval(
                     child: Material(
                       elevation: 5,
-                      color: chatownColor, // button color
+                      color: chatownColor,
                       child: InkWell(
-                        splashColor: chatownColor, // inkwell color
+                        splashColor: chatownColor,
                         child: const SizedBox(
                             width: 25,
                             height: 25,
@@ -546,7 +526,6 @@ class _profile2State extends State<profile2> {
   }
 
   Future getImageFromCamera() async {
-    // ignore: deprecated_member_use
     final pickedFile = await picker.pickImage(source: ImageSource.camera);
     setState(() {
       if (pickedFile != null) {
@@ -558,7 +537,6 @@ class _profile2State extends State<profile2> {
   }
 
   Future getImageFromGallery() async {
-    // ignore: deprecated_member_use
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
     setState(() {
       if (pickedFile != null) {

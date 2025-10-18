@@ -5,14 +5,15 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'package:meyaoo_new/app.dart';
-import 'package:meyaoo_new/controller/online_controller.dart';
-import 'package:meyaoo_new/controller/user_chatlist_controller.dart';
-import 'package:meyaoo_new/model/common_widget.dart';
-import 'package:meyaoo_new/model/userchatlist_model/archive_list_model.dart';
-import 'package:meyaoo_new/src/global/global.dart';
-import 'package:meyaoo_new/src/screens/chat/group_chat_temp.dart';
-import 'package:meyaoo_new/src/screens/chat/single_chat.dart';
+import 'package:whoxachat/app.dart';
+import 'package:whoxachat/controller/online_controller.dart';
+import 'package:whoxachat/controller/user_chatlist_controller.dart';
+import 'package:whoxachat/model/common_widget.dart';
+import 'package:whoxachat/model/userchatlist_model/archive_list_model.dart';
+import 'package:whoxachat/src/global/common_widget.dart';
+import 'package:whoxachat/src/global/global.dart';
+import 'package:whoxachat/src/screens/chat/group_chat_temp.dart';
+import 'package:whoxachat/src/screens/chat/single_chat.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -29,22 +30,16 @@ class _ArchiveChatState extends State<ArchiveChat> with WidgetsBindingObserver {
   OnlineOfflineController onlieController = Get.find();
 
   Future<void> requestPermissions() async {
-    // Request notification permission
     await Permission.notification.request();
 
-    // Request location permission
-    await Permission.location.request();
+    // await Permission.location.request();
 
-    // Request camera permission
     await Permission.camera.request();
 
-    // Request microphone permission
     await Permission.microphone.request();
 
-    // Request storage permission
     await Permission.storage.request();
 
-    // Request photo library permission
     await Permission.photos.request();
 
     await Permission.contacts.request();
@@ -112,7 +107,7 @@ class _ArchiveChatState extends State<ArchiveChat> with WidgetsBindingObserver {
             children: [
               const SizedBox(height: 10),
               searchBar(),
-              Expanded(child: SingleChildScrollView(child: chatListScreen1()))
+              Expanded(child: chatListScreen1())
             ],
           ),
         ));
@@ -126,46 +121,44 @@ class _ArchiveChatState extends State<ArchiveChat> with WidgetsBindingObserver {
       return chatListController
                   .userArchiveListModel.value!.archiveList!.length >
               0
-          ? _searchResult.length != 0 ||
-                  controller.text.trim().toLowerCase().isNotEmpty
-              ? ListView.builder(
-                  shrinkWrap: true,
-                  scrollDirection: Axis.vertical,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: _searchResult.length,
-                  itemBuilder: (context, index) {
-                    List chatlist = _searchResult;
-                    return chatsWidget(chatlist[index], index);
-                  },
-                )
-              : ListView.builder(
-                  shrinkWrap: true,
-                  scrollDirection: Axis.vertical,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: chatListController
-                      .userArchiveListModel.value!.archiveList!.length,
-                  itemBuilder: (context, index) {
-                    isOnline = chatListController.onlineUsers
-                        .contains(chatListController
-                            .userChatListModel.value!.chatList![index].userId
-                            .toString())
-                        .toString();
-                    return chatsWidget(
-                        chatListController
-                            .userArchiveListModel.value!.archiveList![index],
-                        index);
-                  },
-                )
-          : Center(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  const SizedBox(height: 150),
-                  Image.asset(
-                    "assets/images/no_contact_found.png",
-                    height: 250,
-                  ),
-                ],
+          ? SingleChildScrollView(
+              child: _searchResult.length != 0 ||
+                      controller.text.trim().toLowerCase().isNotEmpty
+                  ? ListView.builder(
+                      shrinkWrap: true,
+                      scrollDirection: Axis.vertical,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: _searchResult.length,
+                      itemBuilder: (context, index) {
+                        List chatlist = _searchResult;
+                        return chatsWidget(chatlist[index], index);
+                      },
+                    )
+                  : ListView.builder(
+                      shrinkWrap: true,
+                      scrollDirection: Axis.vertical,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: chatListController
+                          .userArchiveListModel.value!.archiveList!.length,
+                      itemBuilder: (context, index) {
+                        isOnline = chatListController.onlineUsers
+                            .contains(chatListController.userChatListModel
+                                .value!.chatList![index].userId
+                                .toString())
+                            .toString();
+                        return chatsWidget(
+                            chatListController.userArchiveListModel.value!
+                                .archiveList![index],
+                            index);
+                      },
+                    ),
+            )
+          : Expanded(
+              child: commonImageTexts(
+                image: "assets/images/no_contact_found_1.png",
+                text1: languageController.textTranslate("No Contact Found"),
+                text2: languageController.textTranslate(
+                    "Tap and hold on any message to archive it, so you can easily find it later."),
               ),
             );
     });
@@ -178,9 +171,6 @@ class _ArchiveChatState extends State<ArchiveChat> with WidgetsBindingObserver {
         children: [
           InkWell(
             onLongPress: () {
-              // data.isGroup == false
-              //     ? dialogBox(data.isBlock.toString(), data.userId.toString())
-              //     : null;
               dialogBox(data.isBlock.toString(), data.conversationId.toString(),
                   data.isGroup!, data.userName!, data.groupName!, data);
             },
@@ -200,7 +190,6 @@ class _ArchiveChatState extends State<ArchiveChat> with WidgetsBindingObserver {
                             isBlock: data.isBlock,
                             userID: data.userId.toString(),
                           )
-                        //____________________navigate to group chat_________________________
                         : GroupChatMsg(
                             conversationID: data.conversationId.toString(),
                             gPusername: data.groupName,
@@ -450,517 +439,6 @@ class _ArchiveChatState extends State<ArchiveChat> with WidgetsBindingObserver {
                                                                   )
                                                                 : const SizedBox
                                                                     .shrink()
-                            // Row(
-                            //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            //   children: [
-                            //     // group audio call outgoing
-                            //     data.type == "call" &&
-                            //             data.lastMessage == "call" &&
-                            //             data.isgroup == "1" &&
-                            //             data.callType == "1" &&
-                            //             data.isComeing == "Outgoing"
-                            //         ? Row(
-                            //             children: [
-                            //               const Image(
-                            //                 image: AssetImage(
-                            //                     'assets/images/call-outgoing.png'),
-                            //                 height: 14,
-                            //               ),
-                            //               Text(
-                            //                 "  ${capitalizeFirstLetter("end call at")} ",
-                            //                 style:
-                            //                     const TextStyle(fontSize: 13),
-                            //               ),
-                            //               Text(
-                            //                 convertUTCTimeTo12HourFormat(
-                            //                     data.lastMessageCreated!),
-                            //                 style:
-                            //                     const TextStyle(fontSize: 13),
-                            //               )
-                            //             ],
-                            //           )
-                            //         // group incoming audio call
-                            //         : data.type == "call" &&
-                            //                 data.lastMessage == "call" &&
-                            //                 data.isgroup == "1" &&
-                            //                 data.callType == "1" &&
-                            //                 data.isComeing == "Incoming"
-                            //             ? Row(
-                            //                 children: [
-                            //                   const Image(
-                            //                     image: AssetImage(
-                            //                         'assets/images/call-outgoing.png'),
-                            //                     height: 14,
-                            //                   ),
-                            //                   Text(
-                            //                     "  ${capitalizeFirstLetter("end call at")} ",
-                            //                     style: const TextStyle(
-                            //                         fontSize: 13),
-                            //                   ),
-                            //                   Text(
-                            //                     convertUTCTimeTo12HourFormat(
-                            //                         data.lastMessageCreated!),
-                            //                     style: const TextStyle(
-                            //                         fontSize: 13),
-                            //                   )
-                            //                 ],
-                            //               )
-                            //             // group video call outgoing
-                            //             : data.type == "call" &&
-                            //                     data.lastMessage == "call" &&
-                            //                     data.isgroup == "1" &&
-                            //                     data.callType == "0" &&
-                            //                     data.isComeing == "Outgoing"
-                            //                 ? Row(
-                            //                     children: [
-                            //                       const Image(
-                            //                         image: AssetImage(
-                            //                             'assets/images/videoo.png'),
-                            //                         height: 14,
-                            //                       ),
-                            //                       Text(
-                            //                         "  ${capitalizeFirstLetter("end call")} ",
-                            //                         style: const TextStyle(
-                            //                             fontSize: 13),
-                            //                       ),
-                            //                       Text(
-                            //                         convertUTCTimeTo12HourFormat(
-                            //                             data.lastMessageCreated!),
-                            //                         style: const TextStyle(
-                            //                             fontSize: 13),
-                            //                       )
-                            //                     ],
-                            //                   )
-                            //                 // group video call incoming
-                            //                 : data.type == "call" &&
-                            //                         data.lastMessage ==
-                            //                             "call" &&
-                            //                         data.isgroup == "1" &&
-                            //                         data.callType == "0" &&
-                            //                         data.isComeing == "Incoming"
-                            //                     ? Row(
-                            //                         children: [
-                            //                           const Image(
-                            //                             image: AssetImage(
-                            //                                 'assets/images/videoo.png'),
-                            //                             height: 14,
-                            //                           ),
-                            //                           Text(
-                            //                             "  ${capitalizeFirstLetter("end call")} ",
-                            //                             style: const TextStyle(
-                            //                                 fontSize: 13),
-                            //                           ),
-                            //                           Text(
-                            //                             convertUTCTimeTo12HourFormat(
-                            //                                 data.lastMessageCreated!),
-                            //                             style: const TextStyle(
-                            //                                 fontSize: 13),
-                            //                           )
-                            //                         ],
-                            //                       )
-                            //                     //_______________________________________________________________________incoming audio call
-                            //                     : data.type == "call" &&
-                            //                             data.lastMessage!
-                            //                                 .startsWith(
-                            //                                     "end call at") &&
-                            //                             data.callType == "1" &&
-                            //                             data.isComeing ==
-                            //                                 "Incoming"
-                            //                         ? Row(
-                            //                             children: [
-                            //                               const Image(
-                            //                                 image: AssetImage(
-                            //                                     'assets/images/call-incoming.png'),
-                            //                                 height: 14,
-                            //                               ),
-                            //                               Text(
-                            //                                 "  ${capitalizeFirstLetter("End call at")} ",
-                            //                                 style:
-                            //                                     const TextStyle(
-                            //                                         fontSize:
-                            //                                             13),
-                            //                               ),
-                            //                               Text(
-                            //                                 convertUTCTimeTo12HourFormat(
-                            //                                     data.lastMessageCreated!),
-                            //                                 style:
-                            //                                     const TextStyle(
-                            //                                         fontSize:
-                            //                                             13),
-                            //                               )
-                            //                             ],
-                            //                           )
-                            //                         //__________________________________________________________________Outgoing audio call
-                            //                         : data.type == "call" &&
-                            //                                 data.lastMessage!
-                            //                                     .startsWith(
-                            //                                         "end call at") &&
-                            //                                 data.callType ==
-                            //                                     "1" &&
-                            //                                 data.isComeing ==
-                            //                                     "Outgoing"
-                            //                             ? Row(
-                            //                                 children: [
-                            //                                   const Image(
-                            //                                     image: AssetImage(
-                            //                                         'assets/images/call-outgoing.png'),
-                            //                                     height: 14,
-                            //                                   ),
-                            //                                   Text(
-                            //                                     "  ${capitalizeFirstLetter("End call at")} ",
-                            //                                     style:
-                            //                                         const TextStyle(
-                            //                                             fontSize:
-                            //                                                 13),
-                            //                                   ),
-                            //                                   Text(
-                            //                                     convertUTCTimeTo12HourFormat(
-                            //                                         data.lastMessageCreated!),
-                            //                                     style:
-                            //                                         const TextStyle(
-                            //                                             fontSize:
-                            //                                                 13),
-                            //                                   )
-                            //                                 ],
-                            //                               )
-                            //                             //________________________________________________________________MISSELD CALL AUIDO INCOMING
-                            //                             : data.type == "call" &&
-                            //                                     data.lastMessage!
-                            //                                         .startsWith(
-                            //                                             "Missed call") &&
-                            //                                     data.callType ==
-                            //                                         "1" &&
-                            //                                     data.isComeing ==
-                            //                                         "Incoming"
-                            //                                 ? Row(
-                            //                                     children: [
-                            //                                       const Image(
-                            //                                         image: AssetImage(
-                            //                                             'assets/images/NotRecive.png'),
-                            //                                         height: 12,
-                            //                                       ),
-                            //                                       Text(
-                            //                                           "  ${data.lastMessage!} "),
-                            //                                       Text(
-                            //                                         convertUTCTimeTo12HourFormat(
-                            //                                             data.lastMessageCreated!),
-                            //                                         style: const TextStyle(
-                            //                                             fontSize:
-                            //                                                 13),
-                            //                                       )
-                            //                                     ],
-                            //                                   )
-                            //                                 //______________________________________________________MISSED CALL AUDIO OUTGOING
-                            //                                 : data.type == "call" &&
-                            //                                         data.lastMessage!
-                            //                                             .startsWith(
-                            //                                                 "Missed call") &&
-                            //                                         data.callType ==
-                            //                                             "1" &&
-                            //                                         data.isComeing ==
-                            //                                             "Outgoing"
-                            //                                     ? Row(
-                            //                                         children: [
-                            //                                           const Image(
-                            //                                             image: AssetImage(
-                            //                                                 'assets/images/NotRecive.png'),
-                            //                                             height:
-                            //                                                 12,
-                            //                                           ),
-                            //                                           Text(
-                            //                                               "  ${data.lastMessage!} "),
-                            //                                           Text(
-                            //                                             convertUTCTimeTo12HourFormat(
-                            //                                                 data.lastMessageCreated!),
-                            //                                             style: const TextStyle(
-                            //                                                 fontSize:
-                            //                                                     13),
-                            //                                           )
-                            //                                         ],
-                            //                                       )
-
-                            //                                     //___________________________________________________MISSED VIDEO CALL OUTGOING__________________________
-                            //                                     : data.type ==
-                            //                                                 "call" &&
-                            //                                             data.lastMessage!.startsWith(
-                            //                                                 "Missed call") &&
-                            //                                             data.callType ==
-                            //                                                 "0" &&
-                            //                                             data.isComeing ==
-                            //                                                 "Outgoing"
-                            //                                         ? Row(
-                            //                                             children: [
-                            //                                               Image
-                            //                                                   .asset(
-                            //                                                 'assets/images/videocall_missed.png',
-                            //                                                 height:
-                            //                                                     14,
-                            //                                               ),
-                            //                                               Text(
-                            //                                                 "  ${capitalizeFirstLetter(data.lastMessage!)} ",
-                            //                                                 style:
-                            //                                                     const TextStyle(fontSize: 13),
-                            //                                               ),
-                            //                                               Text(
-                            //                                                 convertUTCTimeTo12HourFormat(data.lastMessageCreated!),
-                            //                                                 style:
-                            //                                                     const TextStyle(fontSize: 13),
-                            //                                               )
-                            //                                             ],
-                            //                                           )
-                            //                                         //___________________________________________________MISSED VIDEO CALL INCOMING_____________________________
-                            //                                         : data.type ==
-                            //                                                     "call" &&
-                            //                                                 data.lastMessage!.startsWith("Missed call") &&
-                            //                                                 data.callType == "0" &&
-                            //                                                 data.isComeing == "Incoming"
-                            //                                             ? Row(
-                            //                                                 children: [
-                            //                                                   Image.asset(
-                            //                                                     'assets/images/videocall_missed.png',
-                            //                                                     height: 14,
-                            //                                                   ),
-                            //                                                   Text(
-                            //                                                     "  ${capitalizeFirstLetter(data.lastMessage!)} ",
-                            //                                                     style: const TextStyle(fontSize: 13),
-                            //                                                   ),
-                            //                                                   Text(
-                            //                                                     convertUTCTimeTo12HourFormat(data.lastMessageCreated!),
-                            //                                                     style: const TextStyle(fontSize: 13),
-                            //                                                   )
-                            //                                                 ],
-                            //                                               )
-                            //                                             //__________________________________________________VIDEO CALL INCOMING__________________________________
-                            //                                             : data.type == "call" && data.lastMessage!.startsWith("end call at") && data.callType == "0" && data.isComeing == "Incoming"
-                            //                                                 ? Row(
-                            //                                                     children: [
-                            //                                                       Image.asset(
-                            //                                                         'assets/images/videoo.png',
-                            //                                                         height: 14,
-                            //                                                       ),
-                            //                                                       Text(
-                            //                                                         "  ${capitalizeFirstLetter("end call at")} ",
-                            //                                                         style: const TextStyle(fontSize: 13),
-                            //                                                       ),
-                            //                                                       Text(
-                            //                                                         convertUTCTimeTo12HourFormat(data.lastMessageCreated!),
-                            //                                                         style: const TextStyle(fontSize: 13),
-                            //                                                       )
-                            //                                                     ],
-                            //                                                   )
-                            //                                                 //____________________________________________ VIDEO CALL OUTGOING _____________________________________
-                            //                                                 : data.type == "call" && data.lastMessage!.startsWith("end call at") && data.callType == "0" && data.isComeing == "Outgoing"
-                            //                                                     ? Row(
-                            //                                                         children: [
-                            //                                                           Image.asset(
-                            //                                                             'assets/images/videoo.png',
-                            //                                                             height: 14,
-                            //                                                           ),
-                            //                                                           Text(
-                            //                                                             "  ${capitalizeFirstLetter("end call at")} ",
-                            //                                                             style: const TextStyle(fontSize: 13),
-                            //                                                           ),
-                            //                                                           Text(
-                            //                                                             convertUTCTimeTo12HourFormat(data.lastMessageCreated!),
-                            //                                                             style: const TextStyle(fontSize: 13),
-                            //                                                           )
-                            //                                                         ],
-                            //                                                       )
-                            //                                                     //______________________________________________________________________ TEXT___________________________
-                            //                                                     : data.type == "text"
-                            //                                                         ? SizedBox(
-                            //                                                             width: 200,
-                            //                                                             child: Text(
-                            //                                                               data.lastMessage!,
-                            //                                                               maxLines: 1,
-                            //                                                               overflow: TextOverflow.ellipsis,
-                            //                                                             ),
-                            //                                                           )
-                            //                                                         //________________________________________________LINK______________________________
-                            //                                                         : data.type == "link"
-                            //                                                             ? const Row(
-                            //                                                                 children: [
-                            //                                                                   Icon(CupertinoIcons.link, size: 15, color: chatColor),
-                            //                                                                   Text(" Link")
-                            //                                                                 ],
-                            //                                                               )
-                            //                                                             //_____________________________________ IMAGE __________________________________________________
-                            //                                                             : data.type == "image"
-                            //                                                                 ? Row(
-                            //                                                                     children: [
-                            //                                                                       Image.asset(
-                            //                                                                         "assets/icons/image_icon.png",
-                            //                                                                         height: 15,
-                            //                                                                         color: chatColor,
-                            //                                                                       ),
-                            //                                                                       const Text(" Photo")
-                            //                                                                     ],
-                            //                                                                   )
-                            //                                                                 //_________________________________VIDEO ____________________________________________
-                            //                                                                 : data.type == "video"
-                            //                                                                     ? Row(
-                            //                                                                         children: [
-                            //                                                                           Image.asset(
-                            //                                                                             "assets/icons/video_icon.png",
-                            //                                                                             height: 15,
-                            //                                                                             color: chatColor,
-                            //                                                                           ),
-                            //                                                                           const Text(" Video")
-                            //                                                                         ],
-                            //                                                                       )
-                            //                                                                     //_______________________________DOC ______________________________________________________
-                            //                                                                     : data.type == "doc"
-                            //                                                                         ? Row(
-                            //                                                                             children: [
-                            //                                                                               Image.asset(
-                            //                                                                                 "assets/icons/file_icon.png",
-                            //                                                                                 height: 15,
-                            //                                                                                 color: chatColor,
-                            //                                                                               ),
-                            //                                                                               const Text(" Document")
-                            //                                                                             ],
-                            //                                                                           )
-                            //                                                                         //______________________________ LOCATION ____________________________________________________
-                            //                                                                         : data.type == "location"
-                            //                                                                             ? Row(
-                            //                                                                                 children: [
-                            //                                                                                   Image.asset(
-                            //                                                                                     "assets/icons/location_icon.png",
-                            //                                                                                     height: 15,
-                            //                                                                                     color: chatColor,
-                            //                                                                                   ),
-                            //                                                                                   const Text(" Location")
-                            //                                                                                 ],
-                            //                                                                               )
-                            //                                                                             //______________________________ GIF ____________________________________________________
-                            //                                                                             : data.type == "gif"
-                            //                                                                                 ? Row(
-                            //                                                                                     children: [
-                            //                                                                                       Image.asset("assets/images/gif-file.png", height: 22),
-                            //                                                                                       const Text(
-                            //                                                                                         "GIF",
-                            //                                                                                         maxLines: 1,
-                            //                                                                                         overflow: TextOverflow.ellipsis,
-                            //                                                                                         style: TextStyle(color: chatColor, fontSize: 13),
-                            //                                                                                       ),
-                            //                                                                                     ],
-                            //                                                                                   )
-                            //                                                                                 : data.type == "voicemessage"
-                            //                                                                                     ? Row(
-                            //                                                                                         children: [
-                            //                                                                                           Image.asset("assets/images/microphone-2.png", height: 15, color: chatColor),
-                            //                                                                                           const Text(" Voice message")
-                            //                                                                                         ],
-                            //                                                                                       )
-                            //                                                                                     //_________________________________________________________________ REPLY TYPE ___________________
-                            //                                                                                     : data.type == "reply" && data.replyType == "reply@text"
-                            //                                                                                         ? SizedBox(
-                            //                                                                                             width: 200,
-                            //                                                                                             child: Text(
-                            //                                                                                               data.lastMessage!,
-                            //                                                                                               maxLines: 1,
-                            //                                                                                               overflow: TextOverflow.ellipsis,
-                            //                                                                                             ),
-                            //                                                                                           )
-                            //                                                                                         : data.type == "reply" && data.replyType == "reply@link"
-                            //                                                                                             ? const Row(
-                            //                                                                                                 children: [
-                            //                                                                                                   Icon(CupertinoIcons.link, size: 15, color: gradient1),
-                            //                                                                                                   Text(" Link")
-                            //                                                                                                 ],
-                            //                                                                                               )
-                            //                                                                                             : data.type == "reply" && data.replyType == "reply@image"
-                            //                                                                                                 ? Row(
-                            //                                                                                                     children: [
-                            //                                                                                                       Image.asset(
-                            //                                                                                                         "assets/icons/image_icon.png",
-                            //                                                                                                         height: 15,
-                            //                                                                                                         color: chatColor,
-                            //                                                                                                       ),
-                            //                                                                                                       const Text(" Photo")
-                            //                                                                                                     ],
-                            //                                                                                                   )
-                            //                                                                                                 : data.type == "reply" && data.replyType == "reply@video"
-                            //                                                                                                     ? Row(
-                            //                                                                                                         children: [
-                            //                                                                                                           Image.asset(
-                            //                                                                                                             "assets/icons/video_icon.png",
-                            //                                                                                                             height: 15,
-                            //                                                                                                             color: chatColor,
-                            //                                                                                                           ),
-                            //                                                                                                           const Text(" Video")
-                            //                                                                                                         ],
-                            //                                                                                                       )
-                            //                                                                                                     : data.type == "reply" && data.replyType == "reply@doc"
-                            //                                                                                                         ? Row(
-                            //                                                                                                             children: [
-                            //                                                                                                               Image.asset(
-                            //                                                                                                                 "assets/icons/file_icon.png",
-                            //                                                                                                                 height: 15,
-                            //                                                                                                                 color: chatColor,
-                            //                                                                                                               ),
-                            //                                                                                                               const Text(" Document")
-                            //                                                                                                             ],
-                            //                                                                                                           )
-                            //                                                                                                         : data.type == "reply" && data.replyType == "reply@location"
-                            //                                                                                                             ? Row(
-                            //                                                                                                                 children: [
-                            //                                                                                                                   Image.asset(
-                            //                                                                                                                     "assets/icons/location_icon.png",
-                            //                                                                                                                     height: 15,
-                            //                                                                                                                     color: chatColor,
-                            //                                                                                                                   ),
-                            //                                                                                                                   const Text(" Location")
-                            //                                                                                                                 ],
-                            //                                                                                                               )
-                            //                                                                                                             : data.type == "reply" && data.replyType == "reply@gif"
-                            //                                                                                                                 ? Row(
-                            //                                                                                                                     children: [
-                            //                                                                                                                       Image.asset("assets/images/gif-file.png", height: 22),
-                            //                                                                                                                       const Text(
-                            //                                                                                                                         "GIF",
-                            //                                                                                                                         maxLines: 1,
-                            //                                                                                                                         overflow: TextOverflow.ellipsis,
-                            //                                                                                                                         style: TextStyle(color: chatColor, fontSize: 13),
-                            //                                                                                                                       ),
-                            //                                                                                                                     ],
-                            //                                                                                                                   )
-                            //                                                                                                                 : data.type == "reply" && data.replyType == "reply@audio"
-                            //                                                                                                                     ? Row(
-                            //                                                                                                                         children: [
-                            //                                                                                                                           Image.asset("assets/images/microphone-2.png", height: 15, color: chatColor),
-                            //                                                                                                                           const Text(" Voice message")
-                            //                                                                                                                         ],
-                            //                                                                                                                       )
-                            //                                                                                                                     : Text(
-                            //                                                                                                                         data.lastMessage == null || data.lastMessage == "" ? "" : capitalizeFirstLetter(data.lastMessage!),
-                            //                                                                                                                         maxLines: 2,
-                            //                                                                                                                         textAlign: TextAlign.left,
-                            //                                                                                                                         style: const TextStyle(fontWeight: FontWeight.w400, fontSize: 12),
-                            //                                                                                                                       ),
-                            //     data.personalCount != "0"
-                            //         ? Container(
-                            //             height: 20,
-                            //             width: 20,
-                            //             decoration: const BoxDecoration(
-                            //               shape: BoxShape.circle,
-                            //               color: chatownColor,
-                            //             ),
-                            //             child: Center(
-                            //               child: Text(
-                            //                 (int.parse(data.personalCount!) >=
-                            //                         99)
-                            //                     ? '99+'
-                            //                     : data.personalCount!,
-                            //                 style: const TextStyle(
-                            //                   fontSize: 10,
-                            //                 ),
-                            //               ),
-                            //             ),
-                            //           )
-                            //         : const SizedBox.shrink()
-                            //   ],
-                            // )
                           ],
                         ),
                       ),
@@ -996,164 +474,38 @@ class _ArchiveChatState extends State<ArchiveChat> with WidgetsBindingObserver {
   }
 
   Widget searchBar() {
-    return Container(
-      height: 50,
-      width: MediaQuery.of(context).size.width * 0.9,
-      decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(10), color: Colors.grey.shade100),
-      child: TextField(
-        controller: controller,
-        onChanged: onSearchTextChanged,
-        decoration: InputDecoration(
-          prefixIcon: const Padding(
-            padding: EdgeInsets.all(17),
-            child: Image(
-              image: AssetImage('assets/icons/search.png'),
-            ),
-          ),
-          hintText: languageController.textTranslate('Search User'),
-          hintStyle: const TextStyle(fontSize: 12, color: Colors.grey),
-          filled: true,
-          fillColor: Colors.transparent,
-          border: const OutlineInputBorder(borderSide: BorderSide.none),
-        ),
-      ),
+    return commonSearchField(
+      context: context,
+      controller: controller,
+      onChanged: onSearchTextChanged,
+      hintText: languageController.textTranslate('Search User'),
     );
+    //     Container(
+    //   height: 50,
+    //   width: MediaQuery.of(context).size.width * 0.9,
+    //   decoration: BoxDecoration(
+    //       borderRadius: BorderRadius.circular(10), color: Colors.grey.shade100),
+    //   child: TextField(
+    //     controller: controller,
+    //     onChanged: onSearchTextChanged,
+    //     decoration: InputDecoration(
+    //       prefixIcon: const Padding(
+    //         padding: EdgeInsets.all(17),
+    //         child: Image(
+    //           image: AssetImage('assets/icons/search.png'),
+    //         ),
+    //       ),
+    //       hintText: languageController.textTranslate('Search User'),
+    //       hintStyle: const TextStyle(fontSize: 12, color: Colors.grey),
+    //       filled: true,
+    //       fillColor: Colors.transparent,
+    //       border: const OutlineInputBorder(borderSide: BorderSide.none),
+    //     ),
+    //   ),
+    // );
   }
 
 //_________________________________________________________________________________________________________________________________________________________
-
-  // dialogBox(String isblock, String cID, bool isGroup, String uname,
-  //     String gpname, ArchiveList data, int index) {
-  //   return showDialog(
-  //       context: context,
-  //       barrierColor: const Color.fromRGBO(30, 30, 30, 0.37),
-  //       builder: (BuildContext context) {
-  //         return
-  //             //  AlertDialog(
-  //             //   insetPadding: const EdgeInsets.all(20),
-  //             //   alignment: Alignment.bottomCenter,
-  //             //   backgroundColor: Colors.white,
-  //             //   elevation: 0,
-  //             //   contentPadding: const EdgeInsets.symmetric(vertical: 20),
-
-  //             //   // contentPadding:
-  //             //   //     const EdgeInsets.only(left: 20, top: 20, right: 20, bottom: 20),
-  //             //   shape: RoundedRectangleBorder(
-  //             //     borderRadius: BorderRadius.circular(20.0),
-  //             //   ),
-  //             //   content: SizedBox(
-  //             //     width: double.maxFinite,
-  //             //     child: Column(
-  //             //       mainAxisSize: MainAxisSize.min,
-  //             //       children: [
-  //             //         GestureDetector(
-  //             //           behavior: HitTestBehavior.translucent,
-  //             //           onTap: () {
-  //             //             Navigator.pop(context);
-  //             //             isGroup == false
-  //             //                 ? chatListController.addArchveApi(cID, uname)
-  //             //                 : chatListController.addArchveApi(cID, gpname);
-  //             //             chatListController
-  //             //                 .userArchiveListModel.value!.archiveList!
-  //             //                 .remove(data);
-  //             //           },
-  //             //           child: Row(
-  //             //             children: [
-  //             //               Image.asset(
-  //             //                 "assets/images/unarchive.png",
-  //             //                 height: 18,
-  //             //                 width: 18,
-  //             //               ),
-  //             //               const SizedBox(
-  //             //                 width: 10,
-  //             //               ),
-  //             //               const Text(
-  //             //                 'Unarchive Chat',
-  //             //                 style: TextStyle(
-  //             //                   fontSize: 14,
-  //             //                   fontWeight: FontWeight.w400,
-  //             //                   fontFamily: "Poppins",
-  //             //                 ),
-  //             //               ),
-  //             //             ],
-  //             //           )
-  //             //               .paddingSymmetric(
-  //             //                 horizontal: 20,
-  //             //                 // vertical: 7,
-  //             //               )
-  //             //               .paddingOnly(bottom: isGroup == false ? 10 : 0),
-  //             //         ),
-  //             //         isGroup == false
-  //             //             ? const Divider(
-  //             //                 height: 1,
-  //             //                 color: Color(0xffF1F1F1),
-  //             //               )
-  //             //             : const SizedBox.shrink(),
-  //             //         isGroup == false
-  //             //             ? GestureDetector(
-  //             //                 behavior: HitTestBehavior.translucent,
-  //             //                 onTap: () {
-  //             //                   Navigator.pop(context);
-  //             //                   chatListController.blockUserApi(cID);
-  //             //                   chatListController.forArchiveChatList();
-  //             //                   // setState(() {});
-  //             //                 },
-  //             //                 child: Row(
-  //             //                   children: [
-  //             //                     Image.asset(
-  //             //                       "assets/images/block.png",
-  //             //                       height: 18,
-  //             //                       width: 18,
-  //             //                     ),
-  //             //                     const SizedBox(
-  //             //                       width: 10,
-  //             //                     ),
-  //             //                     Text(
-  //             //                       isblock == "false" ? 'Block' : "Unblock",
-  //             //                       style: const TextStyle(
-  //             //                         fontSize: 14,
-  //             //                         fontWeight: FontWeight.w400,
-  //             //                         fontFamily: "Poppins",
-  //             //                       ),
-  //             //                     ),
-  //             //                   ],
-  //             //                 )
-  //             //                     .paddingSymmetric(
-  //             //                       horizontal: 20,
-  //             //                       // vertical: 7,
-  //             //                     )
-  //             //                     .paddingOnly(top: 10),
-  //             //               )
-  //             //             : const SizedBox.shrink(),
-  //             //       ],
-  //             //     ),
-  //             //   ),
-  //             // );
-  //             UnarchiveAndBlock(
-  //           isblock: isblock,
-  //           cID: cID,
-  //           isGroup: isGroup,
-  //           uname: uname,
-  //           gpname: gpname,
-  //           data: data,
-  //         );
-  //       });
-  //   //     .then((value) {
-  //   //   debugPrint("value $value");
-  //   //   if (value["isblock"] == "true") {
-  //   //     debugPrint("value isblock ${value["isblock"]}");
-  //   //     chatListController
-  //   //         .userArchiveListModel.value!.archiveList![index].isBlock = false;
-  //   //     setState(() {});
-  //   //   } else {
-  //   //     debugPrint("value isblock ${value["isblock"]}");
-  //   //     chatListController
-  //   //         .userArchiveListModel.value!.archiveList![index].isGroup = true;
-  //   //     setState(() {});
-  //   //   }
-  //   // });
-  // }
 
   Future dialogBox(String isblock, String cID, bool isGroup, String uname,
       String gpname, ArchiveList data) {

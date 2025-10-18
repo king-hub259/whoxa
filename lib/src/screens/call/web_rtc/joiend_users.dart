@@ -1,7 +1,9 @@
+// ignore_for_file: deprecated_member_use
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:meyaoo_new/controller/call_controller.dart/get_roomId_controller.dart';
-import 'package:meyaoo_new/src/global/global.dart';
+import 'package:whoxachat/controller/call_controller.dart/get_roomId_controller.dart';
+import 'package:whoxachat/src/global/global.dart';
 
 class JoinedUsers extends StatefulWidget {
   const JoinedUsers({super.key});
@@ -101,8 +103,7 @@ class _JoinedUsersState extends State<JoinedUsers> {
                                     const Spacer(),
                                     Container(
                                       decoration: BoxDecoration(
-                                        color: const Color(0xffFCC604)
-                                            .withOpacity(0.43),
+                                        color: chatownColor.withOpacity(0.43),
                                         borderRadius: const BorderRadius.all(
                                           Radius.circular(10),
                                         ),

@@ -4,9 +4,9 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:get/get.dart';
-import 'package:meyaoo_new/Models/get_all_videocall_list_model.dart';
-import 'package:meyaoo_new/controller/call_history_controller.dart';
-import 'package:meyaoo_new/src/global/global.dart';
+import 'package:whoxachat/Models/get_all_videocall_list_model.dart';
+import 'package:whoxachat/controller/call_history_controller.dart';
+import 'package:whoxachat/src/global/global.dart';
 
 class AllVideoCallList extends StatefulWidget {
   const AllVideoCallList({super.key});
@@ -55,8 +55,6 @@ class _AllVideoCallListState extends State<AllVideoCallList> {
         log("ALL NUMBER ${allNumbers[i].trim()}");
         log("index $i");
         log("Name ${_contacts![i].id}");
-
-        // log("Name ${_contacts![i].phones.first.number}");
       }
     }
   }
@@ -69,7 +67,7 @@ class _AllVideoCallListState extends State<AllVideoCallList> {
         }
       }
     }
-    return -1; // Return -1 if name is not found
+    return -1;
   }
 
   @override
@@ -148,7 +146,6 @@ class _AllVideoCallListState extends State<AllVideoCallList> {
                       ? allNumbers.contains(videoCallList.mobileNumber!)
                           ? allNames[
                               getIndexFromNumber(videoCallList.mobileNumber!)]
-                          // allNames[index]
                           : capitalizeFirstLetter(videoCallList.username!)
                       : capitalizeFirstLetter(videoCallList.groupname!),
                   style: const TextStyle(
@@ -206,10 +203,6 @@ class _AllVideoCallListState extends State<AllVideoCallList> {
                                         height: 20,
                                       )
                                     : const SizedBox()
-                //          Image(
-                //   image: AssetImage('assets/images/videoo.png'),
-                //   height: 15,
-                // )
               ],
             ),
           )

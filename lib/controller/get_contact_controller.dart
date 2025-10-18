@@ -1,17 +1,25 @@
 import 'dart:convert';
 import 'dart:developer';
 
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hive/hive.dart';
-import 'package:meyaoo_new/Models/get_contact_model.dart';
-import 'package:meyaoo_new/src/global/api_helper.dart';
+import 'package:whoxachat/Models/get_contact_model.dart';
+import 'package:whoxachat/Models/my_contacts_model.dart';
+import 'package:whoxachat/src/global/api_helper.dart';
 import 'package:http/http.dart' as http;
-import 'package:meyaoo_new/src/global/strings.dart';
+import 'package:whoxachat/src/global/strings.dart';
 
 final ApiHelper apiHelper = ApiHelper();
 
 class GetAllDeviceContact extends GetxController {
   RxBool isGetContectLoading = false.obs;
+  RxBool isGetMYContectLoading = false.obs;
+
+  RxInt getMyContact = 1.obs;
+
+  Rx<MyContactModel> myContactsData = MyContactModel().obs;
+
   @override
   void onInit() {
     getAllContactApi();
@@ -28,7 +36,7 @@ class GetAllDeviceContact extends GetxController {
       'Authorization': 'Bearer ${Hive.box(userdata).get(authToken)}',
       "Accept": "application/json",
     };
-    log("AAAAAA: $contact");
+    log("AAAAAA get all contact: $contact");
     request.headers.addAll(headers);
     request.fields['contact_list'] = contact ?? '';
     log("FEILDs:${request.fields}");
@@ -52,5 +60,48 @@ class GetAllDeviceContact extends GetxController {
       log("API_CONTACT_RESPONSE: $userData");
     }
     isGetContectLoading.value = false;
+  }
+
+  myContact({
+    bool isAddData = false,
+  }) async {
+    try {
+      isGetMYContectLoading.value = isAddData == false ? false : true;
+      if (isAddData == true) {
+        getMyContact.value = getMyContact.value + 1;
+      } else {
+        getMyContact.value = 1;
+      }
+      final responseJson = await apiHelper.postMethod(
+        url: apiHelper.myContacts,
+        headers: {
+          'Authorization': 'Bearer ${Hive.box(userdata).get(authToken)}',
+          'Content-Type': 'application/json',
+        },
+        requestBody: {
+          "page": getMyContact.value,
+        },
+      );
+
+      if (responseJson["success"] == true) {
+        log("$responseJson", name: "myContactsData");
+        myContactsData.value = MyContactModel.fromJson(responseJson);
+        debugPrint(
+            "myContactsData length ${myContactsData.value.myContactList!.length}");
+        if (getMyContact.value == myContactsData.value.pagination!.totalPages) {
+          myContactsData.refresh();
+        } else {
+          if (getMyContact.value != 1) {
+            myContact(isAddData: true);
+          }
+        }
+      }
+
+      isGetMYContectLoading.value = false;
+    } catch (e) {
+      isGetMYContectLoading.value = false;
+
+      debugPrint('get my contacts failed : $e');
+    }
   }
 }

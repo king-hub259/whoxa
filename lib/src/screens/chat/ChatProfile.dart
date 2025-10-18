@@ -1,4 +1,4 @@
-// ignore_for_file: use_build_context_synchronously, avoid_print, must_be_immutable, file_names, unused_element
+// ignore_for_file: use_build_context_synchronously, avoid_print, must_be_immutable, file_names, unused_element, deprecated_member_use
 
 import 'dart:developer';
 import 'dart:ui';
@@ -6,19 +6,26 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:meyaoo_new/app.dart';
-import 'package:meyaoo_new/controller/all_star_msg_controller.dart';
-import 'package:meyaoo_new/controller/single_chat_media_controller.dart';
-import 'package:meyaoo_new/controller/user_chatlist_controller.dart';
-import 'package:meyaoo_new/model/chat_profile_model.dart';
-import 'package:meyaoo_new/src/screens/chat/Media.dart';
-import 'package:meyaoo_new/src/screens/chat/allstarred_msg_list.dart';
+import 'package:whoxachat/app.dart';
+import 'package:whoxachat/controller/all_star_msg_controller.dart';
+import 'package:whoxachat/controller/call_controller.dart/get_roomId_controller.dart';
+import 'package:whoxachat/controller/single_chat_media_controller.dart';
+import 'package:whoxachat/controller/user_chatlist_controller.dart';
+import 'package:whoxachat/model/chat_profile_model.dart';
+import 'package:whoxachat/src/screens/call/web_rtc/audio_call_screen.dart';
+import 'package:whoxachat/src/screens/call/web_rtc/video_call_screen.dart';
+import 'package:whoxachat/src/screens/chat/Media.dart';
+import 'package:whoxachat/src/screens/chat/allstarred_msg_list.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:meyaoo_new/src/global/global.dart';
-import 'package:meyaoo_new/src/screens/chat/chatvideo.dart';
-import 'package:meyaoo_new/src/screens/chat/imageView.dart';
+import 'package:whoxachat/src/global/global.dart';
+import 'package:whoxachat/src/screens/chat/chatvideo.dart';
+import 'package:whoxachat/src/screens/chat/imageView.dart';
+import 'package:whoxachat/src/screens/chat/report_popup.dart';
 import 'package:page_transition/page_transition.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:whoxachat/src/screens/chat/shareable/common_permission_dialog.dart';
+import 'package:whoxachat/src/screens/chat/shareable/shimmer_profile_loader.dart';
 
 class ChatProfile extends StatefulWidget {
   String? fullName;
@@ -26,6 +33,7 @@ class ChatProfile extends StatefulWidget {
   String? peeid;
   String? status;
   String? phnnum;
+  String? userId;
   ChatProfile({
     super.key,
     this.fullName,
@@ -33,6 +41,7 @@ class ChatProfile extends StatefulWidget {
     this.peeid,
     this.phnnum,
     this.status,
+    this.userId,
   });
   @override
   State<ChatProfile> createState() => _ChatProfileState();
@@ -48,10 +57,20 @@ class _ChatProfileState extends State<ChatProfile> {
   final picker = ImagePicker();
   @override
   void initState() {
+    print("UID:${widget.userId}");
     print("ID:${widget.peeid}");
     print("PH:${widget.phnnum}");
     chatProfileController.getProfileDATA(widget.peeid!);
     allStaredMsgController.getAllStarMsg(widget.peeid);
+
+    if (widget.peeid!.isEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        chatProfileController.profileModel.value!.mediaData = [];
+        chatProfileController.profileModel.value!.linkData = [];
+        chatProfileController.profileModel.value!.documentData = [];
+        allStaredMsgController.allStarred.value = [];
+      });
+    }
     super.initState();
   }
 
@@ -62,7 +81,7 @@ class _ChatProfileState extends State<ChatProfile> {
       backgroundColor: const Color.fromRGBO(250, 250, 250, 1),
       body: Obx(() {
         return chatProfileController.isLoading.value
-            ? loader(context)
+            ? ChatProfilePlaceholder()
             : SingleChildScrollView(
                 child: Stack(
                   children: [
@@ -80,11 +99,480 @@ class _ChatProfileState extends State<ChatProfile> {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         SizedBox(height: Get.height * 0.13),
-                        profilePicWidget(chatProfileController
-                            .profileModel.value!.conversationDetails!),
-                        Center(
-                            child: profiledetails(chatProfileController
-                                .profileModel.value!.conversationDetails!)),
+                        widget.peeid!.isEmpty
+                            ? Padding(
+                                padding:
+                                    const EdgeInsets.only(left: 12, top: 10),
+                                child: Column(
+                                  children: [
+                                    Container(
+                                      decoration: const BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          color: Colors.white),
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(10.0),
+                                        child: Container(
+                                          width: 95,
+                                          height: 95,
+                                          decoration: const BoxDecoration(
+                                              shape: BoxShape.circle),
+                                          child: CustomCachedNetworkImage(
+                                            imageUrl: widget.profileimg!,
+                                            errorWidgeticon:
+                                                const Icon(Icons.groups),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 10),
+                                    Text(
+                                      widget.fullName!,
+                                      style: const TextStyle(
+                                          fontWeight: FontWeight.w500,
+                                          fontSize: 18),
+                                    ),
+                                    const SizedBox(height: 10),
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Text(widget.phnnum!,
+                                            style: const TextStyle(
+                                              fontWeight: FontWeight.w400,
+                                              fontSize: 14,
+                                              color: Colors.grey,
+                                            ))
+                                      ],
+                                    )
+                                  ],
+                                ),
+                              )
+                            : widget.peeid!.isEmpty
+                                ? const SizedBox.shrink()
+                                : profilePicWidget(chatProfileController
+                                    .profileModel.value!.conversationDetails!),
+                        widget.peeid!.isEmpty
+                            ? Column(
+                                children: [
+                                  const SizedBox(height: 20),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      buttonContainer(
+                                          onTap: () async {},
+                                          img: "assets/images/call_1.png",
+                                          title: languageController
+                                              .textTranslate('Audio')),
+                                      const SizedBox(width: 30),
+                                      buttonContainer(
+                                          onTap: () async {},
+                                          img: "assets/images/video_1.png",
+                                          title: languageController
+                                              .textTranslate('Video')),
+                                      const SizedBox(width: 30),
+                                      buttonContainer(
+                                          onTap: () {},
+                                          img: "assets/icons/search-normal.png",
+                                          title: languageController
+                                              .textTranslate('Search'))
+                                    ],
+                                  ),
+                                  const SizedBox(height: 20),
+                                  // bioAndCreatedAt(data),
+                                  // const SizedBox(
+                                  //   height: 20,
+                                  // ),
+                                  mediaContainer(),
+                                  const SizedBox(
+                                    height: 20,
+                                  ),
+                                  stareContainer(),
+                                  const SizedBox(
+                                    height: 36,
+                                  ),
+                                  Column(
+                                    children: [
+                                      GestureDetector(
+                                        behavior: HitTestBehavior.translucent,
+                                        onTap: () {
+                                          showDialog(
+                                            barrierColor: const Color.fromRGBO(
+                                                30, 30, 30, 0.37),
+                                            context: context,
+                                            barrierDismissible: false,
+                                            builder: (BuildContext context) {
+                                              return Stack(
+                                                children: [
+                                                  BackdropFilter(
+                                                    filter: ImageFilter.blur(
+                                                        sigmaX: 5.0,
+                                                        sigmaY: 5.0),
+                                                    child: Container(
+                                                      color:
+                                                          const Color.fromRGBO(
+                                                              30, 30, 30, 0.37),
+                                                    ),
+                                                  ),
+                                                  AlertDialog(
+                                                    insetPadding:
+                                                        const EdgeInsets.all(8),
+                                                    alignment:
+                                                        Alignment.bottomCenter,
+                                                    backgroundColor:
+                                                        Colors.white,
+                                                    shape:
+                                                        const RoundedRectangleBorder(
+                                                      borderRadius:
+                                                          BorderRadius.all(
+                                                        Radius.circular(20),
+                                                      ),
+                                                    ),
+                                                    content: SizedBox(
+                                                      height: 150,
+                                                      child: Column(
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment
+                                                                .start,
+                                                        children: [
+                                                          const SizedBox(
+                                                              height: 10),
+                                                          Text(
+                                                            chatListController
+                                                                        .blockModel
+                                                                        .value!
+                                                                        .isBlock ==
+                                                                    true
+                                                                ? languageController
+                                                                    .textTranslate(
+                                                                        'Are you sure you want to Unblock?')
+                                                                : languageController
+                                                                    .textTranslate(
+                                                                        'Are you sure you want to Block?'),
+                                                            style: const TextStyle(
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w600,
+                                                                fontSize: 16),
+                                                          ),
+                                                          const SizedBox(
+                                                              height: 15),
+                                                          Text(
+                                                            chatListController
+                                                                        .blockModel
+                                                                        .value!
+                                                                        .isBlock ==
+                                                                    true
+                                                                ? "${languageController.textTranslate('Are you sure you want to unblock profile of')}  @${widget.fullName}?"
+                                                                : "${languageController.textTranslate('Are you sure you want to block profile of')}  @${widget.fullName}?",
+                                                            style: const TextStyle(
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w500,
+                                                                color: appgrey2,
+                                                                fontSize: 13),
+                                                          ),
+                                                          const SizedBox(
+                                                              height: 20),
+                                                          Row(
+                                                            mainAxisAlignment:
+                                                                MainAxisAlignment
+                                                                    .spaceAround,
+                                                            children: [
+                                                              InkWell(
+                                                                onTap: () {
+                                                                  Navigator.pop(
+                                                                      context);
+                                                                },
+                                                                child:
+                                                                    Container(
+                                                                  height: 38,
+                                                                  width: MediaQuery.of(
+                                                                              context)
+                                                                          .size
+                                                                          .width *
+                                                                      0.35,
+                                                                  decoration: BoxDecoration(
+                                                                      border: Border.all(
+                                                                          color:
+                                                                              chatownColor,
+                                                                          width:
+                                                                              1),
+                                                                      borderRadius:
+                                                                          BorderRadius.circular(
+                                                                              12)),
+                                                                  child: Center(
+                                                                      child:
+                                                                          Text(
+                                                                    languageController
+                                                                        .textTranslate(
+                                                                            'Cancel'),
+                                                                    style: const TextStyle(
+                                                                        fontSize:
+                                                                            14,
+                                                                        fontWeight:
+                                                                            FontWeight
+                                                                                .w400,
+                                                                        color:
+                                                                            chatColor),
+                                                                  )),
+                                                                ),
+                                                              ),
+                                                              const SizedBox(
+                                                                width: 10,
+                                                              ),
+                                                              InkWell(
+                                                                onTap: () {
+                                                                  setState(
+                                                                      () {});
+                                                                  chatListController
+                                                                      .blockUserApi(
+                                                                          widget
+                                                                              .userId);
+                                                                  Navigator.pop(
+                                                                      context);
+                                                                },
+                                                                child:
+                                                                    Container(
+                                                                  height: 40,
+                                                                  width: MediaQuery.of(
+                                                                              context)
+                                                                          .size
+                                                                          .width *
+                                                                      0.35,
+                                                                  decoration: BoxDecoration(
+                                                                      borderRadius:
+                                                                          BorderRadius.circular(
+                                                                              12),
+                                                                      gradient: LinearGradient(
+                                                                          colors: [
+                                                                            secondaryColor,
+                                                                            chatownColor
+                                                                          ],
+                                                                          begin: Alignment
+                                                                              .topCenter,
+                                                                          end: Alignment
+                                                                              .bottomCenter)),
+                                                                  child: Center(
+                                                                      child:
+                                                                          Text(
+                                                                    chatListController.blockModel.value!.isBlock ==
+                                                                            true
+                                                                        ? languageController.textTranslate(
+                                                                            'Unblock')
+                                                                        : languageController
+                                                                            .textTranslate('Block'),
+                                                                    style: const TextStyle(
+                                                                        fontSize:
+                                                                            14,
+                                                                        fontWeight:
+                                                                            FontWeight
+                                                                                .w400,
+                                                                        color:
+                                                                            chatColor),
+                                                                  )),
+                                                                ),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              );
+                                            },
+                                          );
+                                        },
+                                        child: Container(
+                                          decoration: const BoxDecoration(
+                                              color: Colors.white,
+                                              boxShadow: [
+                                                BoxShadow(
+                                                  blurRadius: 0.5,
+                                                  spreadRadius: 0,
+                                                  offset: Offset(0, 0.4),
+                                                  color: Color.fromRGBO(
+                                                      239, 239, 239, 1),
+                                                )
+                                              ]),
+                                          child: Padding(
+                                            padding: const EdgeInsets.only(
+                                                left: 25,
+                                                top: 15,
+                                                right: 25,
+                                                bottom: 15),
+                                            child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
+                                              children: [
+                                                Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment
+                                                          .spaceBetween,
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.center,
+                                                  children: [
+                                                    Image.asset(
+                                                      "assets/icons/block.png",
+                                                      height: 18,
+                                                      width: 18,
+                                                    ),
+                                                    const SizedBox(
+                                                      width: 10,
+                                                    ),
+                                                    Text(
+                                                      chatListController
+                                                                  .blockModel
+                                                                  .value!
+                                                                  .isBlock ==
+                                                              true
+                                                          ? 'Unblock ${widget.fullName}'
+                                                          : 'Block ${widget.fullName}',
+                                                      style: const TextStyle(
+                                                        fontSize: 12,
+                                                        fontWeight:
+                                                            FontWeight.w400,
+                                                        color:
+                                                            Color(0xffFF2525),
+                                                        fontFamily: "Poppins",
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(
+                                        height: 1,
+                                      ),
+                                      GestureDetector(
+                                        onTap: () {
+                                          // reportPopup();
+                                          // allStaredMsgController
+                                          //     .selectedReportIndex.value = -1;
+                                        },
+                                        child: Container(
+                                          decoration: const BoxDecoration(
+                                              color: Colors.white,
+                                              boxShadow: [
+                                                BoxShadow(
+                                                  blurRadius: 0.5,
+                                                  spreadRadius: 0,
+                                                  offset: Offset(0, 0.4),
+                                                  color: Color.fromRGBO(
+                                                      239, 239, 239, 1),
+                                                )
+                                              ]),
+                                          child: Padding(
+                                            padding: const EdgeInsets.only(
+                                                left: 25,
+                                                top: 15,
+                                                right: 25,
+                                                bottom: 15),
+                                            child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
+                                              children: [
+                                                Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment
+                                                          .spaceBetween,
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.center,
+                                                  children: [
+                                                    Image.asset(
+                                                      "assets/icons/report.png",
+                                                      height: 18,
+                                                      width: 18,
+                                                    ),
+                                                    const SizedBox(
+                                                      width: 10,
+                                                    ),
+                                                    Text(
+                                                      'Report ${widget.fullName}',
+                                                      style: const TextStyle(
+                                                        fontSize: 12,
+                                                        fontWeight:
+                                                            FontWeight.w400,
+                                                        color:
+                                                            Color(0xffFF2525),
+                                                        fontFamily: "Poppins",
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(
+                                        height: 1,
+                                      ),
+                                      Container(
+                                        decoration: const BoxDecoration(
+                                            color: Colors.white,
+                                            boxShadow: [
+                                              BoxShadow(
+                                                blurRadius: 0.5,
+                                                spreadRadius: 0,
+                                                offset: Offset(0, 0.4),
+                                                color: Color.fromRGBO(
+                                                    239, 239, 239, 1),
+                                              )
+                                            ]),
+                                        child: Padding(
+                                          padding: const EdgeInsets.only(
+                                              left: 25,
+                                              top: 15,
+                                              right: 25,
+                                              bottom: 15),
+                                          child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment
+                                                        .spaceBetween,
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.center,
+                                                children: [
+                                                  Image.asset(
+                                                    "assets/icons/delete.png",
+                                                    height: 18,
+                                                    width: 18,
+                                                  ),
+                                                  const SizedBox(
+                                                    width: 10,
+                                                  ),
+                                                  Text(
+                                                    '${languageController.textTranslate('Delete')} ${widget.fullName!}',
+                                                    style: const TextStyle(
+                                                      fontSize: 12,
+                                                      fontWeight:
+                                                          FontWeight.w400,
+                                                      color: Color(0xffFF2525),
+                                                      fontFamily: "Poppins",
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              )
+                            : Center(
+                                child: profiledetails(chatProfileController
+                                    .profileModel.value!.conversationDetails!)),
                       ],
                     ),
                     Positioned(
@@ -99,8 +587,6 @@ class _ChatProfileState extends State<ChatProfile> {
                 ),
               );
       }),
-      // bottomNavigationBar:
-      //     BottomAppBar(color: Colors.white, elevation: 0, child: blockButton()),
     );
   }
 
@@ -180,23 +666,90 @@ class _ChatProfileState extends State<ChatProfile> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             buttonContainer(
-                onTap: () {
+                onTap: () async {
                   chatListController.blockModel.value!.isBlock == true
                       ? Fluttertoast.showToast(
                           msg: languageController.textTranslate(
                               'User blocked, not able to voice call'))
                       : '';
+                  var status = await Permission.notification.status;
+
+                  if (status.isDenied || status.isRestricted) {
+                    status = await Permission.notification.request();
+                  }
+                  if (status.isGranted) {
+                    await Get.find<RoomIdController>().getRoomModelApi(
+                        conversationID: widget.peeid, callType: "audio_call");
+                    print(
+                        "ROOMID 2 ${Get.find<RoomIdController>().roomModel.value!.roomId}");
+                    Get.to(() => AudioCallScreen(
+                          roomID: Get.find<RoomIdController>()
+                              .roomModel
+                              .value!
+                              .roomId,
+                          conversation_id: widget.peeid ?? "",
+                          isCaller: true,
+                          receiverImage: widget.profileimg!,
+                          receiverUserName: widget.fullName!,
+                          isGroupCall: "false",
+                        ));
+                  } else if (status.isPermanentlyDenied) {
+                    // openAppSettings();
+                    PermissionUtil.showPermissionSettingsDialog(
+                        context,
+                        "Notification", // or "Location", "Microphone", etc.
+                        languageController.textTranslate,
+                        chatownColor,
+                        secondaryColor);
+                  } else {
+                    // Show a message if permission is denied
+                    Fluttertoast.showToast(
+                        msg: languageController.textTranslate(
+                            'Notification permission is required to Audio call.'));
+                  }
                 },
                 img: "assets/images/call_1.png",
                 title: languageController.textTranslate('Audio')),
             const SizedBox(width: 30),
             buttonContainer(
-                onTap: () {
+                onTap: () async {
                   chatListController.blockModel.value!.isBlock == true
                       ? Fluttertoast.showToast(
                           msg: languageController.textTranslate(
                               'User blocked, not able to video call'))
                       : '';
+                  var status = await Permission.notification.status;
+
+                  if (status.isDenied || status.isRestricted) {
+                    status = await Permission.notification.request();
+                  }
+                  if (status.isGranted) {
+                    await Get.find<RoomIdController>().getRoomModelApi(
+                        conversationID: widget.peeid, callType: "video_call");
+                    print(
+                        "ROOMID 1 ${Get.find<RoomIdController>().roomModel.value!.roomId}");
+                    Get.to(() => VideoCallScreen(
+                          roomID: Get.find<RoomIdController>()
+                              .roomModel
+                              .value!
+                              .roomId,
+                          conversation_id: widget.peeid ?? "",
+                          isCaller: true,
+                          isGroupCall: "false",
+                        ));
+                  } else if (status.isPermanentlyDenied) {
+                    PermissionUtil.showPermissionSettingsDialog(
+                        context,
+                        "Notification", // or "Location", "Microphone", etc.
+                        languageController.textTranslate,
+                        chatownColor,
+                        secondaryColor);
+                  } else {
+                    // Show a message if permission is denied
+                    Fluttertoast.showToast(
+                        msg: languageController.textTranslate(
+                            'Notification permission is required to Video call.'));
+                  }
                 },
                 img: "assets/images/video_1.png",
                 title: languageController.textTranslate('Video')),
@@ -211,16 +764,6 @@ class _ChatProfileState extends State<ChatProfile> {
         ),
         const SizedBox(height: 20),
         bioAndCreatedAt(data),
-        // Container(
-        //   width: MediaQuery.sizeOf(context).width * 0.90,
-        //   decoration: BoxDecoration(
-        //       borderRadius: BorderRadius.circular(10),
-        //       color: const Color.fromRGBO(243, 243, 243, 1.000)),
-        //   child: Padding(
-        //     padding: const EdgeInsets.all(15.0),
-        //     child: SelectableText(matchNum(widget.fullName!)),
-        //   ),
-        // ),
         const SizedBox(
           height: 20,
         ),
@@ -306,7 +849,7 @@ class _ChatProfileState extends State<ChatProfile> {
                                         0.35,
                                     decoration: BoxDecoration(
                                         border: Border.all(
-                                            color: yellow2Color, width: 1),
+                                            color: chatownColor, width: 1),
                                         borderRadius:
                                             BorderRadius.circular(12)),
                                     child: Center(
@@ -338,8 +881,8 @@ class _ChatProfileState extends State<ChatProfile> {
                                         borderRadius: BorderRadius.circular(12),
                                         gradient: LinearGradient(
                                             colors: [
-                                              yellow1Color,
-                                              yellow2Color
+                                              secondaryColor,
+                                              chatownColor
                                             ],
                                             begin: Alignment.topCenter,
                                             end: Alignment.bottomCenter)),
@@ -418,45 +961,51 @@ class _ChatProfileState extends State<ChatProfile> {
         const SizedBox(
           height: 1,
         ),
-        Container(
-          decoration: const BoxDecoration(color: Colors.white, boxShadow: [
-            BoxShadow(
-              blurRadius: 0.5,
-              spreadRadius: 0,
-              offset: Offset(0, 0.4),
-              color: Color.fromRGBO(239, 239, 239, 1),
-            )
-          ]),
-          child: Padding(
-            padding:
-                const EdgeInsets.only(left: 25, top: 15, right: 25, bottom: 15),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Image.asset(
-                      "assets/icons/report.png",
-                      height: 18,
-                      width: 18,
-                    ),
-                    const SizedBox(
-                      width: 10,
-                    ),
-                    Text(
-                      'Report ${data.conversationsUsers![0].user!.userName!}',
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w400,
-                        color: Color(0xffFF2525),
-                        fontFamily: "Poppins",
+        GestureDetector(
+          onTap: () {
+            reportPopup();
+            allStaredMsgController.selectedReportIndex.value = -1;
+          },
+          child: Container(
+            decoration: const BoxDecoration(color: Colors.white, boxShadow: [
+              BoxShadow(
+                blurRadius: 0.5,
+                spreadRadius: 0,
+                offset: Offset(0, 0.4),
+                color: Color.fromRGBO(239, 239, 239, 1),
+              )
+            ]),
+            child: Padding(
+              padding: const EdgeInsets.only(
+                  left: 25, top: 15, right: 25, bottom: 15),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Image.asset(
+                        "assets/icons/report.png",
+                        height: 18,
+                        width: 18,
                       ),
-                    ),
-                  ],
-                ),
-              ],
+                      const SizedBox(
+                        width: 10,
+                      ),
+                      Text(
+                        'Report ${data.conversationsUsers![0].user!.userName!}',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w400,
+                          color: Color(0xffFF2525),
+                          fontFamily: "Poppins",
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -521,6 +1070,7 @@ class _ChatProfileState extends State<ChatProfile> {
       ]),
       child: InkWell(
         onTap: () {
+          allStaredMsgController.getAllStarMsg(widget.peeid);
           Get.to(
             () => AllStarredMsgList(
                 conversationid: widget.peeid, isPersonal: true),
@@ -584,6 +1134,13 @@ class _ChatProfileState extends State<ChatProfile> {
   }
 
   Widget mediaContainer() {
+    if (widget.peeid!.isEmpty) {
+      //   // WidgetsBinding.instance.addPostFrameCallback((_) async {
+      chatProfileController.profileModel.value!.mediaData = [];
+      chatProfileController.profileModel.value!.linkData = [];
+      chatProfileController.profileModel.value!.documentData = [];
+      //   // });
+    }
     return Container(
       decoration: const BoxDecoration(color: Colors.white, boxShadow: [
         BoxShadow(
@@ -670,8 +1227,6 @@ class _ChatProfileState extends State<ChatProfile> {
                                               play: true,
                                               mute: false,
                                               date: "",
-
-                                              ///convertUTCTimeTo12HourFormat(data.createdAt!),
                                             ),
                                           ));
                                     },
@@ -763,6 +1318,11 @@ class _ChatProfileState extends State<ChatProfile> {
       ]),
       child: InkWell(
         onTap: () {
+          if (widget.peeid!.isNotEmpty) {
+            allStaredMsgController.getAllStarMsg(widget.peeid);
+          } else {
+            allStaredMsgController.allStarred.value = [];
+          }
           Get.to(
               () => AllStarredMsgList(
                   conversationid: widget.peeid, isPersonal: true),
@@ -791,18 +1351,28 @@ class _ChatProfileState extends State<ChatProfile> {
               ),
               Row(
                 children: [
-                  Obx(() {
-                    return Text(
-                      allStaredMsgController.allStarred.isEmpty
-                          ? "0"
-                          : allStaredMsgController.allStarred.length.toString(),
-                      style: const TextStyle(
-                        color: Colors.grey,
-                        fontSize: 13.5,
-                        fontWeight: FontWeight.w400,
-                      ),
-                    );
-                  }),
+                  widget.peeid!.isEmpty
+                      ? const Text(
+                          "0",
+                          style: TextStyle(
+                            color: Colors.grey,
+                            fontSize: 13.5,
+                            fontWeight: FontWeight.w400,
+                          ),
+                        )
+                      : Obx(() {
+                          return Text(
+                            allStaredMsgController.allStarred.isEmpty
+                                ? "0"
+                                : allStaredMsgController.allStarred.length
+                                    .toString(),
+                            style: const TextStyle(
+                              color: Colors.grey,
+                              fontSize: 13.5,
+                              fontWeight: FontWeight.w400,
+                            ),
+                          );
+                        }),
                   const Icon(
                     Icons.arrow_forward_ios_rounded,
                     size: 15,
@@ -883,7 +1453,7 @@ class _ChatProfileState extends State<ChatProfile> {
                                       MediaQuery.of(context).size.width * 0.35,
                                   decoration: BoxDecoration(
                                       border: Border.all(
-                                          color: yellow2Color, width: 1),
+                                          color: chatownColor, width: 1),
                                       borderRadius: BorderRadius.circular(12)),
                                   child: Center(
                                       child: Text(
@@ -911,7 +1481,10 @@ class _ChatProfileState extends State<ChatProfile> {
                                   decoration: BoxDecoration(
                                       borderRadius: BorderRadius.circular(12),
                                       gradient: LinearGradient(
-                                          colors: [yellow1Color, yellow2Color],
+                                          colors: [
+                                            secondaryColor,
+                                            chatownColor
+                                          ],
                                           begin: Alignment.topCenter,
                                           end: Alignment.bottomCenter)),
                                   child: Center(
@@ -947,7 +1520,7 @@ class _ChatProfileState extends State<ChatProfile> {
           decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(10),
               gradient: LinearGradient(
-                  colors: [yellow1Color, yellow2Color],
+                  colors: [secondaryColor, chatownColor],
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter)),
           child: Center(
@@ -966,5 +1539,25 @@ class _ChatProfileState extends State<ChatProfile> {
         ),
       ),
     );
+  }
+
+  reportPopup() {
+    return showDialog(
+        context: context,
+        barrierColor: const Color.fromRGBO(30, 30, 30, 0.37),
+        barrierDismissible: true,
+        builder: (BuildContext context) {
+          return ReportPopup(
+            conversationId: widget.peeid!,
+            userId: chatProfileController
+                .profileModel.value!.conversationDetails!.conversationsUsers!
+                .where((element) =>
+                    element.user!.profileImage == widget.profileimg!)
+                .first
+                .user!
+                .userId
+                .toString(),
+          );
+        });
   }
 }

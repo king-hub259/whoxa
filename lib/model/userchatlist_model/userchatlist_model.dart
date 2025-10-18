@@ -35,21 +35,24 @@ class ChatList {
   bool? isBlock;
   String? createdAt;
   String? updatedAt;
+  int? unreadCount;
 
-  ChatList(
-      {this.conversationId,
-      this.isGroup,
-      this.groupName,
-      this.groupProfileImage,
-      this.lastMessage,
-      this.lastMessageType,
-      this.userId,
-      this.userName,
-      this.phoneNumber,
-      this.profileImage,
-      this.isBlock,
-      this.createdAt,
-      this.updatedAt});
+  ChatList({
+    this.conversationId,
+    this.isGroup,
+    this.groupName,
+    this.groupProfileImage,
+    this.lastMessage,
+    this.lastMessageType,
+    this.userId,
+    this.userName,
+    this.phoneNumber,
+    this.profileImage,
+    this.isBlock,
+    this.createdAt,
+    this.updatedAt,
+    this.unreadCount,
+  });
 
   ChatList.fromJson(Map<String, dynamic> json) {
     conversationId = json['conversation_id'];
@@ -65,6 +68,7 @@ class ChatList {
     isBlock = json['is_block'];
     createdAt = json['createdAt'];
     updatedAt = json['updatedAt'];
+    unreadCount = json['unread_count'];
   }
 
   Map<String, dynamic> toJson() {
@@ -82,6 +86,7 @@ class ChatList {
     data['is_block'] = isBlock;
     data['createdAt'] = createdAt;
     data['updatedAt'] = updatedAt;
+    data['unread_count'] = unreadCount;
     return data;
   }
 }

@@ -2,7 +2,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
+import 'package:whoxachat/web_view.dart';
+// import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 
 class FileView extends StatefulWidget {
   final String file;
@@ -20,24 +21,30 @@ class _FileViewState extends State<FileView> {
     super.initState();
   }
 
-  final GlobalKey<SfPdfViewerState> _pdfViewerKey = GlobalKey();
+  // final GlobalKey<SfPdfViewerState> _pdfViewerKey = GlobalKey();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
+      // appBar: AppBar(
+      //     // leading: const Icon(Icons.arrow_back_ios),
+      //     ),
       body: Material(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 5),
           child: Container(
-            decoration: const BoxDecoration(
-              color: Colors.white,
-            ),
-            child: SfPdfViewer.network(
-              widget.file,
-              key: _pdfViewerKey,
-            ),
-          ),
+              decoration: const BoxDecoration(
+                color: Colors.white,
+              ),
+              child: PrivacyWebView(
+                url: widget.file,
+              )
+              // SfPdfViewer.network(
+              //   widget.file,
+              //   key: _pdfViewerKey,
+              // ),
+              ),
         ).paddingOnly(top: 30),
       ),
     );

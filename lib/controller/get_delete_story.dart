@@ -3,12 +3,12 @@
 import 'dart:convert';
 
 import 'package:get/get.dart';
-import 'package:meyaoo_new/src/global/global.dart';
+import 'package:whoxachat/src/global/api_helper.dart';
 import 'package:http/http.dart' as http;
 
 class GetDeleteStroy extends GetxController {
   Future<void> getDelete() async {
-    var uri = Uri.parse("${baseUrl()}DeleteStory");
+    var uri = Uri.parse("${ApiHelper.baseUrl}/DeleteStory");
     var request = http.MultipartRequest("GET", uri);
     Map<String, String> headers = {
       "Accept": "application/json",

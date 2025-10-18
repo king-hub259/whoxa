@@ -1,31 +1,39 @@
-// ignore_for_file: must_be_immutable, depend_on_referenced_packages, constant_identifier_names, avoid_print, non_constant_identifier_names
+// ignore_for_file: must_be_immutable, depend_on_referenced_packages, constant_identifier_names, avoid_print, non_constant_identifier_names, unused_field, deprecated_member_use
 
-// // ignore_for_file: avoid_print, use_build_context_synchronously
+//
+import 'dart:developer';
+import 'dart:io';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:get/get.dart' as getx;
 import 'package:hive/hive.dart';
-import 'package:meyaoo_new/app.dart';
-import 'package:meyaoo_new/controller/call_controller.dart/get_roomId_controller.dart';
-import 'package:meyaoo_new/controller/user_chatlist_controller.dart';
-import 'package:meyaoo_new/main.dart';
-import 'package:meyaoo_new/src/global/common_widget.dart';
-import 'package:meyaoo_new/src/global/global.dart';
-import 'package:meyaoo_new/src/global/strings.dart';
-import 'package:meyaoo_new/src/screens/call/web_rtc/joiend_users.dart';
-import 'package:meyaoo_new/src/screens/layout/bottombar.dart';
+import 'package:whoxachat/app.dart';
+import 'package:whoxachat/controller/call_controller.dart/get_roomId_controller.dart';
+import 'package:whoxachat/controller/user_chatlist_controller.dart';
+import 'package:whoxachat/main.dart';
+import 'package:whoxachat/native_controller/audio_native_controller.dart';
+import 'package:whoxachat/src/Notification/one_signal_service.dart';
+import 'package:whoxachat/src/global/api_helper.dart';
+import 'package:whoxachat/src/global/common_widget.dart';
+import 'package:whoxachat/src/global/global.dart';
+import 'package:whoxachat/src/global/strings.dart';
+import 'package:whoxachat/src/screens/call/web_rtc/joiend_users.dart';
+import 'package:whoxachat/src/screens/layout/bottombar.dart';
 import 'package:peerdart/peerdart.dart';
 import 'package:uuid/uuid.dart';
 
 class VideoCallScreen extends StatefulWidget {
   String? roomID;
+  String? isGroupCall;
   String conversation_id;
   bool isCaller = false;
   VideoCallScreen(
       {super.key,
       this.roomID,
+      this.isGroupCall,
       required this.conversation_id,
       this.isCaller = false});
 
@@ -36,29 +44,99 @@ class VideoCallScreen extends StatefulWidget {
 class _VideoCallScreenState extends State<VideoCallScreen> {
   Peer? myPeer;
   Map<String, MediaConnection> peers = {};
-  // MediaStream? localStream;
-  // MediaStream? remoteStream;
+
   RTCVideoRenderer localRenderer = RTCVideoRenderer();
-  // List<RTCVideoRenderer> remoteRenderer = [];
   final Map<String, RTCVideoRenderer> remoteRenderers = {};
 
   final RoomIdController roomIdController = getx.Get.put(RoomIdController());
 
-  // RTCVideoRenderer remoteRenderer = RTCVideoRenderer();
-  // RTCVideoRenderer remote2Renderer = RTCVideoRenderer();
-
-  // late RTCPeerConnection _peerConnection;
   String? peerid;
   bool inCall = false;
   bool isScreenBig = true;
   bool isReciverConnect = false;
   bool isCallCutByMe = false;
+  bool isCallCutCall = false;
 
   @override
   void initState() {
     super.initState();
+    callingRingtone();
     _initializeRenderers();
-    roomIdController.joinUsers();
+    checkIsRemoteUsersJoined();
+    roomIdController.joinUsers(
+      isCaller: widget.isCaller,
+      isGroupCall: bool.parse(widget.isGroupCall!),
+      callback: () {
+        log("callback call");
+        if (roomIdController.connnectdUsersData.length == 1) {
+          log("remoteRenderers length first ${remoteRenderers.length}");
+
+          Future.delayed(
+            const Duration(seconds: 2),
+            () {
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (context.mounted) {
+                  endedCall(context);
+                }
+              });
+              disposeLocalRender();
+              disposeRemoteRender();
+              getx.Get.find<ChatListController>().forChatList();
+            },
+          );
+        }
+      },
+    );
+  }
+
+  late Future _delayedCheckFuture;
+
+  checkIsRemoteUsersJoined() async {
+    _delayedCheckFuture = Future.delayed(
+      const Duration(seconds: 45),
+      () {
+        if (remoteRenderers.isEmpty) {
+          if (widget.isCaller == true) {
+            stopRingtone();
+          }
+          if (isReciverConnect == false &&
+              widget.isCaller == true &&
+              isCallCutCall == false) {
+            print("callCutByMe calling...");
+            roomIdController.callCutByMe(
+                conversationID: widget.conversation_id, callType: "video_call");
+          }
+
+          setState(() {
+            inCall = false;
+          });
+          disposeLocalRender();
+          disposeRemoteRender();
+          getx.Get.find<ChatListController>().forChatList();
+          getx.Get.offAll(
+            TabbarScreen(
+              currentTab: 0,
+            ),
+          );
+        }
+      },
+    );
+  }
+
+  callingRingtone() {
+    if (widget.isCaller == true && remoteRenderers.isEmpty) {
+      AudioManager.setEarpiece();
+      if (Platform.isAndroid) {
+        FlutterRingtonePlayer().play(
+          fromAsset: 'assets/audio/calling.mp3',
+          looping: true,
+        );
+      } else {
+        AudioManager.playAudio(
+          audioFile: 'calling.mp3',
+        );
+      }
+    }
   }
 
   Future<void> _initializeRenderers() async {
@@ -67,19 +145,9 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
     await _initPeer();
   }
 
-  static const CLOUD_HOST = "62.72.36.245";
+  static const CLOUD_HOST = ApiHelper.baseUrlIp;
+
   static const CLOUD_PORT = 4001;
-  // ignore: unused_field
-  static const defaultConfig = {
-    'iceServers': [
-      {'urls': 'stun:stun.l.google.com:19302'},
-      {
-        'urls': "turn:62.72.36.245:4001",
-        'username': "peerjs",
-        'credential': "peerjsp"
-      }
-    ],
-  };
 
   Future<void> _initPeer() async {
     try {
@@ -90,8 +158,6 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
           host: CLOUD_HOST,
           secure: false,
           path: '/',
-          // config: defaultConfig,
-          // pingInterval: 50,
         ),
       );
     } catch (e) {
@@ -119,13 +185,15 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
         if (!remoteRenderers.containsKey(call.peer)) {
           RTCVideoRenderer renderer = RTCVideoRenderer();
           await renderer.initialize();
-          setState(() {
-            remoteRenderers[call.peer] = renderer;
-          });
+          if (mounted) {
+            setState(() {
+              remoteRenderers[call.peer] = renderer;
+            });
+          }
         }
         remoteRenderers[userId]!.srcObject = stream;
         print("remoteStream $stream");
-        print("remoteRenderers length ${remoteRenderers.length}");
+        print("remoteRenderers length third ${remoteRenderers.length}");
       });
 
       call.on("close").listen((onData) {
@@ -133,7 +201,7 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
         if (remoteRenderers[userId] != null) {
           remoteRenderers[userId]!.dispose();
           remoteRenderers.remove(userId);
-          print("remoteRenderers length ${remoteRenderers.length}");
+          print("remoteRenderers length fourth ${remoteRenderers.length}");
         }
       });
 
@@ -141,10 +209,21 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
       print("peers $peers");
     }
 
-    navigator.mediaDevices
-        .getUserMedia({"video": true, "audio": true}).then((mediaStream) {
+    navigator.mediaDevices.getUserMedia({
+      'video': Platform.isAndroid
+          ? true
+          : {
+              'mandatory': {
+                'minWidth': '640',
+                'minHeight': '480',
+              },
+              'facingMode': 'user',
+            },
+      "audio": true
+    }).then((mediaStream) async {
       localRenderer.srcObject = mediaStream;
       print('my stream $mediaStream');
+      await Helper.setSpeakerphoneOn(false);
 
       myPeer!.on<MediaConnection>("call").listen((call) {
         print("call from ${call.peer} to $peerid");
@@ -152,19 +231,16 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
         call.answer(mediaStream);
 
         call.on<MediaStream>("stream").listen((remoteStream) async {
-          // remoteRenderer.srcObject = remoteStream;
           if (!remoteRenderers.containsKey(call.peer)) {
             RTCVideoRenderer renderer = RTCVideoRenderer();
 
             await renderer.initialize();
-            setState(() {
-              remoteRenderers[call.peer] = renderer;
-            });
-          }
-          setState(() {
+
+            remoteRenderers[call.peer] = renderer;
             remoteRenderers[call.peer]!.srcObject = remoteStream;
-          });
-          print("remoteRenderers length ${remoteRenderers.length}");
+          }
+          setState(() {});
+          print("remoteRenderers length fifth ${remoteRenderers.length}");
           print("remoteStream $remoteStream");
         });
         print("call peer ${call.peer}");
@@ -172,11 +248,13 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
       });
       socketIntilized.socket!.on(
         "user-connected-to-call",
-        (userId) {
+        (userId) async {
+          if (widget.isCaller == true) {
+            stopRingtone();
+          }
           print("PEERID☺☺☺☺☺☺☺ remote: $userId");
           connectNewUser(userId, mediaStream);
           isReciverConnect = true;
-          // setState(() {});
         },
       );
     });
@@ -186,84 +264,92 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
         (userId) => {
               print("disconnected  $userId"),
               print("peers $peers"),
+              print("TESTING 1"),
+              print("remoteRenderers $remoteRenderers"),
+              print("remoteRenderers length sixth ${remoteRenderers.length}"),
               if (peers[userId] != null)
                 {
+                  print("TESTING 2"),
                   print("disconnected userid $userId"),
                   peers[userId]!.close(),
                   if (remoteRenderers[userId] != null)
                     {
+                      print("TESTING 3"),
                       remoteRenderers[userId]!.dispose(),
                       remoteRenderers.remove(userId),
+                      print("TESTING 4"),
                       if (remoteRenderers.isEmpty)
                         {
-                          // if (widget.isCaller == true)
-                          //   {
-                          //     getx.Get.back(),
-                          //   }
-                          // else
-                          //   {
+                          print("TESTING 5"),
+                          socketIntilized.socket!.emit("leave-call", {
+                            "room_id": widget.roomID,
+                            "user_id": myPeer!.id
+                          }),
                           disposeLocalRender(),
                           disposeRemoteRender(),
+                          getx.Get.find<ChatListController>().forChatList(),
                           getx.Get.offAll(
                             TabbarScreen(
                               currentTab: 0,
                             ),
                           ),
-                          getx.Get.find<ChatListController>().forChatList(),
-                          // }
+                          print("TESTING 6"),
+                          print("TESTING 7"),
                         }
                     },
                   setState(() {}),
                   print("disconnected peers[userId] ${peers[userId]}"),
-                  print("remoteRenderers length ${remoteRenderers.length}"),
+                  print(
+                      "remoteRenderers length second ${remoteRenderers.length}"),
                 }
               else
                 {
+                  print("TESTING else"),
                   print("peers else $peers"),
                 }
             });
 
     socketIntilized.socket!.on("call_decline", (data) {
       print("call_decline data : $data");
-      // getx.Get.back();
+
+      stopRingtone();
+      getx.Get.find<ChatListController>().forChatList();
       getx.Get.offAll(
         TabbarScreen(
           currentTab: 0,
         ),
       );
-      getx.Get.find<ChatListController>().forChatList();
       disposeLocalRender();
       disposeRemoteRender();
-      setState(() {
-        myPeer!.dispose();
-      });
     });
   }
 
   void _endCall() {
+    if (widget.isCaller == true) {
+      isCallCutCall = true;
+      setState(() {});
+      stopRingtone();
+    }
     if (isReciverConnect == false && widget.isCaller == true) {
       print("callCutByMe calling...");
       roomIdController.callCutByMe(
           conversationID: widget.conversation_id, callType: "video_call");
     }
+
+    peers = {};
     socketIntilized.socket!
         .emit("leave-call", {"room_id": widget.roomID, "user_id": myPeer!.id});
-
     setState(() {
       inCall = false;
     });
-    // if (widget.isCaller == true) {
-    //   getx.Get.back();
-    // } else {
     disposeLocalRender();
     disposeRemoteRender();
+    getx.Get.find<ChatListController>().forChatList();
     getx.Get.offAll(
       TabbarScreen(
         currentTab: 0,
       ),
     );
-    getx.Get.find<ChatListController>().forChatList();
-    // }
   }
 
   bool microphone = false;
@@ -284,7 +370,7 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
     setState(() {});
   }
 
-  bool specker = true;
+  bool specker = false;
   void _toggleSpecker() async {
     specker == true
         ? await Helper.setSpeakerphoneOn(false)
@@ -394,14 +480,9 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
                           onTap: _toggleMicrophone,
                         ),
                         callOptionsContainer(
-                          image:
-                              // localRenderer.srcObject!
-                              //             .getAudioTracks()[0]
-                              //             .enabled ==
-                              //         false
-                              specker == false
-                                  ? "assets/icons/volume_off.png"
-                                  : "assets/icons/volume_on.png",
+                          image: specker == false
+                              ? "assets/icons/volume_off.png"
+                              : "assets/icons/volume_on.png",
                           onTap: _toggleSpecker,
                         ),
                         GestureDetector(
@@ -599,7 +680,6 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
         ),
         Positioned(
           bottom: 110,
-          // left: 20,
           right: 20,
           child: ClipRRect(
             borderRadius: const BorderRadius.all(
@@ -774,11 +854,6 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
             ),
           ),
         ),
-        // remoteRenderers.isEmpty
-        //     ? const SizedBox()
-        //     : const SizedBox(
-        //         height: 2,
-        //       ),
         remoteRenderers.isEmpty
             ? const SizedBox()
             : Expanded(
@@ -794,49 +869,179 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
                   ),
                 ),
               ),
-        // Expanded(
-        //   child: GridView.builder(
-        //     gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        //       crossAxisCount: 2,
-        //     ),
-        //     itemCount: remoteRenderers.length,
-        //     itemBuilder: (context, index) {
-        //       print("remoteRenderers length ${remoteRenderers.length}");
-
-        //       String key = remoteRenderers.keys.elementAt(index);
-        //       return SizedBox(
-        //           height: 300,
-        //           child: RTCVideoView(remoteRenderers[key]!, mirror: true));
-        //     },
-        //   ),
-        // ),
       ],
     );
   }
 
-  disposeLocalRender() {
-    localRenderer.srcObject!.getTracks().forEach((track) => track.stop());
-    localRenderer.srcObject!.getAudioTracks().forEach((track) => track.stop());
-    localRenderer.srcObject!.getVideoTracks().forEach((track) => track.stop());
-    localRenderer.srcObject = null;
-    localRenderer.dispose();
+  endedCall(BuildContext context) {
+    return showDialog(
+      barrierColor: const Color.fromRGBO(30, 30, 30, 0.37),
+      context: context,
+      builder: (BuildContext context) {
+        return BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 5.0, sigmaY: 5.0),
+          child: AlertDialog(
+            insetPadding: const EdgeInsets.all(8),
+            alignment: Alignment.bottomCenter,
+            backgroundColor: Colors.white,
+            elevation: 0,
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(
+                Radius.circular(20),
+              ),
+            ),
+            content: SizedBox(
+              width: getx.Get.width,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const SizedBox(height: 10),
+                  Text(
+                    languageController
+                        .textTranslate('This call has already ended.'),
+                    style: const TextStyle(
+                        fontWeight: FontWeight.w600, fontSize: 16),
+                  ),
+                  Text(
+                    languageController.textTranslate('Please call again.'),
+                    style: const TextStyle(
+                        fontWeight: FontWeight.w600, fontSize: 16),
+                  ),
+                  const SizedBox(height: 30),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      Expanded(
+                        child: InkWell(
+                          onTap: () {
+                            getx.Get.offAll(
+                              TabbarScreen(
+                                currentTab: 0,
+                              ),
+                            );
+                          },
+                          child: Container(
+                            height: 40,
+                            decoration: BoxDecoration(
+                                border:
+                                    Border.all(color: chatownColor, width: 1),
+                                borderRadius: BorderRadius.circular(12)),
+                            child: Center(
+                                child: Text(
+                              languageController.textTranslate('Cancel'),
+                              style: const TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w400,
+                                  color: chatColor),
+                            )),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(
+                        width: 10,
+                      ),
+                      Expanded(
+                        child: InkWell(
+                          onTap: () {
+                            getx.Get.offAll(
+                              TabbarScreen(
+                                currentTab: 0,
+                              ),
+                            );
+                          },
+                          child: Container(
+                            height: 40,
+                            decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(12),
+                                gradient: LinearGradient(
+                                    colors: [secondaryColor, chatownColor],
+                                    begin: Alignment.topCenter,
+                                    end: Alignment.bottomCenter)),
+                            child: Center(
+                                child: Text(
+                              languageController.textTranslate('Call Again'),
+                              style: const TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w400,
+                                  color: chatColor),
+                            )),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
   }
 
-  disposeRemoteRender() {
-    remoteRenderers.forEach((key, renderer) {
-      renderer.srcObject!.getTracks().forEach((track) => track.stop());
-      renderer.srcObject!.getAudioTracks().forEach((track) => track.stop());
-      renderer.srcObject!.getVideoTracks().forEach((track) => track.stop());
-      renderer.srcObject = null;
-      renderer.dispose();
+  Future<void> disposeLocalRender() async {
+    if (localRenderer.srcObject != null) {
+      final audioTracks = localRenderer.srcObject!.getAudioTracks();
+      if (audioTracks.isNotEmpty) {
+        for (var track in audioTracks) {
+          track.stop();
+        }
+      }
+
+      final videoTracks = localRenderer.srcObject!.getVideoTracks();
+      if (videoTracks.isNotEmpty) {
+        for (var track in videoTracks) {
+          track.stop();
+        }
+      }
+
+      localRenderer.srcObject!.getAudioTracks().clear();
+      localRenderer.srcObject!.getVideoTracks().clear();
+    }
+
+    await localRenderer.dispose();
+  }
+
+  Future<void> disposeRemoteRender() async {
+    remoteRenderers.forEach((key, renderer) async {
+      if (renderer.srcObject != null) {
+        final audioTracks = renderer.srcObject!.getAudioTracks();
+        if (audioTracks.isNotEmpty) {
+          for (var track in audioTracks) {
+            print('Stopping audio track for renderer $key');
+            track.stop();
+          }
+        }
+
+        final videoTracks = renderer.srcObject!.getVideoTracks();
+        if (videoTracks.isNotEmpty) {
+          for (var track in videoTracks) {
+            print('Stopping video track for renderer $key');
+            track.stop();
+          }
+        }
+
+        renderer.srcObject!.getAudioTracks().clear();
+        renderer.srcObject!.getVideoTracks().clear();
+      } else {
+        print('No srcObject found for renderer $key');
+      }
+
+      await renderer.dispose();
+      print('Renderer $key disposed');
     });
   }
 
   @override
-  void dispose() {
-    disposeLocalRender();
-    disposeRemoteRender();
-    myPeer!.dispose();
+  void dispose() async {
+    await disposeLocalRender();
+    await disposeRemoteRender();
+    if (myPeer != null) {
+      myPeer!.dispose();
+    }
+
+    _delayedCheckFuture = Future.value();
     super.dispose();
   }
 }

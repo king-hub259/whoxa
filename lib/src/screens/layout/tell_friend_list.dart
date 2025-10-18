@@ -6,13 +6,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:get/get.dart';
 import 'package:hive/hive.dart';
-import 'package:meyaoo_new/app.dart';
-import 'package:meyaoo_new/controller/add_contact_controller.dart';
-import 'package:meyaoo_new/controller/get_contact_controller.dart';
-import 'package:meyaoo_new/controller/user_chatlist_controller.dart';
-import 'package:meyaoo_new/src/global/global.dart';
-import 'package:meyaoo_new/src/global/strings.dart';
-import 'package:meyaoo_new/src/screens/chat/create_group.dart';
+import 'package:whoxachat/app.dart';
+import 'package:whoxachat/controller/add_contact_controller.dart';
+import 'package:whoxachat/controller/get_contact_controller.dart';
+import 'package:whoxachat/controller/user_chatlist_controller.dart';
+import 'package:whoxachat/src/global/common_widget.dart';
+import 'package:whoxachat/src/global/global.dart';
+import 'package:whoxachat/src/global/strings.dart';
+import 'package:whoxachat/src/screens/chat/create_group.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class InviteFriend extends StatefulWidget {
@@ -39,7 +40,7 @@ class _InviteFriendState extends State<InviteFriend> {
 
   Future<void> apis() async {
     await _fetchContacts();
-    // await getContactsFromGloble();
+
     log("MY_DEVICE_CONTACS: ${addContactController.mobileContacts}");
     var contactJson = json.encode(addContactController.mobileContacts);
     getAllDeviceContact.getAllContactApi(contact: contactJson);
@@ -53,8 +54,7 @@ class _InviteFriendState extends State<InviteFriend> {
           withProperties: true, withPhoto: true);
       setState(() {
         _contacts = contacts;
-        filteredContacts =
-            contacts; // Initially set filteredContacts to all contacts
+        filteredContacts = contacts;
       });
     }
   }
@@ -96,7 +96,6 @@ class _InviteFriendState extends State<InviteFriend> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              //To of search bar
               Container(
                 color: chatownColor,
                 child: Row(
@@ -105,38 +104,50 @@ class _InviteFriendState extends State<InviteFriend> {
                   children: [
                     Padding(
                       padding: const EdgeInsets.only(bottom: 10),
-                      child: Container(
-                        height: 50,
-                        width: MediaQuery.of(context).size.width * 0.9,
-                        decoration: BoxDecoration(
-                            color: const Color(0xffFFFFFF),
-                            borderRadius: BorderRadius.circular(7)),
-                        child: TextField(
-                          controller: controller,
-                          onChanged: (value) {
-                            setState(() {
-                              searchText = value.toLowerCase().trim();
-                            });
-                          },
-                          decoration: InputDecoration(
-                            suffixIcon: const Padding(
-                              padding: EdgeInsets.all(17),
-                              child: Image(
-                                image: AssetImage('assets/icons/search.png'),
-                              ),
-                            ),
-                            hintText:
-                                '  ${languageController.textTranslate('What are you looking for?')}',
-                            hintStyle: const TextStyle(
-                                fontSize: 12, color: Colors.grey),
-                            filled: true,
-                            fillColor: Colors.transparent,
-                            border: const OutlineInputBorder(
-                              borderSide: BorderSide.none,
-                            ),
-                          ),
-                        ),
+                      child: commonSearchField(
+                        context: context,
+                        controller: controller,
+                        onChanged: (value) {
+                          setState(() {
+                            searchText = value.toLowerCase().trim();
+                          });
+                        },
+                        hintText: languageController
+                            .textTranslate('What are you looking for?'),
                       ),
+
+                      //     Container(
+                      //   height: 50,
+                      //   width: MediaQuery.of(context).size.width * 0.9,
+                      //   decoration: BoxDecoration(
+                      //       color: const Color(0xffFFFFFF),
+                      //       borderRadius: BorderRadius.circular(7)),
+                      //   child: TextField(
+                      //     controller: controller,
+                      //     onChanged: (value) {
+                      //       setState(() {
+                      //         searchText = value.toLowerCase().trim();
+                      //       });
+                      //     },
+                      //     decoration: InputDecoration(
+                      //       suffixIcon: const Padding(
+                      //         padding: EdgeInsets.all(17),
+                      //         child: Image(
+                      //           image: AssetImage('assets/icons/search.png'),
+                      //         ),
+                      //       ),
+                      //       hintText:
+                      //           '  ${languageController.textTranslate('What are you looking for?')}',
+                      //       hintStyle: const TextStyle(
+                      //           fontSize: 12, color: Colors.grey),
+                      //       filled: true,
+                      //       fillColor: Colors.transparent,
+                      //       border: const OutlineInputBorder(
+                      //         borderSide: BorderSide.none,
+                      //       ),
+                      //     ),
+                      //   ),
+                      // ),
                     ),
                   ],
                 ),
@@ -257,17 +268,14 @@ class _InviteFriendState extends State<InviteFriend> {
   }
 
   inviteMe(phone) async {
-    // Android
-    String fullMessage =
-        "‎Hey there! Join me on our Chat app!\nChat with friends, share photos & videos instantly.\nDownload now.\nLet's stay connected!";
+    String fullMessage = languageController.appSettingsData[0].androidLink!;
+
     String uri = 'sms:$phone?body=${Uri.encodeComponent(fullMessage)}';
-    // ${"‎Hey there! Join me on our Chat app!\nChat with friends, share photos & videos instantly.\nDownload now.\nLet's stay connected!"}';
+
     if (await canLaunch(uri)) {
       await launch(uri);
     } else {
-      // iOS
       String uri = 'sms:$phone?body=${Uri.encodeComponent(fullMessage)}';
-      // ${"‎Hey there! Join me on our Chat app!\nChat with friends, share photos & videos instantly.\nDownload now.\nLet's stay connected!"}';
       if (await canLaunch(uri)) {
         await launch(uri);
       } else {

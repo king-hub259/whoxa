@@ -6,11 +6,11 @@
 // import 'package:internet_connection_checker/internet_connection_checker.dart';
 
 // class InternetController extends GetxController {
-//   var isOnline = false.obs; // Observable boolean to track offline/online status
+//   var isOnline = false.obs;
 
 //   @override
 //   void onInit() {
-//     // Initialize connectivity subscription
+//    
 //     Connectivity().onConnectivityChanged.listen((ConnectivityResult result) {
 //       checkInternet();
 //     });
@@ -37,7 +37,7 @@
 //   }
 
 //   checkInternet() async {
-//     // ignore: unused_local_variable
+//    
 //     var subscription = Connectivity()
 //         .onConnectivityChanged
 //         .listen((ConnectivityResult result) async {
@@ -47,7 +47,7 @@
 //       } else {
 //         isOnline.value = await InternetConnectionChecker().hasConnection;
 //         log("VALUE OF ONLINE : ${isOnline.value}");
-//         // isAPICalling.value = true;
+//        
 //       }
 //     });
 //   }

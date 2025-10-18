@@ -2,9 +2,9 @@
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:meyaoo_new/app.dart';
-import 'package:meyaoo_new/controller/user_chatlist_controller.dart';
-import 'package:meyaoo_new/model/userchatlist_model/archive_list_model.dart';
+import 'package:whoxachat/app.dart';
+import 'package:whoxachat/controller/user_chatlist_controller.dart';
+import 'package:whoxachat/model/userchatlist_model/archive_list_model.dart';
 
 class UnarchiveAndBlock extends StatefulWidget {
   String isblock;
@@ -38,9 +38,6 @@ class _UnarchiveAndBlockState extends State<UnarchiveAndBlock> {
       backgroundColor: Colors.white,
       elevation: 0,
       contentPadding: const EdgeInsets.symmetric(vertical: 20),
-
-      // contentPadding:
-      //     const EdgeInsets.only(left: 20, top: 20, right: 20, bottom: 20),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20.0),
       ),
@@ -82,7 +79,6 @@ class _UnarchiveAndBlockState extends State<UnarchiveAndBlock> {
               )
                   .paddingSymmetric(
                     horizontal: 20,
-                    // vertical: 7,
                   )
                   .paddingOnly(bottom: widget.isGroup == false ? 10 : 0),
             ),
@@ -96,9 +92,6 @@ class _UnarchiveAndBlockState extends State<UnarchiveAndBlock> {
                 ? GestureDetector(
                     behavior: HitTestBehavior.translucent,
                     onTap: () async {
-                      // Get.back(result: {
-                      //   "isblock": widget.isblock == "false" ? "true" : "false"
-                      // });
                       await chatListController.blockUserApi(widget.cID);
                       await chatListController.forArchiveChatList();
                       Get.back();
@@ -127,7 +120,6 @@ class _UnarchiveAndBlockState extends State<UnarchiveAndBlock> {
                     )
                         .paddingSymmetric(
                           horizontal: 20,
-                          // vertical: 7,
                         )
                         .paddingOnly(top: 10),
                   )

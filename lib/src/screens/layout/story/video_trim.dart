@@ -5,8 +5,8 @@ import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:meyaoo_new/controller/story_controller.dart';
-import 'package:meyaoo_new/src/global/global.dart';
+import 'package:whoxachat/controller/story_controller.dart';
+import 'package:whoxachat/src/global/global.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:video_player/video_player.dart';
 import 'package:path/path.dart' as path;
@@ -87,7 +87,7 @@ class _VideoTrimmerState extends State<VideoTrimmer> {
                     ],
                   ),
                 )
-              : const CircularProgressIndicator(color: chatownColor),
+              : CircularProgressIndicator(color: chatownColor),
           Expanded(
             flex: 1,
             child: Stack(
@@ -170,9 +170,6 @@ class _VideoTrimmerState extends State<VideoTrimmer> {
       log("START TIME IN MILLI SECOND $startTimeInMilliseconds");
       log("DURATION TIME IN MILLI SECOND $durationInMilliseconds");
 
-      // await flutterFFmpeg.execute(command);
-
-      // Check if the output file exists
       bool exists = await File(outputPath).exists();
       if (exists) {
         log("IT Exists");

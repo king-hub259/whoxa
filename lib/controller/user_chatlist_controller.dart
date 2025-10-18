@@ -4,24 +4,23 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hive/hive.dart';
-import 'package:meyaoo_new/Models/add_archive_model.dart';
-import 'package:meyaoo_new/controller/online_user_controller.dart';
-import 'package:meyaoo_new/main.dart';
-import 'package:meyaoo_new/model/block_user_model.dart';
-import 'package:meyaoo_new/model/userchatlist_model/archive_list_model.dart';
-import 'package:meyaoo_new/model/userchatlist_model/userchatlist_model.dart';
+import 'package:whoxachat/Models/add_archive_model.dart';
+import 'package:whoxachat/controller/online_user_controller.dart';
+import 'package:whoxachat/main.dart';
+import 'package:whoxachat/model/block_user_model.dart';
+import 'package:whoxachat/model/userchatlist_model/archive_list_model.dart';
+import 'package:whoxachat/model/userchatlist_model/userchatlist_model.dart';
 import 'dart:developer';
 import 'package:http/http.dart' as http;
-import 'package:meyaoo_new/src/global/api_helper.dart';
-import 'package:meyaoo_new/src/global/global.dart';
-import 'package:meyaoo_new/src/global/strings.dart';
+import 'package:whoxachat/src/global/api_helper.dart';
+import 'package:whoxachat/src/global/global.dart';
+import 'package:whoxachat/src/global/strings.dart';
 
 final ApiHelper apiHelper = ApiHelper();
 
 class ChatListController extends GetxController {
   RxBool isChatListLoading = false.obs;
   Rx<UserChatListModel?> userChatListModel = UserChatListModel().obs;
-  //RxList<ChatList> allChats = <ChatList>[].obs;
 
   RxBool isArchive = false.obs;
   Rx<AddArchiveModel?> archiveModel = AddArchiveModel().obs;
@@ -34,38 +33,68 @@ class ChatListController extends GetxController {
   RxBool isBlock = false.obs;
   Rx<BlockUserModel?> blockModel = BlockUserModel().obs;
 
+  @override
+  void onInit() {
+    forChatList();
+    forArchiveChatList();
+    super.onInit();
+  }
+
+  // forChatList() async {
+  //   isChatListLoading(true);
+  //   try {
+
+  //     socketIntilized.socket!.emit("ChatList");
+  //     print("Emitted");
+
+  //     socketIntilized.socket!.on("ChatList", (data) {
+  //       userChatListModel.value = UserChatListModel.fromJson(data);
+
+  //       log("CHATLIST:$data");
+  //       userChatListModel.refresh();
+
+  //       isChatListLoading(false);
+  //     });
+  //   } catch (e) {
+  //     isChatListLoading(false);
+  //     log("Error ${e.toString()}");
+  //   } finally {
+  //     isChatListLoading(false);
+  //     print("Finally Called");
+  //   }
+  // }
+
   forChatList() async {
-    //await socketIntilized.initlizedsocket();
     isChatListLoading(true);
     try {
-      socketIntilized.socket!.emit("ChatList");
-      print("Emitted");
-      //Listen on ChatList
+      // Remove any existing listener first to prevent duplicates
+      socketIntilized.socket!.off("ChatList");
+
+      // Now add the new listener
       socketIntilized.socket!.on("ChatList", (data) {
         userChatListModel.value = UserChatListModel.fromJson(data);
-        //userChatListModel = respo.obs;
-        // allChats.clear();
-        // allChats.value = respo.chatList!;
         log("CHATLIST:$data");
         userChatListModel.refresh();
-        //allChats.refresh();
         isChatListLoading(false);
+      });
+
+      // Emit the event to get data
+      socketIntilized.socket!.emit("ChatList");
+      print("Emitted");
+
+      // Add a timeout in case socket doesn't respond
+      Future.delayed(Duration(seconds: 10), () {
+        if (isChatListLoading.value) {
+          isChatListLoading(false);
+          print("Socket timeout - forcing loader to hide");
+        }
       });
     } catch (e) {
       isChatListLoading(false);
       log("Error ${e.toString()}");
-    } finally {
-      isChatListLoading(false);
-      print("Finally Called");
     }
   }
 
-  // ChatList
-  //socketIntilized.socket!.emit("ChatList");
-  // OnlineUsers
-  //socketIntilized.socket!.emit("onlineUsers");
-
-  //Listen on ChatList
 // ============================= Add to archive APi ====================
   addArchveApi(String conversationID, String name) async {
     print(conversationID);
@@ -107,30 +136,50 @@ class ChatListController extends GetxController {
   }
 
 //=============================================================================================================
-  forArchiveChatList() async {
-    // await socketIntilized.initlizedsocket();
-    isChatListLoading(true);
-    try {
-      socketIntilized.socket!.emit("ChatList");
-      print("Emitted");
-      //Listen on ChatList
-      socketIntilized.socket!.on("ArchiveList", (data) {
-        print("LISTE EMITTEDDDDDDDDDDDDDDDD 111");
-        print("data12345678 $data");
+  // forArchiveChatList() async {
+  //   isChatListLoading(true);
+  //   try {
+  //     socketIntilized.socket!.emit("ChatList");
+  //     print("Emitted");
 
+  //     socketIntilized.socket!.on("ArchiveList", (data) {
+  //       print("LISTE EMITTEDDDDDDDDDDDDDDDD 111");
+  //       print("data12345678 $data");
+
+  //       userArchiveListModel.value = UserArchiveListModel.fromJson(data);
+  //       userChatListModel.refresh();
+  //       isChatListLoading(false);
+  //       log("ARCHIV LIST: ${userArchiveListModel.value!.archiveList}");
+
+  //       print("DATA $data");
+  //     });
+  //     isChatListLoading(false);
+  //   } catch (e) {
+  //     isChatListLoading(false);
+  //     log("Error ${e.toString()}");
+  //   } finally {
+  //     isChatListLoading(false);
+  //     print("Finally Called");
+  //   }
+  // }
+
+  forArchiveChatList() async {
+    try {
+      // Remove any existing listener first
+      socketIntilized.socket!.off("ArchiveList");
+
+      // Add new listener
+      socketIntilized.socket!.on("ArchiveList", (data) {
+        print("ARCHIVE LIST RECEIVED");
         userArchiveListModel.value = UserArchiveListModel.fromJson(data);
-        userChatListModel.refresh();
-        isChatListLoading(false);
-        log("ARCHIV LIST: ${userArchiveListModel.value!.archiveList}");
-        // }
-        print("DATA $data");
+        userArchiveListModel.refresh();
       });
+
+      // Emit the event
+      socketIntilized.socket!.emit("ChatList");
+      print("Archive List Emitted");
     } catch (e) {
-      isChatListLoading(false);
-      log("Error ${e.toString()}");
-    } finally {
-      isChatListLoading(false);
-      print("Finally Called");
+      log("Error in archive list: ${e.toString()}");
     }
   }
 

@@ -1,17 +1,18 @@
 // ignore_for_file: avoid_print
 
 import 'dart:convert';
+import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:hive/hive.dart';
-import 'package:meyaoo_new/Models/group_exit_model.dart';
-import 'package:meyaoo_new/Models/make_admin_model.dart';
-import 'package:meyaoo_new/Models/remove_admin_modeld.dart';
-import 'package:meyaoo_new/model/chat_profile_model.dart';
-import 'package:meyaoo_new/src/global/api_helper.dart';
-import 'package:meyaoo_new/src/global/global.dart';
-import 'package:meyaoo_new/src/global/strings.dart';
-import 'package:meyaoo_new/src/screens/layout/bottombar.dart';
+import 'package:whoxachat/Models/group_exit_model.dart';
+import 'package:whoxachat/Models/make_admin_model.dart';
+import 'package:whoxachat/Models/remove_admin_modeld.dart';
+import 'package:whoxachat/model/chat_profile_model.dart';
+import 'package:whoxachat/src/global/api_helper.dart';
+import 'package:whoxachat/src/global/global.dart';
+import 'package:whoxachat/src/global/strings.dart';
+import 'package:whoxachat/src/screens/layout/bottombar.dart';
 
 final ApiHelper apiHelper = ApiHelper();
 
@@ -31,6 +32,7 @@ class ChatProfileController extends GetxController {
   Rx<ExitGroupModel?> exitModel = ExitGroupModel().obs;
 
   Future<void> getProfileDATA(String conversationID) async {
+    debugPrint("conversationID $conversationID");
     isLoading.value = true;
     try {
       var uri = Uri.parse(apiHelper.getOnetoOneMedia);
@@ -45,12 +47,11 @@ class ChatProfileController extends GetxController {
       });
 
       var response = await request.send();
-      print(response.statusCode);
+      print("RES PROFILE DATA ${response.statusCode}");
       String responseData =
           await response.stream.transform(utf8.decoder).join();
       var userData = json.decode(responseData);
       profileModel.value = ChatProfileModel.fromJson(userData);
-
       int mediaLength = profileModel.value!.mediaData!.length;
       int docLength = profileModel.value!.documentData!.length;
       int linkLength = profileModel.value!.linkData!.length;

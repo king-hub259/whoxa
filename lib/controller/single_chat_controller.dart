@@ -9,16 +9,16 @@ import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:http/http.dart' as http;
 import 'package:get/get.dart';
-import 'package:meyaoo_new/Models/add_star_model.dart';
-import 'package:meyaoo_new/Models/clear_all_chat_model.dart';
-import 'package:meyaoo_new/Models/send_msg_model.dart';
-// import 'package:meyaoo_new/controller/reply_msg_controller.dart';
-import 'package:meyaoo_new/controller/user_chatlist_controller.dart';
-import 'package:meyaoo_new/main.dart';
-import 'package:meyaoo_new/model/chatdetails/single_chat_list_model.dart';
-import 'package:meyaoo_new/src/global/api_helper.dart';
-import 'package:meyaoo_new/src/global/global.dart';
-import 'package:meyaoo_new/src/global/strings.dart';
+import 'package:whoxachat/Models/add_star_model.dart';
+import 'package:whoxachat/Models/clear_all_chat_model.dart';
+import 'package:whoxachat/Models/send_msg_model.dart';
+// import 'package:whoxachat/controller/reply_msg_controller.dart';
+import 'package:whoxachat/controller/user_chatlist_controller.dart';
+import 'package:whoxachat/main.dart';
+import 'package:whoxachat/model/chatdetails/single_chat_list_model.dart';
+import 'package:whoxachat/src/global/api_helper.dart';
+import 'package:whoxachat/src/global/global.dart';
+import 'package:whoxachat/src/global/strings.dart';
 
 final ApiHelper apiHelper = ApiHelper();
 
@@ -37,7 +37,11 @@ class SingleChatContorller extends GetxController {
   Rx<ClearAllChatModel?> clearChatModel = ClearAllChatModel().obs;
 
   // get message list
-  getdetailschat(conversationID, {bool isAddData = false}) async {
+  getdetailschat(
+    conversationID, {
+    bool isAddData = false,
+    Function(MessageList)? onNewMessageReceived,
+  }) async {
     try {
       isLoading(true);
 
@@ -75,13 +79,17 @@ class SingleChatContorller extends GetxController {
                 .toList();
 
             // Add reversed new messages to the existing list
-            userdetailschattModel.value!.messageList!
+            userdetailschattModel
+                .value!
+                .messageList
+                // = reversedNewMessages;
+                !
                 .addAll(reversedNewMessages);
           }
           print("MESSAGE_RECEIVED-3");
-          userdetailschattModel.value!.messageList!.insert(
-              userdetailschattModel.value!.messageList!.length,
-              MessageList.fromJson(data));
+          // userdetailschattModel.value!.messageList!.insert(
+          //     userdetailschattModel.value!.messageList!.length,
+          //     MessageList.fromJson(data));
           print("MESSAGE LIST : ${userdetailschattModel.value!.messageList}");
         } else {
           print("List Emitted 222");
@@ -133,11 +141,45 @@ class SingleChatContorller extends GetxController {
             }
             userdetailschattModel.value!.messageList!
                 .insert(0, MessageList.fromJson(data));
+            userdetailschattModel.refresh();
+            if (onNewMessageReceived != null) {
+              onNewMessageReceived(
+                MessageList.fromJson(data),
+              );
+            }
+            debugPrint("messageViewed called");
           }
         }
 
         isLoading(false);
         userdetailschattModel.refresh();
+        socketIntilized.socket!.on(
+          "update_data",
+          (data) {
+            print("data: $data");
+            socketIntilized.socket!.emit("ChatList");
+            if ((data["conversation_id"]).toString() ==
+                conversationID.toString()) {
+              if (data["delete_from_everyone_ids"].toList().isNotEmpty) {
+                data["delete_from_everyone_ids"].map((id) {
+                  debugPrint("delete_from_everyone_id $id");
+                  userdetailschattModel.value!.messageList!
+                      .where((element) =>
+                          element.messageId.toString() == id.toString())
+                      .first
+                      .deleteFromEveryone = true;
+                }).toList();
+                userdetailschattModel.refresh();
+              } else {
+                socketIntilized.socket!.emit("messageReceived", {
+                  "conversation_id": conversationID.toString(),
+                  "user_timezone": Hive.box(userdata).get(utcLocaName),
+                  "per_page_message": 1,
+                });
+              }
+            }
+          },
+        );
       });
     } catch (e) {
       log("Error ${e.toString()}");
@@ -328,6 +370,7 @@ class SingleChatContorller extends GetxController {
       }
       userdetailschattModel.refresh();
       Get.find<ChatListController>().forChatList();
+
       print("LLIISSTT:${userdetailschattModel.value!.messageList!.length}");
     } catch (e) {
       debugPrint("send message error $e");
@@ -544,8 +587,12 @@ class SingleChatContorller extends GetxController {
     if (isforwardUrl == true) {
       request.fields['url'] = forwardurl;
     } else {
+      final filePathNative = Platform.isIOS
+          ? Uri.parse(filePath.path).toFilePath()
+          : filePath.path;
+
       request.files
-          .add(await http.MultipartFile.fromPath('files', filePath.path));
+          .add(await http.MultipartFile.fromPath('files', filePathNative));
     }
 
     // send
@@ -699,11 +746,11 @@ class SingleChatContorller extends GetxController {
           userdetailschattModel.value!.messageList!.insert(0, todayDateMessage);
         }
         userdetailschattModel.value!.messageList!.insert(0, newMessage);
+        userdetailschattModel.refresh();
+        Get.find<ChatListController>().forChatList();
+        print("LLIISSTT:${userdetailschattModel.value!.messageList!.length}");
       }
     }
-    userdetailschattModel.refresh();
-    Get.find<ChatListController>().forChatList();
-    print("LLIISSTT:${userdetailschattModel.value!.messageList!.length}");
   }
 
   //========================= send contact message ==============================
@@ -855,44 +902,102 @@ class SingleChatContorller extends GetxController {
   deleteChatApi(chatID, bool deleteFrom, String mobileNum) async {
     isSendMsg(true);
     loadingTime();
+
     var uri = Uri.parse(apiHelper.deleteChatMsg);
 
-    var request = http.MultipartRequest("POST", uri);
+    // Constructing the body as a JSON object
+    Map<String, dynamic> requestBody = {
+      'message_id_list': chatID
+          .toString()
+          .replaceAll('[', '')
+          .replaceAll(']', '')
+          .removeAllWhitespace,
+      'delete_from_every_one': deleteFrom.toString(),
+      'conversation_id': int.parse(mobileNum),
+    };
 
+    // Creating headers with Authorization
     Map<String, String> headers = {
       'Authorization': 'Bearer ${Hive.box(userdata).get(authToken)}',
       "Accept": "application/json",
+      "Content-Type": "application/json", // Important to send JSON payload
     };
 
-    //add headers
-    request.headers.addAll(headers);
-    //adding params
-    request.fields['message_id_list'] = chatID
-        .toString()
-        .replaceAll('[', '')
-        .replaceAll(']', '')
-        .removeAllWhitespace;
-    request.fields['delete_from_every_one'] = deleteFrom.toString();
-    request.fields['phone_number'] = mobileNum;
+    // Send POST request with JSON body
+    try {
+      var response = await http.post(
+        uri,
+        headers: headers,
+        body: json.encode(requestBody), // Encoding request body as JSON
+      );
 
-    // send
-    var response = await request.send();
+      // Check if the request was successful
+      if (response.statusCode == 200) {
+        String responseData = response.body;
+        var useData = json.decode(responseData);
 
-    String responseData = await response.stream.transform(utf8.decoder).join();
-    var useData = json.decode(responseData);
+        // Handling response
+        isSendMsg(false);
+        print("Response Data: $useData");
 
-    isSendMsg(false);
-    print("object: ${request.fields}");
-    print("object: $useData");
-    print(responseData);
+        userdetailschattModel.value!.messageList!
+            .removeWhere((message) => chatID.contains(message.messageId));
 
-    userdetailschattModel.value!.messageList!
-        .removeWhere((message) => chatID.contains(message.messageId));
-
-    userdetailschattModel.refresh();
-    Get.find<ChatListController>().forChatList();
-    print("LLIISSTT:${userdetailschattModel.value!.messageList!.length}");
+        userdetailschattModel.refresh();
+        Get.find<ChatListController>().forChatList();
+        print(
+            "Updated message list length: ${userdetailschattModel.value!.messageList!.length}");
+      } else {
+        print("Failed to delete message. Status code: ${response.statusCode}");
+        // Handle failure if needed
+      }
+    } catch (e) {
+      print("Error occurred while sending request: $e");
+      isSendMsg(false);
+      // Handle error if needed
+    }
   }
+  // deleteChatApi(chatID, bool deleteFrom, String mobileNum) async {
+  //   isSendMsg(true);
+  //   loadingTime();
+  //   var uri = Uri.parse(apiHelper.deleteChatMsg);
+
+  //   var request = http.MultipartRequest("POST", uri);
+
+  //   Map<String, String> headers = {
+  //     'Authorization': 'Bearer ${Hive.box(userdata).get(authToken)}',
+  //     "Accept": "application/json",
+  //   };
+
+  //   //add headers
+  //   request.headers.addAll(headers);
+  //   //adding params
+  //   request.fields['message_id_list'] = chatID
+  //       .toString()
+  //       .replaceAll('[', '')
+  //       .replaceAll(']', '')
+  //       .removeAllWhitespace;
+  //   request.fields['delete_from_every_one'] = deleteFrom.toString();
+  //   request.fields['conversation_id'] = mobileNum;
+
+  //   // send
+  //   var response = await request.send();
+
+  //   String responseData = await response.stream.transform(utf8.decoder).join();
+  //   var useData = json.decode(responseData);
+
+  //   isSendMsg(false);
+  //   print("object: ${request.fields}");
+  //   print("object: $useData");
+  //   print(responseData);
+
+  //   userdetailschattModel.value!.messageList!
+  //       .removeWhere((message) => chatID.contains(message.messageId));
+
+  //   userdetailschattModel.refresh();
+  //   Get.find<ChatListController>().forChatList();
+  //   print("LLIISSTT:${userdetailschattModel.value!.messageList!.length}");
+  // }
 
   addStarApi(chatID, conversationId) async {
     print(chatID);
@@ -1063,8 +1168,10 @@ class SingleChatContorller extends GetxController {
   isTypingApi(cID, istyping) {
     print("IS_TYPING_CONVERSATION:$cID");
     print("IS-TYPING:$istyping");
-    socketIntilized.socket!.emit("isTyping",
-        {"conversation_id": cID.toString(), "is_typing": istyping.toString()});
+    socketIntilized.socket!.emit("isTyping", {
+      "conversation_id": cID.toString(),
+      "is_typing": int.parse(istyping.toString())
+    });
     userdetailschattModel.refresh();
     print("isTyping Emitted");
   }
@@ -1131,10 +1238,22 @@ class SingleChatContorller extends GetxController {
     }
   }
 
+  //this method not work to set data is null in result it is create error
+  // @override
+  // void onClose() {
+  //   super.onClose();
+  //   userdetailschattModel.value?.messageList?.clear();
+  //   userdetailschattModel.value = null;
+  // }
+
   @override
   void onClose() {
     super.onClose();
-    userdetailschattModel.value?.messageList?.clear();
-    userdetailschattModel.value = null;
+    if (userdetailschattModel.value != null) {
+      // Clear the message list if it exists
+      userdetailschattModel.value?.messageList?.clear();
+      // Reset to a new empty model instead of null
+      userdetailschattModel.value = SingleChatListModel();
+    }
   }
 }

@@ -2,19 +2,28 @@
 
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:hive/hive.dart';
-import 'package:meyaoo_new/Models/block_list_model.dart';
-import 'package:meyaoo_new/src/global/api_helper.dart';
+import 'package:whoxachat/Models/block_list_model.dart';
+import 'package:whoxachat/src/global/api_helper.dart';
 import 'package:http/http.dart' as http;
-import 'package:meyaoo_new/src/global/strings.dart';
+import 'package:whoxachat/src/global/strings.dart';
 
 final ApiHelper apiHelper = ApiHelper();
 
 class AllBlockListController extends GetxController {
   RxBool isLoading = false.obs;
+  RxBool isDeletedLoading = false.obs;
+  RxBool isAccountDeleted = false.obs;
   Rx<GetBlockListModel?> blockListModel = GetBlockListModel().obs;
   RxList<BlockUserList> allBlock = <BlockUserList>[].obs;
+
+  @override
+  void onInit() {
+    isAccountDeleted.value = false;
+    super.onInit();
+  }
 
   Future<void> getBlockListApi() async {
     isLoading.value = true;
@@ -53,6 +62,35 @@ class AllBlockListController extends GetxController {
       isLoading.value = false;
     } finally {
       isLoading.value = false;
+    }
+  }
+
+  deleteAccount() async {
+    try {
+      isDeletedLoading.value = true;
+
+      await Hive.openBox(userdata);
+
+      final response = await apiHelper.postMethod(
+        url: apiHelper.deleteAccount,
+        headers: {
+          'Authorization': 'Bearer ${Hive.box(userdata).get(authToken)}',
+          "Accept": "application/json",
+        },
+        requestBody: {},
+      );
+
+      if (response["success"] == true) {
+        isAccountDeleted.value = true;
+      }
+
+      isDeletedLoading.value = false;
+    } catch (e) {
+      isDeletedLoading.value = false;
+
+      if (kDebugMode) {
+        print('delete account faield: $e');
+      }
     }
   }
 }

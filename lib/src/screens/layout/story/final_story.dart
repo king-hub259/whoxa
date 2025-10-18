@@ -4,8 +4,8 @@ import 'dart:developer';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:meyaoo_new/controller/story_controller.dart';
-import 'package:meyaoo_new/src/global/global.dart';
+import 'package:whoxachat/controller/story_controller.dart';
+import 'package:whoxachat/src/global/global.dart';
 
 class FinalStoryConfirmationScreen extends StatefulWidget {
   const FinalStoryConfirmationScreen({super.key});
@@ -19,25 +19,15 @@ class _FinalStoryConfirmationScreenState
     extends State<FinalStoryConfirmationScreen> {
   StroyGetxController storyController = Get.put(StroyGetxController());
   TextEditingController messagecontroller = TextEditingController();
-  // late VideoPlayerController _controller;
-  // late Future<void> _initializeVideoPlayerFuture; // For Check In Video
 
   @override
   void initState() {
-    // if (storyController.result.files[0].path!.endsWith('mp4')) {
-    //   _controller = VideoPlayerController.file(
-    //       File(storyController.result.files[0].path!));
-    //   _initializeVideoPlayerFuture = _controller.initialize();
-    // }
-
     super.initState();
   }
 
   @override
   void dispose() {
-    if (storyController.result.files[0].path!.endsWith('mp4')) {
-      // _controller.dispose();
-    }
+    if (storyController.result.files[0].path!.endsWith('mp4')) {}
     super.dispose();
   }
 
@@ -58,82 +48,8 @@ class _FinalStoryConfirmationScreenState
           )),
       body: Obx(() {
         return Column(crossAxisAlignment: CrossAxisAlignment.center, children: [
-          // (storyController.result.files[0].path!.endsWith('jpg') ||
-          //         storyController.result.files[0].path!.endsWith('jpeg') ||
-          //         storyController.result.files[0].path!.endsWith('png'))
-          //     ?
           Expanded(
               child: Image.file(File(storyController.result.files[0].path!))),
-          // : Expanded(
-          //     child: GestureDetector(
-          //       onTap: () {
-          //         if (mounted) {
-          //           setState(() {
-          //             if (_controller.value.isPlaying) {
-          //               _controller.pause();
-          //             } else {
-          //               // If the video is paused, play it.
-          //               _controller.play();
-          //             }
-          //           });
-          //         }
-          //       },
-          //       child: Stack(
-          //         children: [
-          //           FutureBuilder(
-          //             future: _initializeVideoPlayerFuture,
-          //             builder: (context, snapshot) {
-          //               if (snapshot.connectionState ==
-          //                   ConnectionState.done) {
-          //                 // If the VideoPlayerController has finished initialization, use
-          //                 // the data it provides to limit the aspect ratio of the video.
-          //                 return Center(
-          //                   child: AspectRatio(
-          //                     aspectRatio: _controller.value.aspectRatio,
-          //                     // Use the VideoPlayer widget to display the video.
-          //                     child: VideoPlayer(_controller),
-          //                   ),
-          //                 );
-          //               } else {
-          //                 // If the VideoPlayerController is still initializing, show a
-          //                 // loading spinner.
-          //                 return const Center(
-          //                   child: CircularProgressIndicator(
-          //                     color: Colors.white,
-          //                   ),
-          //                 );
-          //               }
-          //             },
-          //           ),
-          //           (_controller.value.isPlaying ||
-          //                   _controller.value.isBuffering)
-          //               ? const SizedBox.shrink()
-          //               : Container(
-          //                   decoration: BoxDecoration(
-          //                       color: Colors.grey.withOpacity(0.63)),
-          //                   child: const Center(
-          //                       child: Icon(
-          //                     CupertinoIcons.play,
-          //                     size: 35,
-          //                   )),
-          //                 ),
-          //           Positioned(
-          //               bottom: 0,
-          //               width: MediaQuery.of(context).size.width,
-          //               child: VideoProgressIndicator(
-          //                 _controller,
-          //                 allowScrubbing: true,
-          //                 colors: VideoProgressColors(
-          //                     backgroundColor:
-          //                         Colors.grey.withOpacity(0.50),
-          //                     bufferedColor:
-          //                         Colors.blueGrey.withOpacity(0.9),
-          //                     playedColor: blackcolor),
-          //               )),
-          //         ],
-          //       ),
-          //     ),
-          //   ),
           Row(
             children: [
               Expanded(
@@ -145,7 +61,7 @@ class _FinalStoryConfirmationScreenState
                   child: TextFormField(
                     maxLength: 150,
                     maxLines: 4,
-                    minLines: 1, // Minimum lines to show initially
+                    minLines: 1,
                     cursorColor: const Color.fromRGBO(108, 108, 108, 1),
                     textCapitalization: TextCapitalization.sentences,
                     style: const TextStyle(color: Colors.white),
@@ -193,7 +109,7 @@ class _FinalStoryConfirmationScreenState
                       decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(10),
                           gradient: LinearGradient(
-                              colors: [yellow1Color, yellow2Color],
+                              colors: [secondaryColor, chatownColor],
                               begin: Alignment.topCenter,
                               end: Alignment.bottomCenter)),
                       child: storyController.isUploadStoryLoad.value

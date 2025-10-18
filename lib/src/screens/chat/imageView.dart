@@ -1,10 +1,10 @@
-// ignore_for_file: must_be_immutable, file_names
+// ignore_for_file: must_be_immutable, file_names, deprecated_member_use
 
 import 'dart:ui';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:meyaoo_new/src/global/global.dart';
+import 'package:whoxachat/src/global/global.dart';
 
 class ImageView extends StatelessWidget {
   final String image;

@@ -3,11 +3,16 @@ import 'dart:developer';
 import 'package:http/http.dart' as http;
 
 class ApiHelper {
-  static const String baseUrl = 'http://62.72.36.245:3000/api';
+  static const String baseUrl = 'https://your_server_ip:your_port/api';
+  static const String baseUrlIp = 'your_server_ip';
 
   /// API Paths
   String registerPhone = "$baseUrl/register-phone";
   String verifyOtpPhone = "$baseUrl/verify-phone-otp";
+
+  final String registerEmail = "${baseUrl}/register-email";
+  final String verifyOtpEmail = "${baseUrl}/verify-email-otp";
+
   String userCreateProfile = "$baseUrl/user-details";
   String userNameCheck = "$baseUrl/check-user-name";
   String getAllContact = "$baseUrl/get-all-available-contacts";
@@ -40,6 +45,14 @@ class ApiHelper {
   String listOfAvatars = '$baseUrl/list-all-avtars';
   String defaultLanguage = '$baseUrl/fetch-default-language';
   String listOfLanguages = '$baseUrl/List-Language';
+  String myContacts = '$baseUrl/my-contacts';
+  String deleteAccount = '$baseUrl/delete-account';
+  String getAppSettings = '$baseUrl/get-settings';
+  String getReportTypesList = '$baseUrl/Report-type-list';
+  String reportUser = '$baseUrl/report-user';
+  String addPinRemovePin = "$baseUrl/add-to-pin-message";
+
+  static const String staticBaseUrl = 'https://your-domain-name/api';
 
   Future<Map<String, dynamic>> getMethod(
       {required String url,

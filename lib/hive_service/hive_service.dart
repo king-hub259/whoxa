@@ -4,11 +4,9 @@ class HiveService {
   static const storySeenListBox = "StorySeenList";
   static const chatListBox = "ChatList";
   static const callListBox = "CallList";
-  // static const callListBox1 = "CallList";
-  // static const callListBox2 = "CallList";
+
   static const profile1Box = "profile1";
   static const contactBox = "profile1";
-  // static const storyBox = "Stories";
 }
 
 class HiveKeyService {

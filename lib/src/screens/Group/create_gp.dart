@@ -1,14 +1,16 @@
-// ignore_for_file: avoid_types_as_parameter_names
+// ignore_for_file: avoid_types_as_parameter_names, avoid_print, deprecated_member_use
 
 import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:hive/hive.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:meyaoo_new/app.dart';
-import 'package:meyaoo_new/controller/group_create_controller.dart';
-import 'package:meyaoo_new/src/global/global.dart';
+import 'package:whoxachat/app.dart';
+import 'package:whoxachat/controller/group_create_controller.dart';
+import 'package:whoxachat/src/global/global.dart';
+import 'package:whoxachat/src/global/strings.dart';
 
 // ignore: must_be_immutable
 class MyWidget extends StatefulWidget {
@@ -30,59 +32,18 @@ class _MyWidgetState extends State<MyWidget> {
   Widget build(BuildContext context) {
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle(
-        statusBarColor: const Color(0xffFFEDAB).withOpacity(0.05),
+        statusBarColor: secondaryColor.withOpacity(0.05),
       ),
       child: Scaffold(
-        // appBar: AppBar(
-        //   shape: RoundedRectangleBorder(
-        //       side: BorderSide(color: Colors.grey.shade300)),
-        //   elevation: 0,
-        //   scrolledUnderElevation: 0,
-        //   titleSpacing: 0,
-        //   leadingWidth: 50,
-        //   leading: InkWell(
-        //     onTap: () {
-        //       Get.back(result: widget.contactData.length);
-        //     },
-        //     child:
-        //         const Icon(Icons.arrow_back_ios, size: 17, color: Colors.black),
-        //   ),
-        //   title: const Text(
-        //     "New Group",
-        //     style: TextStyle(
-        //         fontSize: 20, fontWeight: FontWeight.w500, color: Colors.black),
-        //   ),
-        //   actions: [
-        //     Padding(
-        //         padding: const EdgeInsets.only(right: 15),
-        //         child: containerWidget(
-        //             onTap: () {
-        //               if (controller.text.isEmpty) {
-        //                 showCustomToast("Enter group name");
-        //               } else if (image == null) {
-        //                 showCustomToast("Set group profile");
-        //               } else if (widget.contactData.isEmpty) {
-        //                 showCustomToast("Please add member");
-        //               } else {
-        //                 gpCreateController.groupCreateApi(
-        //                     controller.text.toString(),
-        //                     image!.path.toString(),
-        //                     "",
-        //                     widget.contactData);
-        //               }
-        //             },
-        //             title: "Create"))
-        //   ],
-        // ),
         body: Column(
           children: [
             Container(
-              height: 130,
+              height: 110,
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    const Color(0xffFFEDAB).withOpacity(0.04),
-                    const Color(0xffFCC604).withOpacity(0.04),
+                    secondaryColor.withOpacity(0.04),
+                    chatownColor.withOpacity(0.04),
                   ],
                 ),
               ),
@@ -110,28 +71,39 @@ class _MyWidgetState extends State<MyWidget> {
                     ),
                   ),
                   const Spacer(),
-                  containerWidget(
-                      onTap: () {
-                        if (controller.text.isEmpty) {
-                          showCustomToast(languageController
-                              .textTranslate('Enter group name'));
-                        } else if (image == null) {
-                          showCustomToast(languageController
-                              .textTranslate('Set group profile'));
-                        } else if (widget.contactData.isEmpty) {
-                          showCustomToast(languageController
-                              .textTranslate('Please add member'));
-                        } else {
-                          gpCreateController.groupCreateApi(
-                              controller.text.toString(),
-                              image!.path.toString(),
-                              "",
-                              widget.contactData);
-                        }
-                      },
-                      title: languageController.textTranslate('Create'))
+                  Obx(
+                    () => gpCreateController.isCreate.value == true
+                        ? Center(
+                            child: SizedBox(
+                              width: 30,
+                              height: 30,
+                              child: CircularProgressIndicator(
+                                color: chatownColor,
+                                strokeWidth: 2,
+                              ),
+                            ),
+                          )
+                        : containerWidget(
+                            onTap: () {
+                              if (controller.text.isEmpty) {
+                                showCustomToast(languageController
+                                    .textTranslate('Enter group name'));
+                              } else if (widget.contactData.isEmpty) {
+                                showCustomToast(languageController
+                                    .textTranslate('Please add member'));
+                              } else {
+                                gpCreateController.groupCreateApi(
+                                    controller.text.toString(),
+                                    image?.path.toString(),
+                                    "",
+                                    widget.contactData);
+                              }
+                            },
+                            title: languageController.textTranslate('Create'),
+                          ),
+                  )
                 ],
-              ).paddingOnly(top: 20).paddingSymmetric(
+              ).paddingOnly(top: 30).paddingSymmetric(
                     horizontal: 28,
                   ),
             ),
@@ -162,7 +134,6 @@ class _MyWidgetState extends State<MyWidget> {
 
   Widget gpCreate() {
     return Container(
-      // height: 70,
       width: Get.width * 0.90,
       decoration: BoxDecoration(boxShadow: const [
         BoxShadow(blurRadius: 0.5, color: Colors.grey, offset: Offset(0, 0.4))
@@ -178,7 +149,8 @@ class _MyWidgetState extends State<MyWidget> {
               height: 50,
               width: 50,
               decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(50), color: yellow1Color),
+                  borderRadius: BorderRadius.circular(50),
+                  color: secondaryColor),
               child: image == null
                   ? Center(
                       child: Image.asset("assets/images/camera2.png")
@@ -233,9 +205,12 @@ class _MyWidgetState extends State<MyWidget> {
                 hoverColor: Colors.transparent,
                 splashFactory: NoSplash.splashFactory,
                 onTap: () {
-                  setState(() {
-                    widget.contactData.removeAt(index);
-                  });
+                  if (widget.contactData[index].userId.toString() !=
+                      Hive.box(userdata).get(userId).toString()) {
+                    setState(() {
+                      widget.contactData.removeAt(index);
+                    });
+                  }
                 },
                 child: Column(
                   children: [
@@ -258,28 +233,31 @@ class _MyWidgetState extends State<MyWidget> {
                             ),
                           ),
                         ),
-                        Positioned(
-                            top: 1,
-                            right: 1,
-                            child: InkWell(
-                              onTap: () {
-                                setState(() {
-                                  widget.contactData.removeAt(index);
-                                });
-                              },
-                              child: Container(
-                                height: 12,
-                                width: 12,
-                                decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(12),
-                                    border: Border.all(color: Colors.black),
-                                    color: chatLogoColor),
-                                child: const Center(
-                                  child: Icon(Icons.close,
-                                      color: Colors.black, size: 7),
-                                ),
-                              ),
-                            ))
+                        Hive.box(userdata).get(userId) ==
+                                widget.contactData[index].userId
+                            ? const SizedBox.shrink()
+                            : Positioned(
+                                top: 1,
+                                right: 1,
+                                child: InkWell(
+                                  onTap: () {
+                                    setState(() {
+                                      widget.contactData.removeAt(index);
+                                    });
+                                  },
+                                  child: Container(
+                                    height: 12,
+                                    width: 12,
+                                    decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(12),
+                                        border: Border.all(color: Colors.black),
+                                        color: chatownColor),
+                                    child: const Center(
+                                      child: Icon(Icons.close,
+                                          color: Colors.black, size: 7),
+                                    ),
+                                  ),
+                                ))
                       ],
                     ),
                     const SizedBox(height: 5),
@@ -337,7 +315,7 @@ class _MyWidgetState extends State<MyWidget> {
                         getImageFromCamera();
                       },
                       style: ButtonStyle(
-                        shape: MaterialStateProperty.all(RoundedRectangleBorder(
+                        shape: WidgetStateProperty.all(RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8.0))),
                       ),
                       child: Text(
@@ -354,7 +332,7 @@ class _MyWidgetState extends State<MyWidget> {
                         getImageFromGallery();
                       },
                       style: ButtonStyle(
-                        shape: MaterialStateProperty.all(
+                        shape: WidgetStateProperty.all(
                           RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8.0),
                           ),
@@ -375,9 +353,9 @@ class _MyWidgetState extends State<MyWidget> {
                   child: ClipOval(
                     child: Material(
                       elevation: 5,
-                      color: blackcolor, // button color
+                      color: blackcolor,
                       child: InkWell(
-                        splashColor: Colors.black, // inkwell color
+                        splashColor: Colors.black,
                         child: const SizedBox(
                             width: 25,
                             height: 25,
@@ -410,26 +388,22 @@ class _MyWidgetState extends State<MyWidget> {
   }
 
   Future getImageFromCamera() async {
-    // ignore: deprecated_member_use
     final pickedFile = await picker.pickImage(source: ImageSource.camera);
     setState(() {
       if (pickedFile != null) {
         image = File(pickedFile.path);
       } else {
-        // ignore: avoid_print
         print('No image selected.');
       }
     });
   }
 
   Future getImageFromGallery() async {
-    // ignore: deprecated_member_use
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
     setState(() {
       if (pickedFile != null) {
         image = File(pickedFile.path);
       } else {
-        // ignore: avoid_print
         print('No image selected.');
       }
     });

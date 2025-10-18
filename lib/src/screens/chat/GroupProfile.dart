@@ -1,4 +1,4 @@
-// // ignore_for_file: avoid_print, must_be_immutable, use_full_hex_values_for_flutter_colors, file_names, use_build_context_synchronously
+//
 
 // ignore_for_file: avoid_print, must_be_immutable, use_build_context_synchronously, non_constant_identifier_names, file_names, use_full_hex_values_for_flutter_colors, unused_field
 import 'dart:developer';
@@ -6,27 +6,40 @@ import 'dart:ui';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:hive/hive.dart';
-import 'package:meyaoo_new/app.dart';
-import 'package:meyaoo_new/controller/all_star_msg_controller.dart';
-import 'package:meyaoo_new/controller/single_chat_media_controller.dart';
-import 'package:meyaoo_new/controller/user_chatlist_controller.dart';
-import 'package:meyaoo_new/model/chat_profile_model.dart';
-import 'package:meyaoo_new/src/global/global.dart';
-import 'package:meyaoo_new/src/global/strings.dart';
-import 'package:meyaoo_new/src/screens/chat/Media.dart';
-import 'package:meyaoo_new/src/screens/chat/allstarred_msg_list.dart';
-import 'package:meyaoo_new/src/screens/chat/chatvideo.dart';
-import 'package:meyaoo_new/src/screens/chat/group_memberlist.dart';
-import 'package:meyaoo_new/src/screens/chat/group_profile_update.dart';
-import 'package:meyaoo_new/src/screens/chat/imageView.dart';
-import 'package:meyaoo_new/src/screens/chat/single_chat.dart';
+import 'package:whoxachat/app.dart';
+import 'package:whoxachat/controller/all_star_msg_controller.dart';
+import 'package:whoxachat/controller/call_controller.dart/get_roomId_controller.dart';
+import 'package:whoxachat/controller/single_chat_controller.dart';
+import 'package:whoxachat/controller/single_chat_media_controller.dart';
+import 'package:whoxachat/controller/user_chatlist_controller.dart';
+import 'package:whoxachat/model/chat_profile_model.dart';
+import 'package:whoxachat/src/global/global.dart';
+import 'package:whoxachat/src/global/strings.dart';
+import 'package:whoxachat/src/screens/call/web_rtc/audio_call_screen.dart';
+import 'package:whoxachat/src/screens/call/web_rtc/video_call_screen.dart';
+import 'package:whoxachat/src/screens/chat/Media.dart';
+import 'package:whoxachat/src/screens/chat/allstarred_msg_list.dart';
+import 'package:whoxachat/src/screens/chat/chatvideo.dart';
+import 'package:whoxachat/src/screens/chat/group_memberlist.dart';
+import 'package:whoxachat/src/screens/chat/group_profile_update.dart';
+import 'package:whoxachat/src/screens/chat/imageView.dart';
+import 'package:whoxachat/src/screens/chat/single_chat.dart';
 import 'package:page_transition/page_transition.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class GroupProfile extends StatefulWidget {
   String conversationID;
-  GroupProfile({super.key, required this.conversationID});
+  String? gPusername;
+  String? gPPic;
+  GroupProfile({
+    super.key,
+    required this.conversationID,
+    required this.gPusername,
+    required this.gPPic,
+  });
 
   @override
   State<GroupProfile> createState() => _GroupProfileState();
@@ -44,7 +57,6 @@ class _GroupProfileState extends State<GroupProfile> {
 
   @override
   void initState() {
-    // log("groupid" + widget.groupid.toString());
     print("GROUP_ID: ${widget.conversationID}");
     WidgetsBinding.instance.addPostFrameCallback((_) {
       chatProfileController
@@ -54,17 +66,13 @@ class _GroupProfileState extends State<GroupProfile> {
       });
       allStaredMsgController.getAllStarMsg(widget.conversationID);
     });
-    // Add a listener to detect scroll events
+
     _scrollController.addListener(() {
       if (_scrollController.position.isScrollingNotifier.value) {
         setState(() {
-          isShowOptions = false; // User is scrolling
+          isShowOptions = false;
         });
-      } else {
-        // setState(() {
-        //   _isScrolling = false; // User stopped scrolling
-        // });
-      }
+      } else {}
     });
     super.initState();
   }
@@ -161,20 +169,19 @@ class _GroupProfileState extends State<GroupProfile> {
                           left: 5,
                           child: IconButton(
                               onPressed: () {
+                                Get.find<SingleChatContorller>()
+                                    .userdetailschattModel
+                                    .value!
+                                    .messageList = [];
+                                Get.find<SingleChatContorller>()
+                                    .getdetailschat(widget.conversationID);
                                 Navigator.pop(context);
-                                // Get.find<SingleChatContorller>()
-                                //     .userdetailschattModel
-                                //     .value
-                                //     ?.messageList
-                                //     ?.clear();
-                                // Get.find<SingleChatContorller>()
-                                //     .getdetailschat(widget.conversationID);
                               },
                               icon:
                                   const Icon(Icons.arrow_back_ios, size: 19))),
                       Positioned(
-                          top: 40,
-                          right: 5,
+                          top: 52,
+                          right: 10,
                           child: Obx(() {
                             return chatProfileController.isLoading.value
                                 ? const Icon(
@@ -292,7 +299,7 @@ class _GroupProfileState extends State<GroupProfile> {
                                                                             0.35,
                                                                         decoration: BoxDecoration(
                                                                             border:
-                                                                                Border.all(color: yellow2Color, width: 1),
+                                                                                Border.all(color: chatownColor, width: 1),
                                                                             borderRadius: BorderRadius.circular(12)),
                                                                         child: Center(
                                                                             child: Text(
@@ -326,8 +333,8 @@ class _GroupProfileState extends State<GroupProfile> {
                                                                                 12),
                                                                             gradient:
                                                                                 LinearGradient(colors: [
-                                                                              yellow1Color,
-                                                                              yellow2Color
+                                                                              secondaryColor,
+                                                                              chatownColor
                                                                             ], begin: Alignment.topCenter, end: Alignment.bottomCenter)),
                                                                         child: Center(
                                                                             child: Text(
@@ -387,11 +394,6 @@ class _GroupProfileState extends State<GroupProfile> {
                                           ],
                                         ),
                                       );
-
-                            // _popMenu(
-                            //     context,
-                            //     chatProfileController.profileModel.value!
-                            //         .conversationDetails!);
                           }))
                     ],
                   ),
@@ -415,10 +417,9 @@ class _GroupProfileState extends State<GroupProfile> {
         height: 47,
         width: MediaQuery.of(context).size.width,
         decoration: BoxDecoration(
-            // border: Border.all(color:  Colors.black, width: 1),
             borderRadius: BorderRadius.circular(5),
             gradient: LinearGradient(
-                colors: [yellow1Color, yellow2Color],
+                colors: [secondaryColor, chatownColor],
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter)),
         child: Center(
@@ -445,12 +446,76 @@ class _GroupProfileState extends State<GroupProfile> {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             buttonContainer(
-                onTap: () {}, img: "assets/images/call_1.png", title: "Audio"),
+                onTap: () async {
+                  var status = await Permission.notification.status;
+
+                  if (status.isDenied || status.isRestricted) {
+                    status = await Permission.notification.request();
+                  }
+                  if (status.isGranted) {
+                    await Get.find<RoomIdController>().getRoomModelApi(
+                        conversationID: widget.conversationID,
+                        callType: "audio_call");
+                    print(
+                        "ROOMID 2 ${Get.find<RoomIdController>().roomModel.value!.roomId}");
+                    Get.to(() => AudioCallScreen(
+                          roomID: Get.find<RoomIdController>()
+                              .roomModel
+                              .value!
+                              .roomId,
+                          conversation_id: widget.conversationID,
+                          isCaller: true,
+                          receiverImage: widget.gPPic!,
+                          receiverUserName: widget.gPusername!,
+                          isGroupCall: "true",
+                        ));
+                  } else if (status.isPermanentlyDenied) {
+                    openAppSettings();
+                  } else {
+                    // Show a message if permission is denied
+                    Fluttertoast.showToast(
+                        msg: languageController.textTranslate(
+                            'Notification permission is required to Group Audio call.'));
+                  }
+                },
+                img: "assets/images/call_1.png",
+                title: "Audio"),
             const SizedBox(
               width: 30,
             ),
             buttonContainer(
-                onTap: () {}, img: "assets/images/video_1.png", title: "Video"),
+                onTap: () async {
+                  var status = await Permission.notification.status;
+
+                  if (status.isDenied || status.isRestricted) {
+                    status = await Permission.notification.request();
+                  }
+                  if (status.isGranted) {
+                    await Get.find<RoomIdController>().getRoomModelApi(
+                        conversationID: widget.conversationID,
+                        callType: "video_call");
+                    print(
+                        "ROOMID 1 ${Get.find<RoomIdController>().roomModel.value!.roomId}");
+                    Get.to(() => VideoCallScreen(
+                          roomID: Get.find<RoomIdController>()
+                              .roomModel
+                              .value!
+                              .roomId,
+                          conversation_id: widget.conversationID,
+                          isCaller: true,
+                          isGroupCall: "true",
+                        ));
+                  } else if (status.isPermanentlyDenied) {
+                    openAppSettings();
+                  } else {
+                    // Show a message if permission is denied
+                    Fluttertoast.showToast(
+                        msg: languageController.textTranslate(
+                            'Notification permission is required to Group Video call.'));
+                  }
+                },
+                img: "assets/images/video_1.png",
+                title: "Video"),
             const SizedBox(
               width: 30,
             ),
@@ -535,7 +600,7 @@ class _GroupProfileState extends State<GroupProfile> {
       context: context,
       builder: (context) {
         return SizedBox(
-          height: 250, // Set height to 200 pixels
+          height: 250,
           child: Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.start,
@@ -544,18 +609,61 @@ class _GroupProfileState extends State<GroupProfile> {
                 const SizedBox(height: 20),
                 InkWell(
                   onTap: () {
+                    Get.find<SingleChatContorller>()
+                        .userdetailschattModel
+                        .value!
+                        .messageList = [];
                     Navigator.push(
                       context,
                       MaterialPageRoute(
                           builder: (context) => SingleChatMsg(
-                                conversationID:
-                                    data.conversationsUserId.toString(),
+                                conversationID: chatListController
+                                        .userChatListModel.value!.chatList!
+                                        .where((element) =>
+                                            element.userId == data.user!.userId)
+                                        .isEmpty
+                                    ? chatListController.userArchiveListModel
+                                        .value!.archiveList!
+                                        .where((element) =>
+                                            element.userId == data.user!.userId)
+                                        .first
+                                        .conversationId!
+                                        .toString()
+                                    : chatListController
+                                        .userChatListModel.value!.chatList!
+                                        .where((element) =>
+                                            element.userId == data.user!.userId)
+                                        .first
+                                        .conversationId!
+                                        .toString(),
                                 username: data.user!.userName,
                                 userPic: data.user!.profileImage,
                                 index: 0,
                                 isMsgHighLight: false,
                                 isBlock: isBlockUser(
-                                    data.conversationsUserId.toString()),
+                                  chatListController
+                                          .userChatListModel.value!.chatList!
+                                          .where((element) =>
+                                              element.userId ==
+                                              data.user!.userId)
+                                          .isEmpty
+                                      ? chatListController.userArchiveListModel
+                                          .value!.archiveList!
+                                          .where((element) =>
+                                              element.userId ==
+                                              data.user!.userId)
+                                          .first
+                                          .conversationId!
+                                          .toString()
+                                      : chatListController
+                                          .userChatListModel.value!.chatList!
+                                          .where((element) =>
+                                              element.userId ==
+                                              data.user!.userId)
+                                          .first
+                                          .conversationId!
+                                          .toString(),
+                                ),
                                 userID: data.user!.userId.toString(),
                               )),
                     ).then((value) {
@@ -667,7 +775,7 @@ class _GroupProfileState extends State<GroupProfile> {
                                               0.35,
                                           decoration: BoxDecoration(
                                               border: Border.all(
-                                                  color: yellow2Color,
+                                                  color: chatownColor,
                                                   width: 1),
                                               borderRadius:
                                                   BorderRadius.circular(12)),
@@ -706,8 +814,8 @@ class _GroupProfileState extends State<GroupProfile> {
                                                   BorderRadius.circular(12),
                                               gradient: LinearGradient(
                                                   colors: [
-                                                    yellow1Color,
-                                                    yellow2Color
+                                                    secondaryColor,
+                                                    chatownColor
                                                   ],
                                                   begin: Alignment.topCenter,
                                                   end: Alignment.bottomCenter)),
@@ -759,13 +867,13 @@ class _GroupProfileState extends State<GroupProfile> {
                           ),
                           blurRadius: 1.0,
                           spreadRadius: 0.0,
-                        ), //BoxShadow
+                        ),
                         BoxShadow(
                           color: Colors.white,
                           offset: Offset(0.0, 0.0),
                           blurRadius: 0.0,
                           spreadRadius: 0.0,
-                        ), //BoxShadow
+                        ),
                       ],
                     ),
                     child: const Center(
@@ -813,35 +921,6 @@ class _GroupProfileState extends State<GroupProfile> {
                                 CupertinoIcons.person_fill,
                                 size: 30,
                               ))),
-                      // Positioned(
-                      //   bottom: 1,
-                      //   right: -10,
-                      //   child: Padding(
-                      //     padding: const EdgeInsets.only(right: 10),
-                      //     child: Column(
-                      //       mainAxisAlignment: MainAxisAlignment.center,
-                      //       children: [
-                      //         data.isAdmin == true
-                      //             ? Container(
-                      //                 height: 12,
-                      //                 width: 12,
-                      //                 decoration: BoxDecoration(
-                      //                     borderRadius:
-                      //                         BorderRadius.circular(12),
-                      //                     color: Colors.green),
-                      //               )
-                      //             : Container(
-                      //                 height: 12,
-                      //                 width: 12,
-                      //                 decoration: BoxDecoration(
-                      //                     borderRadius:
-                      //                         BorderRadius.circular(12),
-                      //                     color: Colors.grey),
-                      //               ),
-                      //       ],
-                      //     ),
-                      //   ),
-                      // )
                     ]),
                     const SizedBox(
                       width: 15,
@@ -898,11 +977,6 @@ class _GroupProfileState extends State<GroupProfile> {
                     : const SizedBox()
               ],
             ),
-            // if (index != data.conversationsUsers![index] - 1)
-            //   Divider(
-            //     color: Colors.grey.shade300,
-            //     height: 2,
-            //   )
           ],
         ),
       ),
@@ -1022,8 +1096,6 @@ class _GroupProfileState extends State<GroupProfile> {
                                               play: true,
                                               mute: false,
                                               date: "",
-
-                                              ///convertUTCTimeTo12HourFormat(data.createdAt!),
                                             ),
                                           ));
                                     },
@@ -1115,6 +1187,7 @@ class _GroupProfileState extends State<GroupProfile> {
       ]),
       child: InkWell(
         onTap: () {
+          allStaredMsgController.getAllStarMsg(widget.conversationID);
           Get.to(
               () => AllStarredMsgList(
                   conversationid: widget.conversationID, isPersonal: true),

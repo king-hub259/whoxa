@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:meyaoo_new/src/global/global.dart';
+import 'package:whoxachat/src/global/global.dart';
 import 'package:percent_indicator/linear_percent_indicator.dart';
 import 'package:video_player/video_player.dart';
 
@@ -100,34 +100,7 @@ class _HomeState extends State<VideoViewFix>
         print('AppLifecycleState hidden');
         break;
     }
-
-    // if (state == AppLifecycleState.inactive &&
-    //     state == AppLifecycleState.paused) {
-    //   print('if called ✅');
-    //   setState(() {
-    //     controller.setVolume(0.0);
-    //   });
-    // } else {
-    //   print('if called ✅');
-    //   setState(() {
-    //     controller.setVolume(0.5);
-    //   });
-    // }
   }
-
-  // @override
-  // void didUpdateWidget(VideoViewFix oldWidget) {
-  //   if (widget.play == true && oldWidget.play != widget.play) {
-  //     if (widget.play) {
-  //       controller!.play();
-  //       controller!.setLooping(true);
-  //     } else {
-  //       controller!.pause();
-  //     }
-  //   }
-
-  //   super.didUpdateWidget(oldWidget);
-  // }
 
   play() {
     controller!.play();
@@ -154,12 +127,6 @@ class _HomeState extends State<VideoViewFix>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
-      // appBar: AppBar(
-      //   elevation: 0,
-      //   scrolledUnderElevation: 0,
-      //   backgroundColor: Colors.transparent,
-      //   foregroundColor: Colors.white,
-      // ),
       body: GestureDetector(
         behavior: HitTestBehavior.translucent,
         onTap: () {
@@ -194,36 +161,12 @@ class _HomeState extends State<VideoViewFix>
                             child: Center(
                               child: AspectRatio(
                                   aspectRatio: controller!.value.aspectRatio,
-                                  // child:
-                                  //  VisibilityDetector(
-                                  //     key: Key(DateTime.now()
-                                  //         .microsecondsSinceEpoch
-                                  //         .toString()),
-                                  //     onVisibilityChanged:
-                                  //         (VisibilityInfo info) {
-                                  //       if (isPlay == true) {
-                                  //         debugPrint(
-                                  //             "${info.visibleFraction} of my widget is visible");
-                                  //         if (info.visibleFraction <= 0.70) {
-                                  //           if (controller != null)
-                                  //             controller!.pause();
-                                  //         } else {
-                                  //           if (controller != null)
-                                  //             controller!.play();
-                                  //         }
-                                  //       } else {
-                                  //         pause();
-                                  //       }
-                                  //     },
-                                  child: VideoPlayer(controller!)
-                                  // )
-                                  ),
+                                  child: VideoPlayer(controller!)),
                             ),
                           ),
                         )
                       : Center(
                           child: AspectRatio(
-                            // aspectRatio: 3,
                             aspectRatio: controller!.value.aspectRatio,
                             child: VideoPlayer(controller!),
                           ),
@@ -246,28 +189,6 @@ class _HomeState extends State<VideoViewFix>
                         ).paddingAll(15),
                       ),
                     ),
-              // Positioned(
-              //   right: 8,
-              //   top: 5,
-              //   child: Padding(
-              //     padding: const EdgeInsets.only(top: 20, right: 20),
-              //     child: Text(
-              //       // "${controller!.value.position.inMinutes}:${controller!.value.position.inSeconds}",
-              //       [
-              //         // controller!.value.position.inMinutes,
-              //         controller!.value.duration.inMinutes,
-              //         controller!.value.duration.inSeconds,
-              //         // controller!.value.position.inSeconds
-              //       ]
-              //           .map((seg) =>
-              //               seg.remainder(60).toString().padLeft(2, '0'))
-              //           .join(':'),
-
-              //       style: const TextStyle(color: Colors.white),
-              //     ),
-              //   ),
-              // ),
-
               Positioned(
                 left: 25,
                 top: 50,
@@ -279,7 +200,6 @@ class _HomeState extends State<VideoViewFix>
                         Get.back();
                       },
                       child: const Icon(
-                        // CupertinoIcons.back,
                         Icons.arrow_back_ios,
                         color: appColorWhite,
                       ),
@@ -314,7 +234,6 @@ class _HomeState extends State<VideoViewFix>
                 ),
               ),
               Positioned(
-                // left: 25,
                 bottom: 50,
                 left: 20,
                 right: 20,
@@ -322,17 +241,13 @@ class _HomeState extends State<VideoViewFix>
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      // "${controller!.value.position.inMinutes}:${controller!.value.position.inSeconds}",
                       [
                         controller!.value.position.inMinutes,
-                        // controller!.value.duration.inMinutes,
-                        // controller!.value.duration.inSeconds,
                         controller!.value.position.inSeconds
                       ]
                           .map((seg) =>
                               seg.remainder(60).toString().padLeft(2, '0'))
                           .join(':'),
-
                       style: const TextStyle(color: Colors.white),
                     ),
                     const SizedBox(
@@ -341,11 +256,10 @@ class _HomeState extends State<VideoViewFix>
                     Expanded(
                       child: LinearPercentIndicator(
                         percent: videoProgress,
-                        // width: Get.width,
                         animation: true,
                         animationDuration: 500,
                         backgroundColor: Colors.white.withOpacity(0.15),
-                        progressColor: appColorYellow,
+                        progressColor: chatownColor,
                         barRadius: const Radius.circular(2),
                         curve: Curves.linear,
                         restartAnimation: false,
@@ -357,51 +271,18 @@ class _HomeState extends State<VideoViewFix>
                       width: 7,
                     ),
                     Text(
-                      // "${controller!.value.position.inMinutes}:${controller!.value.position.inSeconds}",
                       [
-                        // controller!.value.position.inMinutes,
                         controller!.value.duration.inMinutes,
                         controller!.value.duration.inSeconds,
-                        // controller!.value.position.inSeconds
                       ]
                           .map((seg) =>
                               seg.remainder(60).toString().padLeft(2, '0'))
                           .join(':'),
-
                       style: const TextStyle(color: Colors.white),
                     ),
                   ],
                 ),
               ),
-              // Positioned.fill(
-              //   child: Container(
-              //     decoration: BoxDecoration(
-              //       gradient: LinearGradient(
-              //         begin: Alignment.bottomCenter,
-              //         end: Alignment.center,
-              //         colors: [
-              //           Colors.black.withOpacity(0.25),
-              //           Colors.black.withOpacity(0.0),
-              //         ],
-              //       ),
-              //     ),
-              //   ),
-              // ),
-              // Positioned.fill(
-              //   child: Container(
-              //     decoration: BoxDecoration(
-              //       gradient: LinearGradient(
-              //         begin: Alignment.topCenter,
-              //         end: Alignment.center,
-              //         colors: [
-              //           Colors.black.withOpacity(0.25),
-              //           Colors.black.withOpacity(0.0),
-              //         ],
-              //       ),
-              //     ),
-              //   ),
-              // ),
-              // _overlayWidget(controller!),
             ],
           ),
         ),

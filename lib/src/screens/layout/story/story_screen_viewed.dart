@@ -5,13 +5,13 @@ import 'dart:developer';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:meyaoo_new/app.dart';
-import 'package:meyaoo_new/controller/story_controller.dart';
-import 'package:meyaoo_new/src/global/global.dart';
+import 'package:whoxachat/app.dart';
+import 'package:whoxachat/controller/story_controller.dart';
+import 'package:whoxachat/src/global/global.dart';
 import 'package:readmore/readmore.dart';
 import 'package:story/story.dart';
 import 'package:video_player/video_player.dart';
-import 'package:meyaoo_new/controller/single_chat_controller.dart';
+import 'package:whoxachat/controller/single_chat_controller.dart';
 
 class StoryScreen6PMViewed extends StatefulWidget {
   final bool isForMyStory;
@@ -40,7 +40,6 @@ class _StoryScreen6PMViewedState extends State<StoryScreen6PMViewed> {
   TextEditingController messagecontroller = TextEditingController();
   SingleChatContorller singleChatContorller = Get.put(SingleChatContorller());
   final FocusNode focusNode = FocusNode();
-  // late CachedVideoPlayerController controller;
 
   VideoPlayerController? _controller;
   Future<void>? _initializeVideoPlayerFuture1;
@@ -52,34 +51,18 @@ class _StoryScreen6PMViewedState extends State<StoryScreen6PMViewed> {
     _controller = VideoPlayerController.networkUrl(
       Uri.parse(
         videoFile,
-        // "https://meyaoo.theprimoapp.com/public/story_img/posts2024041007164415397891-hd_1080_1920_25fps.mp4",
-        // "https://videos.pexels.com/video-files/20770858/20770858-sd_540_960_30fps.mp4"
-        // widget.filePath,
       ),
     );
     indicatorAnimationController.value = IndicatorAnimationCommand.pause;
     final Duration duration = _controller!.value.duration;
-    // setState(() {
+
     videoLengthInSeconds = duration.inSeconds;
-    // });
+
     log("VIDEO LENGTH IS $videoLengthInSeconds");
     _initializeVideoPlayerFuture1 = _controller!.initialize();
     _controller!.setLooping(true);
     _controller!.play();
-
-    // controller = VideoPlayerController.network(widget.filePath);
-    // controller.addListener(() {
-    //   setState(() {});
-    // });
-    // controller.initialize().then((value) {
-    //   setState(() {});
-    // });
   }
-
-  // late VideoPlayerController controller;
-  // late List<VideoPlayerController> _videoControllers;
-
-  // late Future<void> _initializeVideoPlayerFuture;
 
   int? length;
   int? i;
@@ -101,16 +84,11 @@ class _StoryScreen6PMViewedState extends State<StoryScreen6PMViewed> {
       log("Page Index Value ${storyGetxController.pageIndexValue.value}");
       log("Length OF POST $length");
     }
-    // setState(() {
-    //   _fetchContacts();
-    // });
-    // Listen to focus changes
+
     focusNode.addListener(() {
       if (focusNode.hasFocus) {
-        // Pause the animation when the keyboard opens (TextField gets focus)
         indicatorAnimationController.value = IndicatorAnimationCommand.pause;
       } else {
-        // Resume the animation when the keyboard closes (TextField loses focus)
         indicatorAnimationController.value = IndicatorAnimationCommand.resume;
       }
     });
@@ -123,22 +101,12 @@ class _StoryScreen6PMViewedState extends State<StoryScreen6PMViewed> {
     storyGetxController.pageIndexValue.value = 0;
     storyGetxController.storyIndexValue.value = 0;
     indicatorAnimationController.dispose();
-    // if (controller.value.isPlaying) {
-    //   controller.dispose();
-    // }
-    // Dispose of the video controller if it exists and is initialized
+
     if (_controller != null) {
-      _controller!.pause(); // Pause the video before disposing
+      _controller!.pause();
       _controller!.dispose();
     }
 
-    // _controller.play();
-    // if()
-    // if (_controller.isBlank!) {
-    //   log("Controller is Blank");
-    // } else {
-    //   _controller.dispose();
-    // }
     focusNode.dispose();
     messagecontroller.dispose();
     super.dispose();
@@ -146,7 +114,6 @@ class _StoryScreen6PMViewedState extends State<StoryScreen6PMViewed> {
 
   @override
   Widget build(BuildContext context) {
-    /// Minimum example to explain the usage.
     return Scaffold(
         body: Stack(
       children: [
@@ -230,19 +197,6 @@ class _StoryScreen6PMViewedState extends State<StoryScreen6PMViewed> {
               storyGetxController.storyIndexValue.value = storyIndex;
             }
 
-            // stautsText = storyGetxController.viewedStatusList.isEmpty
-            //     ? ""
-            //     : storyGetxController
-            //         .viewedStatusList[
-            //             storyGetxController.pageIndexValue.value]
-            //         .userData!
-            //         .statuses![0]
-            //         .statusMedia![storyGetxController.storyIndexValue.value]
-            //         .statusText!;
-            // myStautsText = widget.isForMyStory
-            //     ? storyGetxController.storyListData.value.myStatus!
-            //         .statuses![0].statusMedia![storyIndex].statusText!
-            //     : "";
             return widget.isForMyStory
                 ? Container(
                     color: Colors.black,
@@ -251,8 +205,6 @@ class _StoryScreen6PMViewedState extends State<StoryScreen6PMViewed> {
                       child: StoryImage(
                         width: Get.width,
                         height: Get.height,
-
-                        /// key is required
                         key: ValueKey(
                           storyGetxController.storyListData.value.myStatus!
                               .statuses![0].statusMedia![storyIndex].url!,
@@ -265,18 +217,12 @@ class _StoryScreen6PMViewedState extends State<StoryScreen6PMViewed> {
                             ImageChunkEvent? loadingProgress) {
                           if (loadingProgress == null) return child;
                           return Center(
-                            child: const CircularProgressIndicator(
+                            child: CircularProgressIndicator(
                               color: chatownColor,
                             ).marginAll(280),
                           );
                         },
-                        errorBuilder: (context, error, stackTrace) =>
-                            //  Center(
-                            //   child: const CircularProgressIndicator(
-                            //     color: chatownColor,
-                            //   ).marginAll(280),
-                            // ),
-                            const Icon(
+                        errorBuilder: (context, error, stackTrace) => Icon(
                           Icons.network_check,
                           size: 40,
                           color: chatownColor,
@@ -291,8 +237,6 @@ class _StoryScreen6PMViewedState extends State<StoryScreen6PMViewed> {
                       child: StoryImage(
                         width: Get.width,
                         height: Get.height,
-
-                        /// key is required
                         key: ValueKey(
                           storyGetxController
                               .viewedStatusList[
@@ -317,23 +261,16 @@ class _StoryScreen6PMViewedState extends State<StoryScreen6PMViewed> {
                             ImageChunkEvent? loadingProgress) {
                           if (loadingProgress == null) return child;
                           return Center(
-                            child: const CircularProgressIndicator(
+                            child: CircularProgressIndicator(
                               color: chatownColor,
                             ).marginAll(280),
                           );
                         },
-                        errorBuilder: (context, error, stackTrace) =>
-                            //  Center(
-                            //   child: const CircularProgressIndicator(
-                            //     color: chatownColor,
-                            //   ).marginAll(280),
-                            // ),
-                            const Icon(
+                        errorBuilder: (context, error, stackTrace) => Icon(
                           Icons.network_check,
                           size: 40,
                           color: chatownColor,
                         ).marginAll(280),
-                        // fit: BoxFit.contain,
                       ),
                     ),
                   );
@@ -346,156 +283,145 @@ class _StoryScreen6PMViewedState extends State<StoryScreen6PMViewed> {
                   alignment: Alignment.bottomCenter,
                   child: Padding(
                     padding: const EdgeInsets.only(top: 32),
-                    child:
-                        // storyGetxController.isMyStorySeenLoading.value ||
-                        storyGetxController.isAllUserStoryLoad.value
-                            ? const SizedBox.shrink()
-                            : Column(
-                                mainAxisAlignment: MainAxisAlignment.end,
-                                crossAxisAlignment: CrossAxisAlignment.center,
+                    child: storyGetxController.isAllUserStoryLoad.value
+                        ? const SizedBox.shrink()
+                        : Column(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              ReadMoreText(
+                                trimLines: 3,
+                                trimMode: TrimMode.Line,
+                                trimCollapsedText: ' Read more'.tr,
+                                trimExpandedText: ' Read less'.tr,
+                                colorClickableText: chatownColor,
+                                storyGetxController.viewedStatusList.isEmpty
+                                    ? ""
+                                    : storyGetxController
+                                        .viewedStatusList[storyGetxController
+                                            .pageIndexValue.value]
+                                        .userData!
+                                        .statuses![0]
+                                        .statusMedia![storyIndex]
+                                        .statusText!,
+                                style: const TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500,
+                                    color: Color.fromRGBO(255, 255, 255, 1)),
+                              ).paddingSymmetric(horizontal: 20),
+                              const SizedBox(height: 10),
+                              Row(
                                 children: [
-                                  ReadMoreText(
-                                    trimLines: 3,
-                                    trimMode: TrimMode.Line,
-                                    trimCollapsedText: ' Read more'.tr,
-                                    trimExpandedText: ' Read less'.tr,
-                                    colorClickableText: chatownColor,
-                                    storyGetxController.viewedStatusList.isEmpty
-                                        ? ""
-                                        : storyGetxController
-                                            .viewedStatusList[
-                                                storyGetxController
-                                                    .pageIndexValue.value]
-                                            .userData!
-                                            .statuses![0]
-                                            .statusMedia![storyIndex]
-                                            .statusText!,
-                                    style: const TextStyle(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w500,
-                                        color:
-                                            Color.fromRGBO(255, 255, 255, 1)),
-                                  ).paddingSymmetric(horizontal: 20),
-                                  const SizedBox(height: 10),
-                                  Row(
-                                    children: [
-                                      Expanded(
-                                        child: Container(
-                                          decoration: BoxDecoration(
+                                  Expanded(
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                          color: const Color.fromRGBO(
+                                              26, 25, 25, 1),
+                                          borderRadius:
+                                              BorderRadius.circular(10),
+                                          border: Border.all(
                                               color: const Color.fromRGBO(
-                                                  26, 25, 25, 1),
-                                              borderRadius:
-                                                  BorderRadius.circular(10),
-                                              border: Border.all(
-                                                  color: const Color.fromRGBO(
-                                                      108, 108, 108, 1))),
-                                          child: TextFormField(
-                                            focusNode: focusNode,
-                                            maxLines: 4,
-                                            minLines:
-                                                1, // Minimum lines to show initially
-                                            cursorColor: const Color.fromRGBO(
-                                                108, 108, 108, 1),
-                                            textCapitalization:
-                                                TextCapitalization.sentences,
-                                            style: const TextStyle(
-                                                color: Colors.white),
-                                            controller: messagecontroller,
-                                            decoration: InputDecoration(
-                                                fillColor: Colors.white,
-                                                alignLabelWithHint: true,
-                                                contentPadding:
-                                                    const EdgeInsets.symmetric(
-                                                        horizontal: 10,
-                                                        vertical: 10),
-                                                border: InputBorder.none,
-                                                hintText: languageController
-                                                    .textTranslate(
-                                                        'Type reply...'),
-                                                hintStyle: const TextStyle(
-                                                    color: Color.fromRGBO(
-                                                        108, 108, 108, 1),
-                                                    fontSize: 13,
-                                                    fontWeight:
-                                                        FontWeight.w400),
-                                                isDense: true),
-                                          ),
-                                        ),
+                                                  108, 108, 108, 1))),
+                                      child: TextFormField(
+                                        focusNode: focusNode,
+                                        maxLines: 4,
+                                        minLines: 1,
+                                        cursorColor: const Color.fromRGBO(
+                                            108, 108, 108, 1),
+                                        textCapitalization:
+                                            TextCapitalization.sentences,
+                                        style: const TextStyle(
+                                            color: Colors.white),
+                                        controller: messagecontroller,
+                                        decoration: InputDecoration(
+                                            fillColor: Colors.white,
+                                            alignLabelWithHint: true,
+                                            contentPadding:
+                                                const EdgeInsets.symmetric(
+                                                    horizontal: 10,
+                                                    vertical: 10),
+                                            border: InputBorder.none,
+                                            hintText: languageController
+                                                .textTranslate('Type reply...'),
+                                            hintStyle: const TextStyle(
+                                                color: Color.fromRGBO(
+                                                    108, 108, 108, 1),
+                                                fontSize: 13,
+                                                fontWeight: FontWeight.w400),
+                                            isDense: true),
                                       ),
-                                      const SizedBox(width: 10),
-                                      SizedBox(
-                                        height: 42,
-                                        width: 42,
-                                        child: InkWell(
-                                          onTap: () async {
-                                            await singleChatContorller
-                                                .sendMessageStatusMessage(
-                                                    messagecontroller.text,
-                                                    "status",
-                                                    storyGetxController
-                                                        .viewedStatusList[
-                                                            storyGetxController
-                                                                .pageIndexValue
-                                                                .value]
-                                                        .phoneNumber
-                                                        .toString(),
-                                                    storyGetxController
-                                                        .viewedStatusList[
-                                                            storyGetxController
-                                                                .pageIndexValue
-                                                                .value]
-                                                        .userData!
-                                                        .statuses![0]
-                                                        .statusMedia![
-                                                            storyIndex]
-                                                        .statusMediaId
-                                                        .toString());
-                                            messagecontroller.clear();
-                                            showCustomToast("Story replied");
-                                            closeKeyboard();
-                                          },
-                                          child: Container(
-                                            decoration: BoxDecoration(
-                                                borderRadius:
-                                                    BorderRadius.circular(10),
-                                                gradient: LinearGradient(
-                                                    colors: [
-                                                      yellow1Color,
-                                                      yellow2Color
-                                                    ],
-                                                    begin: Alignment.topCenter,
-                                                    end: Alignment
-                                                        .bottomCenter)),
-                                            child: Obx(() => singleChatContorller
-                                                    .isSendMsg.value
-                                                ? const SizedBox(
-                                                    height: 15,
-                                                    width: 15,
-                                                    child: Center(
-                                                      child:
-                                                          CircularProgressIndicator(
-                                                              strokeWidth: 3,
-                                                              color:
-                                                                  Colors.black),
-                                                    ),
-                                                  )
-                                                : Image.asset(
-                                                        "assets/images/send1.png",
-                                                        color: chatColor)
-                                                    .paddingAll(13)),
-                                          ),
-                                        ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  SizedBox(
+                                    height: 42,
+                                    width: 42,
+                                    child: InkWell(
+                                      onTap: () async {
+                                        await singleChatContorller
+                                            .sendMessageStatusMessage(
+                                                messagecontroller.text,
+                                                "status",
+                                                storyGetxController
+                                                    .viewedStatusList[
+                                                        storyGetxController
+                                                            .pageIndexValue
+                                                            .value]
+                                                    .phoneNumber
+                                                    .toString(),
+                                                storyGetxController
+                                                    .viewedStatusList[
+                                                        storyGetxController
+                                                            .pageIndexValue
+                                                            .value]
+                                                    .userData!
+                                                    .statuses![0]
+                                                    .statusMedia![storyIndex]
+                                                    .statusMediaId
+                                                    .toString());
+                                        messagecontroller.clear();
+                                        showCustomToast("Story replied");
+                                        closeKeyboard();
+                                      },
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                            borderRadius:
+                                                BorderRadius.circular(10),
+                                            gradient: LinearGradient(
+                                                colors: [
+                                                  secondaryColor,
+                                                  chatownColor
+                                                ],
+                                                begin: Alignment.topCenter,
+                                                end: Alignment.bottomCenter)),
+                                        child: Obx(() => singleChatContorller
+                                                .isSendMsg.value
+                                            ? const SizedBox(
+                                                height: 15,
+                                                width: 15,
+                                                child: Center(
+                                                  child:
+                                                      CircularProgressIndicator(
+                                                          strokeWidth: 3,
+                                                          color: Colors.black),
+                                                ),
+                                              )
+                                            : Image.asset(
+                                                    "assets/images/send1.png",
+                                                    color: chatColor)
+                                                .paddingAll(13)),
                                       ),
-                                    ],
-                                  )
-                                      .paddingSymmetric(
-                                          horizontal: 10, vertical: 15)
-                                      .paddingOnly(top: 15, bottom: 15)
+                                    ),
+                                  ),
                                 ],
-                              ),
+                              )
+                                  .paddingSymmetric(
+                                      horizontal: 10, vertical: 15)
+                                  .paddingOnly(top: 15, bottom: 15)
+                            ],
+                          ),
                   ),
                 ),
-                //====================================== TOP OF USER NAME ==============================
                 Positioned(
                   top: 66,
                   left: 16,
@@ -518,8 +444,6 @@ class _StoryScreen6PMViewedState extends State<StoryScreen6PMViewed> {
                         child: SizedBox(
                           height: 35,
                           width: 35,
-                          // decoration: const BoxDecoration(
-                          //     shape: BoxShape.circle, color: Colors.black),
                           child: CachedNetworkImage(
                               errorWidget: (context, url, error) =>
                                   const Icon(Icons.person_2),
@@ -547,7 +471,6 @@ class _StoryScreen6PMViewedState extends State<StoryScreen6PMViewed> {
                                   .viewedStatusList[
                                       storyGetxController.pageIndexValue.value]
                                   .fullName!),
-                              // "${storyGetxController.storyListData.value.post![storyGetxController.pageIndexValue.value].username}",
                               style: const TextStyle(
                                   color: Colors.white, fontSize: 15),
                             ),
@@ -560,7 +483,6 @@ class _StoryScreen6PMViewedState extends State<StoryScreen6PMViewed> {
                                   .statusMedia![
                                       storyGetxController.storyIndexValue.value]
                                   .updatedAt!),
-                              // "${storyGetxController.storyListData.value.post![storyGetxController.pageIndexValue.value].username}",
                               style: const TextStyle(
                                   fontWeight: FontWeight.w300,
                                   color: Color.fromRGBO(255, 255, 255, 1),
@@ -578,7 +500,6 @@ class _StoryScreen6PMViewedState extends State<StoryScreen6PMViewed> {
         ),
       ],
     ));
-    // });
   }
 
   Future showModalForSeenUsersList() {
@@ -599,7 +520,7 @@ class _StoryScreen6PMViewedState extends State<StoryScreen6PMViewed> {
                     storyGetxController.isAllUserStoryLoad.value
                 ? SizedBox(
                     height: MediaQuery.of(context).size.height * 0.33,
-                    child: const Center(
+                    child: Center(
                         child: CircularProgressIndicator(color: chatownColor)))
                 : storyGetxController.myStorySeenData.value.statusViewsList ==
                         null
@@ -628,9 +549,9 @@ class _StoryScreen6PMViewedState extends State<StoryScreen6PMViewed> {
                               Container(
                                 height: 40,
                                 width: MediaQuery.of(context).size.width,
-                                decoration: const BoxDecoration(
+                                decoration: BoxDecoration(
                                     color: chatownColor,
-                                    gradient: LinearGradient(
+                                    gradient: const LinearGradient(
                                         colors: [
                                           Color.fromRGBO(255, 237, 171, 0.2),
                                           Color.fromRGBO(252, 198, 4, 0.2)
@@ -705,7 +626,7 @@ class _StoryScreen6PMViewedState extends State<StoryScreen6PMViewed> {
                                               1)
                                         Divider(
                                           color: Colors.grey.shade100,
-                                        ), // Add a Divider between items except after the last item
+                                        ),
                                     ],
                                   );
                                 },
@@ -717,7 +638,6 @@ class _StoryScreen6PMViewedState extends State<StoryScreen6PMViewed> {
       },
     ).whenComplete(() {
       indicatorAnimationController.value = IndicatorAnimationCommand.resume;
-      // controller.play();
     });
   }
 
@@ -732,11 +652,9 @@ class _StoryScreen6PMViewedState extends State<StoryScreen6PMViewed> {
       )),
       builder: (BuildContext context) {
         return const SizedBox();
-        // });
       },
     ).whenComplete(() {
       indicatorAnimationController.value = IndicatorAnimationCommand.resume;
-      // controller.play();
     });
   }
 }

@@ -4,13 +4,13 @@ import 'dart:convert';
 import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:meyaoo_new/app.dart';
-import 'package:meyaoo_new/controller/get_contact_controller.dart';
-import 'package:meyaoo_new/controller/group_create_controller.dart';
-import 'package:meyaoo_new/controller/user_chatlist_controller.dart';
-import 'package:meyaoo_new/model/userchatlist_model/userchatlist_model.dart';
-import 'package:meyaoo_new/src/global/global.dart';
-import 'package:meyaoo_new/Models/get_contact_model.dart';
+import 'package:whoxachat/app.dart';
+import 'package:whoxachat/controller/get_contact_controller.dart';
+import 'package:whoxachat/controller/group_create_controller.dart';
+import 'package:whoxachat/controller/user_chatlist_controller.dart';
+import 'package:whoxachat/model/userchatlist_model/userchatlist_model.dart';
+import 'package:whoxachat/src/global/global.dart';
+import 'package:whoxachat/Models/get_contact_model.dart';
 
 class AddMembersinGroup extends StatefulWidget {
   String? grpId;
@@ -93,7 +93,6 @@ class _AddMembersinGroupState extends State<AddMembersinGroup> {
               height: 40,
               width: MediaQuery.of(context).size.width * 0.9,
               child: TextField(
-                  // controller: aboutController,
                   readOnly: false,
                   decoration: InputDecoration(
                       enabledBorder: OutlineInputBorder(
@@ -118,10 +117,7 @@ class _AddMembersinGroupState extends State<AddMembersinGroup> {
                       prefixIcon: const Icon(
                         Icons.search,
                         size: 18,
-                      )
-
-                      // ),
-                      )),
+                      ))),
             )),
         Expanded(
             child: SingleChildScrollView(
@@ -136,10 +132,9 @@ class _AddMembersinGroupState extends State<AddMembersinGroup> {
                 ),
               ),
               recentContactWidget(context),
-              if (hasMatchingContacts()) // Check if there are matching contacts
+              if (hasMatchingContacts())
                 Padding(
-                  padding: const EdgeInsets.only(
-                      left: 10, top: 10), // Reduced top padding to 10
+                  padding: const EdgeInsets.only(left: 10, top: 10),
                   child: Text(
                     languageController.textTranslate('Contacts on Whoxa'),
                     style: const TextStyle(color: Colors.grey),
@@ -161,8 +156,7 @@ class _AddMembersinGroupState extends State<AddMembersinGroup> {
       width: MediaQuery.of(context).size.width,
       color: Colors.white,
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(
-            0, 0, 0, 10), // Reduced bottom padding to 10
+        padding: const EdgeInsets.fromLTRB(0, 0, 0, 10),
         child: ListView.builder(
           shrinkWrap: true,
           scrollDirection: Axis.vertical,
@@ -420,7 +414,6 @@ class _AddMembersinGroupState extends State<AddMembersinGroup> {
                 height: 50,
                 width: MediaQuery.of(context).size.width,
                 decoration: BoxDecoration(
-                  // border: Border.all(color:  Colors.black, width: 1),
                   borderRadius: BorderRadius.circular(25),
                   color: chatownColor,
                 ),

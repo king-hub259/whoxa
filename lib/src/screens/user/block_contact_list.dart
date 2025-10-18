@@ -1,12 +1,13 @@
-// ignore_for_file: avoid_print, unused_field
+// ignore_for_file: avoid_print, unused_field, deprecated_member_use
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:meyaoo_new/Models/block_list_model.dart';
-import 'package:meyaoo_new/app.dart';
-import 'package:meyaoo_new/controller/all_block_list_controller.dart';
-import 'package:meyaoo_new/controller/user_chatlist_controller.dart';
-import 'package:meyaoo_new/src/global/global.dart';
+import 'package:whoxachat/Models/block_list_model.dart';
+import 'package:whoxachat/app.dart';
+import 'package:whoxachat/controller/all_block_list_controller.dart';
+import 'package:whoxachat/controller/user_chatlist_controller.dart';
+import 'package:whoxachat/src/global/common_widget.dart';
+import 'package:whoxachat/src/global/global.dart';
 
 class BlockList extends StatefulWidget {
   const BlockList({super.key});
@@ -29,19 +30,19 @@ class _BlockListState extends State<BlockList> {
   Widget build(BuildContext context) {
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle(
-        statusBarColor: const Color(0xffFFEDAB).withOpacity(0.05),
+        statusBarColor: secondaryColor.withOpacity(0.05),
       ),
       child: Scaffold(
           backgroundColor: appColorWhite,
           body: Column(
             children: [
               Container(
-                height: 130,
+                height: 110,
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
-                      const Color(0xffFFEDAB).withOpacity(0.04),
-                      const Color(0xffFCC604).withOpacity(0.04),
+                      secondaryColor.withOpacity(0.04),
+                      chatownColor.withOpacity(0.04),
                     ],
                   ),
                 ),
@@ -69,7 +70,7 @@ class _BlockListState extends State<BlockList> {
                       ),
                     ),
                   ],
-                ).paddingOnly(top: 20).paddingSymmetric(
+                ).paddingOnly(top: 30).paddingSymmetric(
                       horizontal: 28,
                     ),
               ),
@@ -115,37 +116,18 @@ class _BlockListState extends State<BlockList> {
                                 child: Column(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    Image.asset(
-                                      "assets/images/empty_block.png",
-                                      height: 200,
-                                      width: 200,
+                                    commonImageTexts(
+                                      image:
+                                          "assets/images/no_block_contact.png",
+                                      text1: languageController
+                                          .textTranslate("No Block Contact"),
+                                      text2: languageController.textTranslate(
+                                          "You don't have any blocked contact to show"),
                                     ),
-                                    const SizedBox(height: 4),
-                                    const Text(
-                                      "You don’t have any block Contact",
-                                      textAlign: TextAlign.center,
-                                      style: TextStyle(
-                                          color: Color(0xff959595),
-                                          fontSize: 10,
-                                          fontFamily: "Poppins",
-                                          fontWeight: FontWeight.w400),
-                                    ).paddingSymmetric(horizontal: 50)
                                   ],
                                 ),
                               ),
                             );
-                  // Center(
-                  //     child: Column(
-                  //       crossAxisAlignment: CrossAxisAlignment.center,
-                  //       children: [
-                  //         const SizedBox(height: 100),
-                  //         Image.asset(
-                  //           "assets/images/empty_block.png",
-                  //           height: 300,
-                  //         ),
-                  //       ],
-                  //     ),
-                  //   );
                 }),
               ),
             ],
@@ -209,7 +191,7 @@ class _BlockListState extends State<BlockList> {
                 width: 80,
                 decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(12),
-                    color: chatStrokeColor,
+                    color: secondaryColor,
                     border: Border.all(color: chatownColor)),
                 child: Center(
                   child: Text(

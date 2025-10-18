@@ -19,7 +19,7 @@ class _PrivacyWebViewState extends State<PrivacyWebView> {
 
     controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setBackgroundColor(const Color(0x00000000))
+      ..setBackgroundColor(const Color(0xFFFFFFFF))
       ..setNavigationDelegate(
         NavigationDelegate(
           onProgress: (int progress) {},
@@ -46,12 +46,11 @@ class _PrivacyWebViewState extends State<PrivacyWebView> {
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
-      body: Column(
-        children: [
-          Expanded(
-            child: WebViewWidget(controller: controller),
-          ),
-        ],
+      body: Container(
+        color: Colors.white,
+        child: WebViewWidget(
+          controller: controller,
+        ),
       ),
     );
   }

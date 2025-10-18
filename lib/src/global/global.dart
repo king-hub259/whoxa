@@ -1,4 +1,4 @@
-// ignore_for_file: must_be_immutable, constant_identifier_names, deprecated_member_use, avoid_print, use_key_in_widget_constructors, unused_local_variable, equal_keys_in_map
+// ignore_for_file: must_be_immutable, constant_identifier_names, deprecated_member_use, avoid_print, use_key_in_widget_constructors, unused_local_variable, equal_keys_in_map, library_private_types_in_public_api
 
 import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -7,22 +7,19 @@ import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'package:meyaoo_new/controller/add_contact_controller.dart';
-import 'package:meyaoo_new/controller/get_contact_controller.dart';
+import 'package:whoxachat/app.dart';
+import 'package:whoxachat/controller/add_contact_controller.dart';
+import 'package:whoxachat/controller/get_contact_controller.dart';
+import 'package:whoxachat/src/global/api_helper.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:video_thumbnail/video_thumbnail.dart';
 
-String baseUrl() {
-  return 'http://62.72.36.245:3000/api/';
-  //'https://meyaoo.theprimoapp.com/public/api/';
-  //'http://192.168.0.11:8001/api/'
-}
+// String baseUrl() {
+//   return 'https://whoxachat.com/api/';
+// }
 
 String socketBaseUrl() {
-  return 'http://62.72.36.245:3000';
-  // return 'http://62.72.36.245:3000';
-  //'https://meyaoo.theprimoapp.com/public/api/';
-  //'http://192.168.0.11:8001/api/'
+  return 'http://${ApiHelper.baseUrlIp}:3000';
 }
 
 String isOnline = 'Online';
@@ -36,7 +33,6 @@ bool isStarred = false;
 List grpids = [];
 
 class Person {
-  //modal class for Person object
   String id, name, phone, dp;
   Person(
       {required this.id,
@@ -52,13 +48,23 @@ String convertUTCTimeTo12HourFormat(String utcTimeString) {
 }
 
 bool isURL(String text) {
-  // Simple check for HTTP or HTTPS URLs
   return text.startsWith('http://') || text.startsWith('https://');
 }
 
 List<Person> persons = [];
 GetAllDeviceContact getAllDeviceContact = Get.put(GetAllDeviceContact());
 AddContactController addContactController = Get.put(AddContactController());
+
+Color dynamiColor(String hex) {
+  hex = hex.replaceAll('#', '');
+  return Color(int.parse('FF$hex', radix: 16));
+}
+
+Color chatownColor =
+    dynamiColor(languageController.appSettingsData[0].appColorPrimary!);
+
+Color secondaryColor =
+    dynamiColor(languageController.appSettingsData[0].appColorSecondary!);
 
 // List localcontname = [];
 
@@ -76,10 +82,10 @@ const Color ratingBgColor = Color(0XFFffefe7);
 const Color appColorWhite = Colors.white;
 const Color appColorBlue = Color(0xFF00366D);
 const Color appIconColor = Color(0xFF445E76);
-const Color appColorYellow = Color(0XFFE7B12D);
+// const Color appColorYellow = Color(0XFFE7B12D);
 const Color appOrange = Color(0xffF56A1F);
-const Color chatownColor = Color(0xffFDC604);
-Color chatStrokeColor = const Color.fromRGBO(255, 249, 226, 1);
+// const Color chatownColor = Color(0xffFDC604);
+// Color secondaryColor = const Color.fromRGBO(255, 249, 226, 1);
 const Color gradient1 = Color(0XffFF6056);
 const Color gradient2 = Color(0XffFF934E);
 const Color bg = Color(0xffFFFFFF);
@@ -91,14 +97,14 @@ const Color bg1 = Color(0xffEEEEEE);
 const Color appgrey = Color(0xffD9D9D9);
 const Color colorE04300 = Color(0xffE04300);
 const Color color3CE000 = Color(0xff3CE000);
-const Color colorFFEDAB = Color(0xffFFEDAB);
+// const Color secondaryColor = Color(0xffFFEDAB);
 const Color colorB0B0B0 = Color(0xffB0B0B0);
 const Color appgrey2 = Color.fromARGB(255, 150, 150, 150);
 const Color chatcolor2 = Color(0xFF393738);
-Color chatLogoColor = const Color.fromRGBO(252, 198, 4, 1);
+// Color chatLogoColor = const Color.fromRGBO(252, 198, 4, 1);
 Color chatYColor = const Color.fromRGBO(252, 198, 4, 0.43);
-Color yellow1Color = const Color.fromRGBO(255, 237, 171, 1);
-Color yellow2Color = const Color.fromRGBO(252, 198, 4, 1);
+// Color secondaryColor = const Color.fromRGBO(255, 237, 171, 1);
+// Color chatownColor = const Color.fromRGBO(252, 198, 4, 1);
 Color grey1Color = Colors.grey.shade200;
 Color blurColor = const Color.fromRGBO(0, 0, 0, 0.56);
 Color darkGreyColor = const Color.fromRGBO(58, 51, 51, 1);
@@ -117,8 +123,6 @@ String rozPublic = '';
 String msgid = '';
 
 class GlobalVariable {
-  /// This global key is used in material app for navigation through firebase notifications.
-  /// [navState] usage can be found in [notification_notifier.dart] file.
   static final GlobalKey<NavigatorState> navState = GlobalKey<NavigatorState>();
 }
 
@@ -299,22 +303,19 @@ Widget onScrrenLoader(BuildContext context) {
 }
 
 String? extractFilename(String url) {
-  // Extract the full filename from the URL
   String fullFilename = url.split('/').last;
 
-  // Use a regular expression to remove any leading characters before the actual filename
   RegExp regExp = RegExp(r'\d+\.\w+$');
   RegExpMatch? match = regExp.firstMatch(fullFilename);
   if (match != null) {
     return match.group(0);
   } else {
-    return fullFilename; // Return full filename if regex match fails
+    return fullFilename;
   }
 }
 
 Widget getUrlWidget(String url) {
   if (url.endsWith('.mp4')) {
-    // If URL ends with '.mp4', fetch its thumbnail
     return FutureBuilder<Uint8List?>(
       future: getThumbnail(url),
       builder: (context, snapshot) {
@@ -331,12 +332,11 @@ Widget getUrlWidget(String url) {
               Icons.image,
               size: 100,
             ),
-          ); // Placeholder or loading indicator can be used here
+          );
         }
       },
     );
   } else {
-    // Otherwise, it's an image URL, return Image.network
     return CachedNetworkImage(
       imageUrl: url,
       fit: BoxFit.cover,
@@ -376,7 +376,7 @@ Widget timestpa(String messageseen, String timestamp, bool isstar) {
         : WidgetSpan(
             alignment: PlaceholderAlignment.middle,
             child: Image.asset("assets/images/starfill.png",
-                color: Colors.grey.shade400, height: 8),
+                color: secondaryColor, height: 8),
           ),
     const WidgetSpan(child: SizedBox(width: 5)),
     TextSpan(
@@ -430,7 +430,6 @@ class CustomtextField extends StatefulWidget {
   });
 
   @override
-  // ignore: library_private_types_in_public_api
   _CustomtextFieldState createState() => _CustomtextFieldState();
 }
 
@@ -608,8 +607,9 @@ Widget loader(BuildContext context) {
       width: 40,
       decoration: BoxDecoration(
           shape: BoxShape.circle,
+          color: appColorWhite,
           gradient: LinearGradient(
-              colors: [yellow1Color, yellow2Color],
+              colors: [secondaryColor, chatownColor],
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter)),
       child: const Padding(
@@ -700,7 +700,6 @@ class ReviewtextField extends StatefulWidget {
   });
 
   @override
-  // ignore: library_private_types_in_public_api
   _ReviewtextFieldState createState() => _ReviewtextFieldState();
 }
 
@@ -715,7 +714,6 @@ class _ReviewtextFieldState extends State<ReviewtextField> {
       autofocus: widget.autoFocus,
       maxLines: widget.maxLines,
       onEditingComplete: widget.onEditingComplate,
-      //onSubmitted: widget.onSubmitted!,
       obscureText: widget.obscureText,
       keyboardType: widget.keyboardType,
       controller: widget.controller,
@@ -764,14 +762,11 @@ class CapitalizedText extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Split the text into individual words
     List<String> words = text.split(' ');
 
-    // Capitalize the first letter of each word
     List<String> capitalizedWords =
         words.map((word) => capitalize(word)).toList();
 
-    // Join the words back into a single string
     String capitalizedText = capitalizedWords.join(' ');
 
     return Text(
@@ -783,13 +778,58 @@ class CapitalizedText extends StatelessWidget {
   }
 }
 
+String formatTimeAgo(String updatedAt) {
+  // Parse the UTC time string
+  DateTime updatedDate = DateTime.parse(updatedAt).toLocal();
+  DateTime now = DateTime.now();
+
+  // Calculate the difference between now and the updated time
+  Duration diff = now.difference(updatedDate);
+
+  // If less than 5 seconds, show 'Just now'
+  if (diff.inSeconds < 5) {
+    return 'Just now';
+  }
+  // If less than 60 seconds, show seconds ago
+  else if (diff.inSeconds < 60) {
+    return '${diff.inSeconds} seconds ago';
+  }
+  // If less than 60 minutes, show minutes ago
+  else if (diff.inMinutes < 60) {
+    return '${diff.inMinutes} minute${diff.inMinutes > 1 ? 's' : ''} ago';
+  }
+  // If less than 24 hours, show hours ago
+  else if (diff.inHours < 24) {
+    return '${diff.inHours} hour${diff.inHours > 1 ? 's' : ''} ago';
+  }
+  // If less than 7 days, show days ago
+  else if (diff.inDays < 7) {
+    return '${diff.inDays} day${diff.inDays > 1 ? 's' : ''} ago';
+  }
+  // If less than 30 days, show weeks ago
+  else if (diff.inDays < 30) {
+    int weeks = (diff.inDays / 7).floor();
+    return '$weeks week${weeks > 1 ? 's' : ''} ago';
+  }
+  // If less than 365 days, show months ago
+  else if (diff.inDays < 365) {
+    int months = (diff.inDays / 30).floor();
+    return '$months month${months > 1 ? 's' : ''} ago';
+  }
+  // Otherwise show years ago
+  else {
+    int years = (diff.inDays / 365).floor();
+    return '$years year${years > 1 ? 's' : ''} ago';
+  }
+}
+
 // String formatLastSeen(String lastSeenString) {
 //   DateTime lastSeen = DateTime.parse(lastSeenString).toLocal();
 
 //   final now = DateTime.now();
 //   final difference = now.difference(lastSeen);
 
-//   // Use DateFormat to format the time part
+//
 //   String formattedTime = DateFormat("h:mm a").format(lastSeen);
 
 //   if (difference.inDays >= 365) {
@@ -811,7 +851,6 @@ String formatLastSeen(String lastSeenString) {
   final now = DateTime.now();
   final difference = now.difference(lastSeen);
 
-  // Use DateFormat to format the time part
   String formattedTime = DateFormat("h:mm a").format(lastSeen);
 
   if (difference.inDays >= 365) {
@@ -826,7 +865,7 @@ String formatLastSeen(String lastSeenString) {
     } else if (difference.inDays == 0) {
       return 'Last seen today, ${DateFormat("d MMMM y").format(lastSeen)}, $formattedTime';
     } else {
-      return 'Last seen ${DateFormat("d MMMM y").format(lastSeen)}';
+      return 'Last seen ${DateFormat("d MMM y").format(lastSeen)}';
     }
   } else {
     return 'Last seen today at $formattedTime';
@@ -843,10 +882,8 @@ String formatDateTime(DateTime dateTime) {
       dateTime.day == now.day;
 
   if (isToday) {
-    // Format time as 4 : 54 PM
     return DateFormat.jm().format(dateTime.toLocal());
   } else {
-    // Format as 29 April, 4 : 54 PM
     return DateFormat('d MMMM, h:mm a').format(dateTime.toLocal());
   }
 }
@@ -902,7 +939,7 @@ class CustomCachedNetworkImage extends StatelessWidget {
 
 //================================================================= GET ALL CONTACT =========================================================
 // List<Map<String, String>> mobileContacts = [];
-// //var mobileContacts = [];
+//
 // List<Contact> allcontacts = [];
 
 // Future getContactsFromGloble() async {
@@ -916,23 +953,23 @@ class CustomCachedNetworkImage extends StatelessWidget {
 
 //   allcontacts = contacts.toList();
 
-//   // for (int i = 0; i < allcontacts.length; i++) {
-//   //   Contact c = allcontacts.elementAt(i);
-//   //   if (c.phones.isNotEmpty) {
-//   //     getContacts.add(c.phones.map((e) => getMobile(e.number)));
-//   //   }
-//   // }
+//
+//
+//
+//
+//
+//
 //   String cleanNumber(String number) {
 //     return getMobile(number);
 //   }
 
 //   for (Contact c in allcontacts) {
 //     if (c.phones.isNotEmpty) {
-//       // Get the cleaned phone numbers
+//
 //       List<String> cleanedNumbers =
 //           c.phones.map((e) => cleanNumber(e.number)).toList();
 //       for (String number in cleanedNumbers) {
-//         // Add contact with display name and cleaned number
+//
 //         mobileContacts.add({'name': c.displayName, 'number': number});
 //       }
 //     }
@@ -940,13 +977,11 @@ class CustomCachedNetworkImage extends StatelessWidget {
 // }
 
 String formatCreateDate(String dateString) {
-  // Parse the date string
   DateTime date = DateTime.parse(dateString).toLocal();
 
   final now = DateTime.now();
   final difference = now.difference(date);
 
-  // Use DateFormat to format the time part
   String formattedTime = DateFormat("h:mm a").format(date);
 
   if (difference.inDays == 1) {
@@ -1010,10 +1045,8 @@ String date(String dateString) {
 }
 
 String dateFormate(String dateStr) {
-  // Parse the input date string
   DateTime parsedDate = DateFormat("dd MMMM yyyy").parse(dateStr);
 
-  // Format the parsed date to the desired format
   return DateFormat("MMMM dd, yyyy").format(parsedDate);
 }
 
@@ -1633,11 +1666,11 @@ String getContact1(mobile, name1) {
           .contains(mobile)) {
         name = addContactController.allcontacts[i].displayName;
         found = true;
-        break; // Once found, no need to continue searching
+        break;
       }
     }
     if (!found) {
-      return name1; // Return username if contact not found
+      return name1;
     }
     return name;
   } else {
@@ -1648,7 +1681,6 @@ String getContact1(mobile, name1) {
 String addPublicToUrl(String url) {
   Uri uri = Uri.parse(url);
 
-  // Construct the new URL with '/public'
   Uri newUri = Uri(
     scheme: uri.scheme,
     host: uri.host,
@@ -1662,204 +1694,202 @@ String addPublicToUrl(String url) {
 void showCustomToast(String message) {
   Fluttertoast.showToast(
       msg: message,
-      toastLength: Toast.LENGTH_SHORT, // or Toast.LENGTH_LONG
-      gravity: ToastGravity.BOTTOM, // or ToastGravity.TOP / ToastGravity.CENTER
+      toastLength: Toast.LENGTH_SHORT,
+      gravity: ToastGravity.BOTTOM,
       timeInSecForIosWeb: 2,
-      backgroundColor:
-          Colors.black, // Change this to your desired background color
-      textColor: Colors.white, // Change this to your desired text color
-      fontSize: 13.0 // Change this to your desired font size
-      );
+      backgroundColor: Colors.black,
+      textColor: Colors.white,
+      fontSize: 13.0);
 }
 
 final Map<String, int> countryMobileLengths = {
-  '+91': 10, // India
-  '+93': 9, // Afghanistan
-  '+355': 9, // Albania
-  '+213': 9, // Algeria
-  '+376': 6, // Andorra
-  '+244': 9, // Angola
-  '+54': 10, // Argentina
-  '+374': 8, // Armenia
-  '+61': 9, // Australia
-  '+43': 10, // Austria
-  '+994': 9, // Azerbaijan
-  '+973': 8, // Bahrain
-  '+880': 10, // Bangladesh
-  '+375': 9, // Belarus
-  '+32': 9, // Belgium
-  '+501': 7, // Belize
-  '+229': 8, // Benin
-  '+975': 8, // Bhutan
-  '+591': 8, // Bolivia
-  '+387': 8, // Bosnia and Herzegovina
-  '+267': 8, // Botswana
-  '+55': 11, // Brazil
-  '+673': 7, // Brunei
-  '+359': 9, // Bulgaria
-  '+226': 8, // Burkina Faso
-  '+257': 8, // Burundi
-  '+855': 9, // Cambodia
-  '+237': 9, // Cameroon
-  '+1': 10, // Canada
-  '+238': 7, // Cape Verde
-  '+236': 8, // Central African Republic
-  '+235': 8, // Chad
-  '+56': 9, // Chile
-  '+86': 11, // China
-  '+57': 10, // Colombia
-  '+269': 7, // Comoros
-  '+242': 9, // Congo
-  '+243': 9, // Congo (DRC)
-  '+682': 5, // Cook Islands
-  '+506': 8, // Costa Rica
-  '+225': 10, // Côte d'Ivoire
-  '+385': 9, // Croatia
-  '+53': 8, // Cuba
-  '+357': 8, // Cyprus
-  '+420': 9, // Czech Republic
-  '+45': 8, // Denmark
-  '+253': 8, // Djibouti
-  '+670': 8, // East Timor
-  '+593': 9, // Ecuador
-  '+20': 10, // Egypt
-  '+503': 8, // El Salvador
-  '+240': 9, // Equatorial Guinea
-  '+291': 7, // Eritrea
-  '+372': 7, // Estonia
-  '+268': 8, // Eswatini
-  '+251': 9, // Ethiopia
-  '+679': 7, // Fiji
-  '+358': 10, // Finland
-  '+33': 9, // France
-  '+241': 7, // Gabon
-  '+220': 7, // Gambia
-  '+995': 9, // Georgia
-  '+49': 11, // Germany
-  '+233': 9, // Ghana
-  '+30': 10, // Greece
-  '+299': 6, // Greenland
-  '+502': 8, // Guatemala
-  '+224': 9, // Guinea
-  '+245': 7, // Guinea-Bissau
-  '+592': 7, // Guyana
-  '+509': 8, // Haiti
-  '+504': 8, // Honduras
-  '+852': 8, // Hong Kong
-  '+36': 9, // Hungary
-  '+354': 7, // Iceland
-  '+62': 11, // Indonesia
-  '+98': 10, // Iran
-  '+964': 10, // Iraq
-  '+353': 9, // Ireland
-  '+972': 10, // Israel
-  '+39': 10, // Italy
-  '+81': 10, // Japan
-  '+962': 9, // Jordan
-  '+7': 10, // Kazakhstan
-  '+254': 10, // Kenya
-  '+686': 8, // Kiribati
-  '+965': 8, // Kuwait
-  '+996': 9, // Kyrgyzstan
-  '+856': 9, // Laos
-  '+371': 8, // Latvia
-  '+961': 8, // Lebanon
-  '+266': 8, // Lesotho
-  '+231': 7, // Liberia
-  '+218': 9, // Libya
-  '+423': 7, // Liechtenstein
-  '+370': 8, // Lithuania
-  '+352': 9, // Luxembourg
-  '+853': 8, // Macau
-  '+261': 9, // Madagascar
-  '+265': 9, // Malawi
-  '+60': 10, // Malaysia
-  '+960': 7, // Maldives
-  '+223': 8, // Mali
-  '+356': 8, // Malta
-  '+692': 7, // Marshall Islands
-  '+222': 8, // Mauritania
-  '+230': 8, // Mauritius
-  '+52': 10, // Mexico
-  '+691': 7, // Micronesia
-  '+373': 8, // Moldova
-  '+377': 8, // Monaco
-  '+976': 8, // Mongolia
-  '+382': 9, // Montenegro
-  '+212': 9, // Morocco
-  '+258': 9, // Mozambique
-  '+264': 9, // Namibia
-  '+674': 7, // Nauru
-  '+977': 10, // Nepal
-  '+31': 9, // Netherlands
-  '+687': 6, // New Caledonia
-  '+64': 9, // New Zealand
-  '+505': 8, // Nicaragua
-  '+227': 8, // Niger
-  '+234': 10, // Nigeria
-  '+47': 8, // Norway
-  '+968': 8, // Oman
-  '+92': 10, // Pakistan
-  '+680': 7, // Palau
-  '+507': 8, // Panama
-  '+675': 9, // Papua New Guinea
-  '+595': 9, // Paraguay
-  '+51': 9, // Peru
-  '+63': 10, // Philippines
-  '+48': 9, // Poland
-  '+351': 9, // Portugal
-  '+974': 8, // Qatar
-  '+40': 10, // Romania
-  '+7': 10, // Russia
-  '+250': 9, // Rwanda
-  '+685': 7, // Samoa
-  '+378': 10, // San Marino
-  '+239': 7, // São Tomé and Príncipe
-  '+966': 9, // Saudi Arabia
-  '+221': 9, // Senegal
-  '+381': 9, // Serbia
-  '+248': 7, // Seychelles
-  '+232': 8, // Sierra Leone
-  '+65': 8, // Singapore
-  '+421': 9, // Slovakia
-  '+386': 9, // Slovenia
-  '+677': 7, // Solomon Islands
-  '+252': 8, // Somalia
-  '+27': 9, // South Africa
-  '+82': 10, // South Korea
-  '+211': 9, // South Sudan
-  '+34': 9, // Spain
-  '+94': 9, // Sri Lanka
-  '+249': 9, // Sudan
-  '+597': 7, // Suriname
-  '+268': 8, // Eswatini
-  '+46': 9, // Sweden
-  '+41': 9, // Switzerland
-  '+963': 9, // Syria
-  '+886': 9, // Taiwan
-  '+992': 9, // Tajikistan
-  '+255': 9, // Tanzania
-  '+66': 9, // Thailand
-  '+228': 8, // Togo
-  '+676': 7, // Tonga
-  '+216': 8, // Tunisia
-  '+90': 10, // Turkey
-  '+993': 8, // Turkmenistan
-  '+688': 6, // Tuvalu
-  '+256': 9, // Uganda
-  '+380': 9, // Ukraine
-  '+971': 9, // United Arab Emirates
-  '+44': 10, // United Kingdom
-  '+1': 10, // United States
-  '+598': 9, // Uruguay
-  '+998': 9, // Uzbekistan
-  '+678': 7, // Vanuatu
-  '+379': 9, // Vatican City
-  '+58': 10, // Venezuela
-  '+84': 9, // Vietnam
-  '+967': 9, // Yemen
-  '+260': 9, // Zambia
-  '+263': 9, // Zimbabwe
+  '+91': 10,
+  '+93': 9,
+  '+355': 9,
+  '+213': 9,
+  '+376': 6,
+  '+244': 9,
+  '+54': 10,
+  '+374': 8,
+  '+61': 9,
+  '+43': 10,
+  '+994': 9,
+  '+973': 8,
+  '+880': 10,
+  '+375': 9,
+  '+32': 9,
+  '+501': 7,
+  '+229': 8,
+  '+975': 8,
+  '+591': 8,
+  '+387': 8,
+  '+267': 8,
+  '+55': 11,
+  '+673': 7,
+  '+359': 9,
+  '+226': 8,
+  '+257': 8,
+  '+855': 9,
+  '+237': 9,
+  '+1': 10,
+  '+238': 7,
+  '+236': 8,
+  '+235': 8,
+  '+56': 9,
+  '+86': 11,
+  '+57': 10,
+  '+269': 7,
+  '+242': 9,
+  '+243': 9,
+  '+682': 5,
+  '+506': 8,
+  '+225': 10,
+  '+385': 9,
+  '+53': 8,
+  '+357': 8,
+  '+420': 9,
+  '+45': 8,
+  '+253': 8,
+  '+670': 8,
+  '+593': 9,
+  '+20': 10,
+  '+503': 8,
+  '+240': 9,
+  '+291': 7,
+  '+372': 7,
+  '+268': 8,
+  '+251': 9,
+  '+679': 7,
+  '+358': 10,
+  '+33': 9,
+  '+241': 7,
+  '+220': 7,
+  '+995': 9,
+  '+49': 11,
+  '+233': 9,
+  '+30': 10,
+  '+299': 6,
+  '+502': 8,
+  '+224': 9,
+  '+245': 7,
+  '+592': 7,
+  '+509': 8,
+  '+504': 8,
+  '+852': 8,
+  '+36': 9,
+  '+354': 7,
+  '+62': 11,
+  '+98': 10,
+  '+964': 10,
+  '+353': 9,
+  '+972': 10,
+  '+39': 10,
+  '+81': 10,
+  '+962': 9,
+  '+7': 10,
+  '+254': 10,
+  '+686': 8,
+  '+965': 8,
+  '+996': 9,
+  '+856': 9,
+  '+371': 8,
+  '+961': 8,
+  '+266': 8,
+  '+231': 7,
+  '+218': 9,
+  '+423': 7,
+  '+370': 8,
+  '+352': 9,
+  '+853': 8,
+  '+261': 9,
+  '+265': 9,
+  '+60': 10,
+  '+960': 7,
+  '+223': 8,
+  '+356': 8,
+  '+692': 7,
+  '+222': 8,
+  '+230': 8,
+  '+52': 10,
+  '+691': 7,
+  '+373': 8,
+  '+377': 8,
+  '+976': 8,
+  '+382': 9,
+  '+212': 9,
+  '+258': 9,
+  '+264': 9,
+  '+674': 7,
+  '+977': 10,
+  '+31': 9,
+  '+687': 6,
+  '+64': 9,
+  '+505': 8,
+  '+227': 8,
+  '+234': 10,
+  '+47': 8,
+  '+968': 8,
+  '+92': 10,
+  '+680': 7,
+  '+507': 8,
+  '+675': 9,
+  '+595': 9,
+  '+51': 9,
+  '+63': 10,
+  '+48': 9,
+  '+351': 9,
+  '+974': 8,
+  '+40': 10,
+  '+7': 10,
+  '+250': 9,
+  '+685': 7,
+  '+378': 10,
+  '+239': 7,
+  '+966': 9,
+  '+221': 9,
+  '+381': 9,
+  '+248': 7,
+  '+232': 8,
+  '+65': 8,
+  '+421': 9,
+  '+386': 9,
+  '+677': 7,
+  '+252': 8,
+  '+27': 9,
+  '+82': 10,
+  '+211': 9,
+  '+34': 9,
+  '+94': 9,
+  '+249': 9,
+  '+597': 7,
+  '+268': 8,
+  '+46': 9,
+  '+41': 9,
+  '+963': 9,
+  '+886': 9,
+  '+992': 9,
+  '+255': 9,
+  '+66': 9,
+  '+228': 8,
+  '+676': 7,
+  '+216': 8,
+  '+90': 10,
+  '+993': 8,
+  '+688': 6,
+  '+256': 9,
+  '+380': 9,
+  '+971': 9,
+  '+44': 10,
+  '+1': 10,
+  '+598': 9,
+  '+998': 9,
+  '+678': 7,
+  '+379': 9,
+  '+58': 10,
+  '+84': 9,
+  '+967': 9,
+  '+260': 9,
+  '+263': 9,
 };
 
 class CustomButtom extends StatelessWidget {
@@ -1884,9 +1914,9 @@ class CustomButtom extends StatelessWidget {
         child: Ink(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(10),
-            gradient: const LinearGradient(colors: [
-              Color(0xffFFEDAB),
-              Color(0xffFCC604),
+            gradient: LinearGradient(colors: [
+              secondaryColor,
+              chatownColor,
             ], begin: Alignment.topCenter, end: Alignment.bottomCenter),
           ),
           child: Container(
@@ -1948,8 +1978,7 @@ Widget containerProfileDesign(
   return InkWell(
     onTap: onTap,
     child: Container(
-      height: 46,
-      width: Get.width * 90,
+      height: 48,
       decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(10),
           color: Colors.white,
@@ -1961,19 +1990,24 @@ Widget containerProfileDesign(
             children: [
               Image.asset(image, height: 16),
               const SizedBox(width: 10),
-              Text(
-                title,
-                style: const TextStyle(
-                    fontSize: 12,
-                    fontFamily: 'Poppins',
-                    fontWeight: FontWeight.w600),
+              Container(
+                constraints: BoxConstraints(maxWidth: Get.width * 0.6),
+                child: Text(
+                  title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                      fontSize: 12,
+                      fontFamily: 'Poppins',
+                      fontWeight: FontWeight.w400),
+                ),
               )
             ],
           ),
           Row(
             children: [
-              SizedBox(
-                width: Get.width * 0.5,
+              Container(
+                constraints: BoxConstraints(maxWidth: Get.width * 0.15),
                 child: Text(
                   about!,
                   textAlign: TextAlign.right,
@@ -2002,7 +2036,7 @@ Widget containerWidget({required Function() onTap, required String title}) {
       height: 30,
       width: 65,
       decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(13), color: yellow1Color),
+          borderRadius: BorderRadius.circular(13), color: secondaryColor),
       child: Center(
         child: Text(
           title,
@@ -2051,7 +2085,7 @@ Widget buttonContainer(
       height: 53,
       width: 68,
       decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(5), color: yellow1Color),
+          borderRadius: BorderRadius.circular(5), color: secondaryColor),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -2121,7 +2155,7 @@ RichText richText(
                     ),
                   ),
                 ),
-                placeholder: (context, url) => const Center(
+                placeholder: (context, url) => Center(
                     child: CircularProgressIndicator(
                   color: chatownColor,
                 )),
@@ -2136,4 +2170,75 @@ RichText richText(
         style: const TextStyle(
             fontSize: 12, fontWeight: FontWeight.w500, color: Colors.black))
   ]));
+}
+
+// Get the proportionate height as per screen size
+double getProportionateScreenHeight(double inputHeight) {
+  double screenHeight = Get.height;
+  // 896 is the layout height that designer use
+  return (inputHeight / 844.0) * screenHeight;
+}
+
+// Get the proportionate height as per screen size
+double getProportionateScreenWidth(double inputWidth) {
+  double screenWidth = Get.width;
+  // 414 is the layout width that designer use
+  return (inputWidth / 390.0) * screenWidth;
+}
+
+sizeBoxHeight(double value) {
+  return SizedBox(
+    height: getProportionateScreenHeight(value),
+  );
+}
+
+sizeBoxWidth(double value) {
+  return SizedBox(
+    width: getProportionateScreenWidth(value),
+  );
+}
+
+bool isOnlyEmoji(String? text) {
+  if (text == null || text.isEmpty) return false;
+
+  // Trim the text to handle any whitespace
+  final trimmedText = text.trim();
+
+  // Use a simpler approach based on character properties
+  // Emojis typically have specific code point ranges
+  // Regular text characters are typically in the ASCII range (< 128)
+
+  // Check if the string is short (most emoji-only messages are 1-5 characters)
+  if (trimmedText.length > 8) return false;
+
+  // Count characters that are likely emojis
+  int emojiCount = 0;
+
+  for (int i = 0; i < trimmedText.length; i++) {
+    int codeUnit = trimmedText.codeUnitAt(i);
+
+    // Most emojis use surrogate pairs or are in specific ranges
+    // If code unit is a high surrogate (part of emoji surrogate pair)
+    // or in ranges commonly used for emojis/symbols
+    if (codeUnit >= 0xD800 && codeUnit <= 0xDBFF) {
+      // Skip surrogate pair (emoji)
+      i++;
+      emojiCount++;
+    }
+    // Check for other common emoji/symbol ranges
+    else if (codeUnit >= 0x2000 && codeUnit <= 0x3300) {
+      emojiCount++;
+    } else if (codeUnit >= 0x1F000 && codeUnit <= 0x1FFFF) {
+      emojiCount++;
+    }
+    // If we find a common ASCII character, it's probably not an emoji-only message
+    else if (codeUnit < 128 &&
+        !RegExp(r'[\s,.!?]').hasMatch(String.fromCharCode(codeUnit))) {
+      return false;
+    }
+  }
+
+  // Consider it an emoji-only message if we found at least one emoji
+  // and didn't return false from finding regular text characters
+  return emojiCount > 0;
 }

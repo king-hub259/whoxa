@@ -2,14 +2,14 @@
 import 'dart:convert';
 import 'package:get/get.dart';
 import 'package:hive_flutter/adapters.dart';
-import 'package:meyaoo_new/app.dart';
-import 'package:meyaoo_new/controller/get_contact_controller.dart';
-import 'package:meyaoo_new/controller/group_create_controller.dart';
-import 'package:meyaoo_new/controller/single_chat_media_controller.dart';
-import 'package:meyaoo_new/model/chat_profile_model.dart';
-import 'package:meyaoo_new/src/global/strings.dart';
+import 'package:whoxachat/app.dart';
+import 'package:whoxachat/controller/get_contact_controller.dart';
+import 'package:whoxachat/controller/group_create_controller.dart';
+import 'package:whoxachat/controller/single_chat_media_controller.dart';
+import 'package:whoxachat/model/chat_profile_model.dart';
+import 'package:whoxachat/src/global/strings.dart';
 import 'package:flutter/material.dart';
-import 'package:meyaoo_new/src/global/global.dart';
+import 'package:whoxachat/src/global/global.dart';
 
 class GetMembersinGroup extends StatefulWidget {
   String? grpId;
@@ -130,7 +130,7 @@ class _GetMembersinGroupState extends State<GetMembersinGroup> {
   }
 
   Widget contactList() {
-    final allContacts = getAllDeviceContact.getList;
+    final allContacts = getAllDeviceContact.myContactsData.value.myContactList!;
 
     return Container(
       width: MediaQuery.of(context).size.width,
@@ -146,10 +146,11 @@ class _GetMembersinGroupState extends State<GetMembersinGroup> {
             itemBuilder: (BuildContext context, int index) {
               final contact = allContacts[index];
 
-              // If the peerId matches the logged-in user's ID, don't show it in the list
-              // if (isMatching(getMobile(contact.mobile!)))
-              // {
-              return isAlreadyAddedRemove(contact.phoneNumber!)
+              return chatProfileController.users
+                      .where((element) =>
+                          element.user!.userId! == contact.userDetails!.userId)
+                      .toList()
+                      .isEmpty
                   ? Padding(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 10,
@@ -159,9 +160,11 @@ class _GetMembersinGroupState extends State<GetMembersinGroup> {
                           InkWell(
                             onTap: () {
                               setState(() {
-                                contactID.contains(contact.userId)
-                                    ? contactID.remove(contact.userId)
-                                    : contactID.add(contact.userId);
+                                contactID.contains(contact.userDetails!.userId!)
+                                    ? contactID
+                                        .remove(contact.userDetails!.userId!)
+                                    : contactID
+                                        .add(contact.userDetails!.userId!);
                               });
                             },
                             child: Container(
@@ -193,7 +196,8 @@ class _GetMembersinGroupState extends State<GetMembersinGroup> {
                                         borderRadius:
                                             BorderRadius.circular(100),
                                         child: CustomCachedNetworkImage(
-                                            imageUrl: contact.profileImage!,
+                                            imageUrl: contact
+                                                .userDetails!.profileImage!,
                                             placeholderColor: chatownColor,
                                             errorWidgeticon:
                                                 const Icon(Icons.person))),
@@ -212,7 +216,7 @@ class _GetMembersinGroupState extends State<GetMembersinGroup> {
                                           height: 17,
                                         ),
                                         Text(
-                                          contact.userName!,
+                                          contact.fullName!,
                                           textAlign: TextAlign.left,
                                           style: const TextStyle(
                                               fontWeight: FontWeight.w500,
@@ -240,22 +244,22 @@ class _GetMembersinGroupState extends State<GetMembersinGroup> {
                                     width: 22,
                                     decoration: BoxDecoration(
                                         border: Border.all(
-                                          color:
-                                              contactID.contains(contact.userId)
-                                                  ? Colors.white
-                                                  : chatownColor,
+                                          color: contactID.contains(
+                                                  contact.userDetails!.userId!)
+                                              ? Colors.white
+                                              : chatownColor,
                                         ),
                                         shape: BoxShape.circle,
-                                        color:
-                                            contactID.contains(contact.userId)
-                                                ? chatownColor
-                                                : Colors.white),
+                                        color: contactID.contains(
+                                                contact.userDetails!.userId!)
+                                            ? chatownColor
+                                            : Colors.white),
                                     child: Icon(Icons.check,
                                         size: 15,
-                                        color:
-                                            contactID.contains(contact.userId)
-                                                ? Colors.black
-                                                : Colors.white),
+                                        color: contactID.contains(
+                                                contact.userDetails!.userId!)
+                                            ? Colors.black
+                                            : Colors.white),
                                   ),
                                   const SizedBox(
                                     width: 5,
@@ -344,7 +348,7 @@ class _GetMembersinGroupState extends State<GetMembersinGroup> {
               height: 22,
               width: 22,
               decoration:
-                  BoxDecoration(shape: BoxShape.circle, color: yellow1Color),
+                  BoxDecoration(shape: BoxShape.circle, color: secondaryColor),
               child: const Icon(
                 Icons.check,
                 size: 15,
@@ -376,7 +380,6 @@ class _GetMembersinGroupState extends State<GetMembersinGroup> {
                 height: 50,
                 width: MediaQuery.of(context).size.width,
                 decoration: BoxDecoration(
-                  // border: Border.all(color:  Colors.black, width: 1),
                   borderRadius: BorderRadius.circular(25),
                   color: chatownColor,
                 ),

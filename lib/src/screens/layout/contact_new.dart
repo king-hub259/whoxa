@@ -6,16 +6,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:get/get.dart';
 import 'package:hive/hive.dart';
-import 'package:meyaoo_new/app.dart';
-import 'package:meyaoo_new/controller/add_contact_controller.dart';
-import 'package:meyaoo_new/controller/get_contact_controller.dart';
-import 'package:meyaoo_new/controller/user_chatlist_controller.dart';
-import 'package:meyaoo_new/src/screens/Group/add_gp_member.dart';
-import 'package:meyaoo_new/src/screens/chat/create_group.dart';
-import 'package:meyaoo_new/src/screens/chat/single_chat.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:whoxachat/app.dart';
+import 'package:whoxachat/controller/add_contact_controller.dart';
+import 'package:whoxachat/controller/get_contact_controller.dart';
+import 'package:whoxachat/controller/user_chatlist_controller.dart';
+import 'package:whoxachat/model/userchatlist_model/userchatlist_model.dart';
+import 'package:whoxachat/src/global/common_widget.dart';
+import 'package:whoxachat/src/screens/Group/add_gp_member.dart';
+import 'package:whoxachat/src/screens/chat/create_group.dart';
+import 'package:whoxachat/src/screens/chat/shareable/common_permission_dialog.dart';
+import 'package:whoxachat/src/screens/chat/single_chat.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:meyaoo_new/src/global/global.dart';
-import 'package:meyaoo_new/src/global/strings.dart';
+import 'package:whoxachat/src/global/global.dart';
+import 'package:whoxachat/src/global/strings.dart';
 
 class FlutterContactsExample extends StatefulWidget {
   bool isValue;
@@ -27,42 +31,51 @@ class FlutterContactsExample extends StatefulWidget {
 
 class _FlutterContactsExampleState extends State<FlutterContactsExample> {
   List<Contact>? _contacts;
-  // bool _permissionDenied = false;
+
   TextEditingController controller = TextEditingController();
   String searchText = '';
   GetAllDeviceContact getAllDeviceContact = Get.find();
   AddContactController addContactController = Get.find();
   ChatListController chatListController = Get.find();
   List<Contact> filteredContacts = [];
+  bool _isPermissionGranted = false;
 
   @override
   void initState() {
+    _checkContactPermission();
+
     apis();
     log(Hive.box(userdata).get(userMobile), name: "USER-MOBILE");
     super.initState();
   }
 
+  Future<void> _checkContactPermission() async {
+    var permission = await Permission.contacts.request();
+
+    if (permission.isGranted) {
+      setState(() {
+        _isPermissionGranted = true;
+      });
+    } else if (permission.isDenied) {
+      // If denied, show a message or retry
+      print("Permission denied. Ask user to grant manually.");
+    } else if (permission.isPermanentlyDenied) {
+      // Open app settings if permanently denied
+      // openAppSettings();
+      PermissionUtil.showPermissionSettingsDialog(
+          context,
+          "Location", // or "Location", "Microphone", etc.
+          languageController.textTranslate,
+          chatownColor,
+          secondaryColor);
+    }
+  }
+
   Future<void> apis() async {
-    // await getContactsFromGloble();
     log("MY_DEVICE_CONTACS: ${addContactController.mobileContacts}");
 
     chatListController.forChatList();
-    // await _fetchContacts();
   }
-
-  // Future _fetchContacts() async {
-  //   if (!await FlutterContacts.requestPermission(readonly: true)) {
-  //     setState(() => _permissionDenied = true);
-  //   } else {
-  //     final contacts = await FlutterContacts.getContacts(
-  //         withProperties: true, withPhoto: true);
-  //     setState(() {
-  //       _contacts = contacts;
-  //       filteredContacts =
-  //           contacts; // Initially set filteredContacts to all contacts
-  //     });
-  //   }
-  // }
 
   void filterContacts(String query) {
     if (_contacts != null) {
@@ -98,69 +111,80 @@ class _FlutterContactsExampleState extends State<FlutterContactsExample> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color.fromRGBO(250, 250, 250, 1),
+      backgroundColor: appColorWhite,
       appBar: AppBar(
-        backgroundColor: const Color.fromRGBO(250, 250, 250, 1),
+        backgroundColor: appColorWhite,
         elevation: 0,
         scrolledUnderElevation: 0,
         automaticallyImplyLeading: false,
-        title: Image.asset("assets/images/logo.png", height: 45),
+        title: Image.network(
+          languageController.appSettingsData[0].appLogo!,
+          height: 45,
+        ),
       ),
       body: Stack(
         children: [
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              //To of search bar
               Container(
-                color: const Color.fromRGBO(250, 250, 250, 1),
+                color: appColorWhite,
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Padding(
                       padding: const EdgeInsets.only(bottom: 10),
-                      child: Container(
-                        height: 50,
-                        width: MediaQuery.of(context).size.width * 0.9,
-                        decoration: BoxDecoration(
-                            color: const Color.fromRGBO(238, 238, 238, 1),
-                            borderRadius: BorderRadius.circular(10)),
-                        child: TextField(
-                          controller: controller,
-                          onChanged: (value) {
-                            setState(() {
-                              searchText = value.toLowerCase().trim();
-                            });
-                          },
-                          decoration: InputDecoration(
-                            prefixIcon: const Padding(
-                              padding: EdgeInsets.all(17),
-                              child: Image(
-                                image: AssetImage('assets/icons/search.png'),
-                              ),
-                            ),
-                            hintText: languageController
-                                .textTranslate('Search name or number'),
-                            hintStyle: const TextStyle(
-                                fontSize: 12, color: Colors.grey),
-                            filled: true,
-                            fillColor: Colors.transparent,
-                            border: const OutlineInputBorder(
-                              borderSide: BorderSide.none,
-                            ),
-                          ),
-                        ),
+                      child: commonSearchField(
+                        context: context,
+                        controller: controller,
+                        onChanged: (value) {
+                          setState(() {
+                            searchText = value.toLowerCase().trim();
+                          });
+                        },
+                        hintText: languageController
+                            .textTranslate('Search name or number'),
                       ),
+                      //     Container(
+                      //   height: 50,
+                      //   width: MediaQuery.of(context).size.width * 0.9,
+                      //   decoration: BoxDecoration(
+                      //       color: const Color.fromRGBO(238, 238, 238, 1),
+                      //       borderRadius: BorderRadius.circular(10)),
+                      //   child: TextField(
+                      //     controller: controller,
+                      //     onChanged: (value) {
+                      //       setState(() {
+                      //         searchText = value.toLowerCase().trim();
+                      //       });
+                      //     },
+                      //     decoration: InputDecoration(
+                      //       prefixIcon: const Padding(
+                      //         padding: EdgeInsets.all(17),
+                      //         child: Image(
+                      //           image: AssetImage('assets/icons/search.png'),
+                      //         ),
+                      //       ),
+                      //       hintText: languageController
+                      //           .textTranslate('Search name or number'),
+                      //       hintStyle: const TextStyle(
+                      //           fontSize: 12, color: Colors.grey),
+                      //       filled: true,
+                      //       fillColor: Colors.transparent,
+                      //       border: const OutlineInputBorder(
+                      //         borderSide: BorderSide.none,
+                      //       ),
+                      //     ),
+                      //   ),
+                      // ),
                     ),
                   ],
                 ),
               ),
-              // New group and contact text design widget
               const SizedBox(height: 15),
               InkWell(
                 onTap: () {
-                  //images();
                   Get.to(() => AddMembersinGroup1());
                 },
                 child: Padding(
@@ -177,8 +201,11 @@ class _FlutterContactsExampleState extends State<FlutterContactsExample> {
                         child: ClipRRect(
                             borderRadius: BorderRadius.circular(100),
                             child: Center(
-                                child:
-                                    Image.asset("assets/images/group1.png"))),
+                              child: Image.asset(
+                                "assets/images/group1.png",
+                                color: chatownColor,
+                              ),
+                            )),
                       ),
                       const SizedBox(width: 10),
                       Text(
@@ -195,10 +222,9 @@ class _FlutterContactsExampleState extends State<FlutterContactsExample> {
                 thickness: 1.5,
                 color: Colors.grey.shade200,
               ),
-
               Expanded(
                 child: RefreshIndicator(
-                  color: appColorYellow,
+                  color: chatownColor,
                   onRefresh: () {
                     var contactJson =
                         json.encode(addContactController.mobileContacts);
@@ -209,7 +235,10 @@ class _FlutterContactsExampleState extends State<FlutterContactsExample> {
                     () => addContactController
                                     .isGetContectsFromDeviceLoading.value ==
                                 true &&
-                            addContactController.allcontacts.isEmpty
+                            (getAllDeviceContact
+                                        .myContactsData.value.myContactList ==
+                                    null ||
+                                addContactController.allcontacts.isEmpty)
                         ? loader(context)
                         : SingleChildScrollView(
                             child: Column(
@@ -217,8 +246,24 @@ class _FlutterContactsExampleState extends State<FlutterContactsExample> {
                               children: [
                                 controller.text.trim().isEmpty
                                     ? contactDesign()
-                                    : const SizedBox.shrink(),
-                                getAllDeviceContact.getList.isNotEmpty
+                                    // : const SizedBox.shrink(),
+                                    : SizedBox(
+                                        height: 100,
+                                        child: Center(
+                                            child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            Text(languageController.textTranslate(
+                                                'You don\'t have any contact using this app.')),
+                                          ],
+                                        )),
+                                      ),
+                                getAllDeviceContact.myContactsData.value
+                                                .myContactList !=
+                                            null &&
+                                        getAllDeviceContact.myContactsData.value
+                                            .myContactList!.isNotEmpty
                                     ? contactsWidget()
                                     : const SizedBox.shrink(),
                                 controller.text.trim().isEmpty
@@ -260,40 +305,64 @@ class _FlutterContactsExampleState extends State<FlutterContactsExample> {
   }
 
   Widget contactsWidget() {
-    return getAllDeviceContact.isGetContectLoading.value == true &&
-            getAllDeviceContact.getList.isEmpty
+    return getAllDeviceContact.isGetMYContectLoading.value == true
         ? loader(context)
-        : getAllDeviceContact.getList.isNotEmpty
+        : getAllDeviceContact.myContactsData.value.myContactList!.isNotEmpty
             ? ListView.separated(
                 padding: const EdgeInsets.all(0),
-                itemCount: getAllDeviceContact.getList.length,
+                itemCount: getAllDeviceContact
+                    .myContactsData.value.myContactList!
+                    .where((contact) => contact.fullName!
+                        .toLowerCase()
+                        .contains(searchText.toLowerCase()))
+                    .length,
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
                 separatorBuilder: (context, index) {
-                  var contact = getAllDeviceContact.getList[index];
-                  return getAllDeviceContact.getList.any((element) =>
-                          element.phoneNumber.toString() ==
-                          Hive.box(userdata).get(userMobile))
+                  var filteredContacts = getAllDeviceContact
+                      .myContactsData.value.myContactList!
+                      .where((contact) => contact.fullName!
+                          .toLowerCase()
+                          .contains(searchText.toLowerCase()))
+                      .toList();
+
+                  if (filteredContacts.isEmpty) {
+                    return const SizedBox.shrink();
+                  }
+
+                  var contact = filteredContacts[index];
+                  return getAllDeviceContact.myContactsData.value.myContactList!
+                          .any((element) =>
+                              element.phoneNumber.toString() ==
+                              Hive.box(userdata).get(userMobile))
                       ? Hive.box(userdata).get(userMobile) ==
                               contact.phoneNumber.toString()
                           ? const SizedBox.shrink()
-                          : index != getAllDeviceContact.getList.length - 2
-                              ? Divider(
-                                  color: Colors.grey.shade300,
-                                )
-                              : const SizedBox.shrink()
-                      : index != getAllDeviceContact.getList.length - 1
+                          : Divider(
+                              color: Colors.grey.shade300,
+                            )
+                      : index !=
+                              getAllDeviceContact.myContactsData.value
+                                      .myContactList!.length -
+                                  1
                           ? Divider(
                               color: Colors.grey.shade300,
                             )
                           : const SizedBox.shrink();
                 },
                 itemBuilder: (BuildContext context, int index) {
-                  var contact = getAllDeviceContact.getList[index];
-                  contact.fullName
-                      .toString()
-                      .toLowerCase()
-                      .contains(searchText);
+                  var filteredContacts = getAllDeviceContact
+                      .myContactsData.value.myContactList!
+                      .where((contact) => contact.fullName!
+                          .toLowerCase()
+                          .contains(searchText.toLowerCase()))
+                      .toList();
+
+                  if (filteredContacts.isEmpty) {
+                    return const SizedBox.shrink();
+                  }
+
+                  var contact = filteredContacts[index];
                   return Hive.box(userdata).get(userMobile) ==
                           contact.phoneNumber.toString()
                       ? const SizedBox.shrink()
@@ -303,52 +372,58 @@ class _FlutterContactsExampleState extends State<FlutterContactsExample> {
                               onTap: () {
                                 if (chatListController.userChatListModel.value!
                                     .chatList!.isEmpty) {
-                                  addContactController.addContactApi(
-                                      contact.fullName!,
-                                      contact.phoneNumber,
-                                      contact.profileImage!);
+                                  Get.to(() => SingleChatMsg(
+                                        conversationID: '',
+                                        username: contact.fullName!,
+                                        userPic:
+                                            contact.userDetails!.profileImage,
+                                        mobileNum:
+                                            contact.phoneNumber.toString(),
+                                        index: 0,
+                                        userID: contact.userDetails!.userId
+                                            .toString(),
+                                      ));
                                 } else {
-                                  for (var i = 0;
-                                      i <
-                                          chatListController.userChatListModel
-                                              .value!.chatList!.length;
-                                      i++) {
-                                    if (chatListController.userChatListModel
-                                            .value!.chatList![i].phoneNumber ==
-                                        getAllDeviceContact
-                                            .getList[index].phoneNumber) {
-                                      print('1111111');
-                                      Get.to(() => SingleChatMsg(
-                                            conversationID: getUserID(
-                                                contact.phoneNumber.toString()),
-                                            username: contact.fullName!,
-                                            userPic: contact.profileImage,
-                                            mobileNum:
-                                                contact.phoneNumber.toString(),
-                                            index: 0,
-                                            isBlock: chatListController
-                                                .userChatListModel
-                                                .value!
-                                                .chatList![i]
-                                                .isBlock,
-                                            userID: chatListController
-                                                .userChatListModel
-                                                .value!
-                                                .chatList![i]
-                                                .userId
-                                                .toString(),
-                                          ));
-                                    } else {
-                                      print('22222');
-                                      if (addContactController
-                                              .isLoading.value ==
-                                          false) {
-                                        addContactController.addContactApi(
-                                            contact.fullName!,
-                                            contact.phoneNumber,
-                                            contact.profileImage!);
-                                      }
-                                    }
+                                  if (chatListController
+                                      .userChatListModel.value!.chatList!
+                                      .where((element) =>
+                                          contact.userDetails!.userId
+                                              .toString() ==
+                                          element.userId!.toString())
+                                      .isNotEmpty) {
+                                    ChatList data = chatListController
+                                        .userChatListModel.value!.chatList!
+                                        .where((element) =>
+                                            contact.userDetails!.userId
+                                                .toString() ==
+                                            element.userId!.toString())
+                                        .first;
+                                    Get.to(() => SingleChatMsg(
+                                          conversationID:
+                                              data.conversationId.toString(),
+                                          username: contact.fullName!,
+                                          userPic:
+                                              contact.userDetails!.profileImage,
+                                          mobileNum:
+                                              contact.phoneNumber.toString(),
+                                          index: 0,
+                                          isBlock: data.isBlock,
+                                          userID: data.userId.toString(),
+                                        ));
+                                  } else {
+                                    Get.to(
+                                      () => SingleChatMsg(
+                                        conversationID: '',
+                                        username: contact.fullName!,
+                                        userPic:
+                                            contact.userDetails!.profileImage,
+                                        mobileNum:
+                                            contact.phoneNumber.toString(),
+                                        index: 0,
+                                        userID: contact.userDetails!.userId!
+                                            .toString(),
+                                      ),
+                                    );
                                   }
                                 }
                               },
@@ -362,7 +437,8 @@ class _FlutterContactsExampleState extends State<FlutterContactsExample> {
                                 child: ClipRRect(
                                     borderRadius: BorderRadius.circular(100),
                                     child: CustomCachedNetworkImage(
-                                        imageUrl: contact.profileImage!,
+                                        imageUrl:
+                                            contact.userDetails!.profileImage!,
                                         placeholderColor: chatownColor,
                                         errorWidgeticon:
                                             const Icon(Icons.person))),
@@ -387,15 +463,6 @@ class _FlutterContactsExampleState extends State<FlutterContactsExample> {
                               trailing: Image.asset("assets/images/Chat1.png",
                                   height: 10),
                             ),
-                            // if (getAllDeviceContact.getList.contains(
-                            //         Hive.box(userdata).get(userMobile))
-                            //     ? index !=
-                            //         getAllDeviceContact.getList.length - 2
-                            //     : index !=
-                            //         getAllDeviceContact.getList.length - 1)
-                            //   Divider(
-                            //     color: Colors.grey.shade300,
-                            //   )
                           ],
                         );
                 },
@@ -406,9 +473,8 @@ class _FlutterContactsExampleState extends State<FlutterContactsExample> {
                     child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const CircularProgressIndicator(color: Colors.black),
-                    const SizedBox(width: 10),
-                    Text(languageController.textTranslate('Please wait...!')),
+                    Text(languageController.textTranslate(
+                        'You do not have any contact in chatweb!')),
                   ],
                 )),
               );
@@ -441,116 +507,155 @@ class _FlutterContactsExampleState extends State<FlutterContactsExample> {
 
   Widget inviteFriend(String searchText) {
     List<Contact> filteredContacts = getFilteredContacts(searchText);
-    return addContactController.isGetContectsFromDeviceLoading.value == true &&
-            addContactController.allcontacts.isEmpty
-        ? loader(context)
-        : ListView.builder(
-            padding: const EdgeInsets.all(0),
-            itemCount: filteredContacts.length,
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemBuilder: (BuildContext context, int index) {
-              var contact = filteredContacts[index];
-              //Uint8List? image = contact.photo;
-              return Column(
-                children: <Widget>[
-                  getMobile(Hive.box(userdata).get(userMobile)) ==
-                          getMobile(
-                              contact.phones.map((e) => e.number).toString())
-                      ? const SizedBox.shrink()
-                      : ListTile(
-                          onTap: () {
-                            inviteMe(
-                                contact.phones.map((e) => e.number).toString());
-                          },
-                          leading: Container(
-                            height: 50,
-                            width: 50,
-                            decoration: BoxDecoration(
-                                color: Colors.white,
-                                shape: BoxShape.circle,
-                                gradient: LinearGradient(
-                                    colors: [
-                                      blackColor,
-                                      black1Color,
-                                    ],
-                                    stops: const [
-                                      1.0,
-                                      3.0
-                                    ],
-                                    begin: FractionalOffset.topLeft,
-                                    end: FractionalOffset.bottomRight,
-                                    tileMode: TileMode.repeated)),
-                            child: ClipRRect(
-                                borderRadius: BorderRadius.circular(100),
-                                child:
-                                    // contact.photo != null
-                                    //     ? Image.memory(
-                                    //         image!,
-                                    //         fit: BoxFit.cover,
-                                    //         width: 50,
-                                    //         height: 50,
-                                    //       )
-                                    //     :
-                                    Center(
-                                  child: Text(
-                                    contact.displayName != null
-                                        ? contact.displayName[0]
-                                        : "?",
-                                    style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 20,
-                                        fontFamily: "MontserratBold",
-                                        fontWeight: FontWeight.bold),
-                                  ),
-                                )),
-                          ),
-                          title: Text(
-                            contact.displayName,
-                            maxLines: 1,
-                            style: const TextStyle(
-                              fontSize: 15.0,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                          subtitle: Container(
-                              padding: const EdgeInsets.only(top: 2.0),
-                              child: Text(
-                                getMobile(contact.phones
-                                    .map((e) => e.number)
-                                    .toString()),
-                                maxLines: 1,
-                                style: const TextStyle(
-                                    color: Color.fromRGBO(73, 73, 73, 1)),
-                              )),
-                          trailing: Text(
-                            languageController.textTranslate('Invite'),
-                            style: const TextStyle(
-                                fontSize: 14,
-                                color: chatownColor,
-                                fontWeight: FontWeight.w500),
-                          ),
+    return _isPermissionGranted == false
+        ? Column(
+            children: [
+              sizeBoxHeight(20),
+              Image.asset(
+                "assets/images/no_contact.png",
+                height: getProportionateScreenHeight(201),
+                width: getProportionateScreenHeight(134),
+              ),
+              sizeBoxHeight(15),
+              const Text(
+                "You Don’t have permission to access contacts, go to settings and change the permission",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  fontFamily: "Poppins",
+                  color: appColorBlack,
+                ),
+              ).paddingSymmetric(horizontal: 50),
+              sizeBoxHeight(15),
+            ],
+          )
+        : addContactController.isGetContectsFromDeviceLoading.value == true &&
+                addContactController.allcontacts.isEmpty
+            ? loader(context)
+            : addContactController.allcontacts.isEmpty
+                ? Column(
+                    children: [
+                      sizeBoxHeight(20),
+                      Image.asset(
+                        "assets/images/no_contact.png",
+                        height: getProportionateScreenHeight(201),
+                        width: getProportionateScreenHeight(134),
+                      ),
+                      sizeBoxHeight(15),
+                      const Text(
+                        "You don’t have any Contacts on your device.",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          fontFamily: "Poppins",
+                          color: appColorBlack,
                         ),
-                  if (index != filteredContacts.length - 1)
-                    Divider(
-                      color: Colors.grey.shade300,
-                    )
-                ],
-              );
-            },
-          );
+                      ).paddingSymmetric(horizontal: 50),
+                      sizeBoxHeight(15),
+                    ],
+                  )
+                : ListView.builder(
+                    padding: const EdgeInsets.all(0),
+                    itemCount: filteredContacts.length,
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemBuilder: (BuildContext context, int index) {
+                      var contact = filteredContacts[index];
+
+                      return Column(
+                        children: <Widget>[
+                          getMobile(Hive.box(userdata).get(userMobile)) ==
+                                  getMobile(contact.phones
+                                      .map((e) => e.number)
+                                      .toString())
+                              ? const SizedBox.shrink()
+                              : ListTile(
+                                  onTap: () {
+                                    inviteMe(contact.phones
+                                        .map((e) => e.number)
+                                        .toString());
+                                  },
+                                  leading: Container(
+                                    height: 50,
+                                    width: 50,
+                                    decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        shape: BoxShape.circle,
+                                        gradient: LinearGradient(
+                                            colors: [
+                                              blackColor,
+                                              black1Color,
+                                            ],
+                                            stops: const [
+                                              1.0,
+                                              3.0
+                                            ],
+                                            begin: FractionalOffset.topLeft,
+                                            end: FractionalOffset.bottomRight,
+                                            tileMode: TileMode.repeated)),
+                                    child: ClipRRect(
+                                        borderRadius:
+                                            BorderRadius.circular(100),
+                                        child: Center(
+                                          child: Text(
+                                            contact.displayName != null
+                                                ? contact.displayName[0]
+                                                : "?",
+                                            style: const TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 20,
+                                                fontFamily: "MontserratBold",
+                                                fontWeight: FontWeight.bold),
+                                          ),
+                                        )),
+                                  ),
+                                  title: Text(
+                                    contact.displayName,
+                                    maxLines: 1,
+                                    style: const TextStyle(
+                                      fontSize: 15.0,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                  subtitle: Container(
+                                      padding: const EdgeInsets.only(top: 2.0),
+                                      child: Text(
+                                        getMobile(contact.phones
+                                            .map((e) => e.number)
+                                            .toString()),
+                                        maxLines: 1,
+                                        style: const TextStyle(
+                                            color:
+                                                Color.fromRGBO(73, 73, 73, 1)),
+                                      )),
+                                  trailing: Text(
+                                    languageController.textTranslate('Invite'),
+                                    style: TextStyle(
+                                        fontSize: 14,
+                                        color: chatownColor,
+                                        fontWeight: FontWeight.w500),
+                                  ),
+                                ),
+                          if (index != filteredContacts.length - 1)
+                            Divider(
+                              color: Colors.grey.shade300,
+                            )
+                        ],
+                      );
+                    },
+                  );
   }
 
   inviteMe(phone) async {
-    // Android
     String uri =
-        'sms:$phone?body=${"‎Hey there! Join me on our Whoxa app!\nChat with friends, share photos & videos instantly.\nDownload now.\nLet's stay connected!"}';
+        'sms:$phone?body=${languageController.appSettingsData[0].tellAFriendLink}';
     if (await canLaunch(uri)) {
       await launch(uri);
     } else {
-      // iOS
       String uri =
-          'sms:$phone?body=${"‎Hey there! Join me on our Whoxa app!\nChat with friends, share photos & videos instantly.\nDownload now.\nLet's stay connected!"}';
+          'sms:$phone?body=${languageController.appSettingsData[0].tellAFriendLink}';
       if (await canLaunch(uri)) {
         await launch(uri);
       } else {
@@ -558,6 +663,21 @@ class _FlutterContactsExampleState extends State<FlutterContactsExample> {
       }
     }
   }
+  // inviteMe(phone) async {
+  //   String uri =
+  //       'sms:$phone?body=${"‎Hey there! Join me on our Whoxa app!\nChat with friends, share photos & videos instantly.\nDownload now.\nLet's stay connected!"}';
+  //   if (await canLaunch(uri)) {
+  //     await launch(uri);
+  //   } else {
+  //     String uri =
+  //         'sms:$phone?body=${"‎Hey there! Join me on our Whoxa app!\nChat with friends, share photos & videos instantly.\nDownload now.\nLet's stay connected!"}';
+  //     if (await canLaunch(uri)) {
+  //       await launch(uri);
+  //     } else {
+  //       throw 'Could not launch $uri';
+  //     }
+  //   }
+  // }
 
   Widget contactDesign() {
     return Column(

@@ -5,9 +5,9 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:get/get.dart';
-import 'package:meyaoo_new/controller/call_history_controller.dart';
-import 'package:meyaoo_new/src/global/global.dart';
-import 'package:meyaoo_new/Models/calllistmodel.dart';
+import 'package:whoxachat/controller/call_history_controller.dart';
+import 'package:whoxachat/src/global/global.dart';
+import 'package:whoxachat/Models/calllistmodel.dart';
 
 class AllCallList extends StatefulWidget {
   const AllCallList({super.key});
@@ -56,8 +56,6 @@ class _AllCallListState extends State<AllCallList> {
         log("ALL NUMBER ${allNumbers[i].trim()}");
         log("index $i");
         log("Name ${_contacts![i].id}");
-
-        // log("Name ${_contacts![i].phones.first.number}");
       }
     }
   }
@@ -70,7 +68,7 @@ class _AllCallListState extends State<AllCallList> {
         }
       }
     }
-    return -1; // Return -1 if name is not found
+    return -1;
   }
 
   @override
@@ -143,7 +141,6 @@ class _AllCallListState extends State<AllCallList> {
                         allNumbers.contains(allList.mobileNumber!)
                             ? allNames[
                                 getIndexFromNumber(allList.mobileNumber!)]
-                            // allNames[index]
                             : capitalizeFirstLetter(allList.username!),
                         style: const TextStyle(
                             fontSize: 14,
@@ -173,7 +170,6 @@ class _AllCallListState extends State<AllCallList> {
               mainAxisAlignment: MainAxisAlignment.end,
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                //____________________ AUDIO CALL STATUS__________________
                 allList.callType == "audio_call" &&
                         allList.message == "" &&
                         allList.isComeing == "Outgoing"
@@ -196,7 +192,6 @@ class _AllCallListState extends State<AllCallList> {
                                     AssetImage('assets/images/NotRecive.png'),
                                 height: 13,
                               )
-                            //____________________ VIDEO CALL STATUS__________________
                             : allList.callType == "video_call" &&
                                     allList.message == "" &&
                                     allList.isComeing == "Incoming"
@@ -220,9 +215,7 @@ class _AllCallListState extends State<AllCallList> {
                                                 'assets/images/videocall_missed.png'),
                                             height: 20,
                                           )
-                                        :
-                                        //_____________________GROUP AUDIO CALL STATUS_______________________________
-                                        allList.callType ==
+                                        : allList.callType ==
                                                     "group_audio_call" &&
                                                 allList.message == "" &&
                                                 allList.isComeing == "Outgoing"
@@ -250,7 +243,6 @@ class _AllCallListState extends State<AllCallList> {
                                                             'assets/images/NotRecive.png'),
                                                         height: 20,
                                                       )
-                                                    //____________________________GROUP VIDEO CALL STATUS______________________________________
                                                     : allList.callType ==
                                                                 "group_video_call" &&
                                                             allList.message ==

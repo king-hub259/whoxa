@@ -2,10 +2,10 @@ import 'dart:developer';
 
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
-import 'package:meyaoo_new/Models/last_seen_model.dart';
-import 'package:meyaoo_new/Models/typing_user_model.dart';
-import 'package:meyaoo_new/controller/online_user_controller.dart';
-import 'package:meyaoo_new/main.dart';
+import 'package:whoxachat/Models/last_seen_model.dart';
+import 'package:whoxachat/Models/typing_user_model.dart';
+import 'package:whoxachat/controller/online_user_controller.dart';
+import 'package:whoxachat/main.dart';
 
 class OnlineOfflineController extends GetxController {
   Rx<OnlineUsersModel> onlineUserModel = OnlineUsersModel().obs;
@@ -28,7 +28,7 @@ class OnlineOfflineController extends GetxController {
           print('online users null');
         }
         var respo = OnlineUsersModel.fromJson(data);
-        onlineUserModel.value = respo; // Update the
+        onlineUserModel.value = respo;
         allOnline.value = OnlineUsersModel.fromJson(data).onlineUserList!;
 
         log("ONLINE USER LIST ${onlineUserModel.value.onlineUserList}");
@@ -40,11 +40,9 @@ class OnlineOfflineController extends GetxController {
           print("ONLINE DATA $data");
         }
         var res = OnlineUsersModel.fromJson(data);
-        onlineUserModel.value = res; // Update the value property
+        onlineUserModel.value = res;
         allOnline.value = OnlineUsersModel.fromJson(data).onlineUserList!;
         log("${onlineUserModel.value.onlineUserList}");
-
-        // No need to call update() here
       }
     });
   }
@@ -59,7 +57,7 @@ class OnlineOfflineController extends GetxController {
           print('offline users null');
         }
         var respo = LastSeenModel.fromJson(data);
-        lastSeenModel.value = respo; // Update the value property
+        lastSeenModel.value = respo;
         allOffline.value = LastSeenModel.fromJson(data).lastSeenUserList!;
         log("OFFLINE USER LIST ${lastSeenModel.value.lastSeenUserList}");
       } else {
@@ -70,11 +68,9 @@ class OnlineOfflineController extends GetxController {
           print("OFFLINE DATA $data");
         }
         var res = LastSeenModel.fromJson(data);
-        lastSeenModel.value = res; // Update the value property
+        lastSeenModel.value = res;
         allOffline.value = LastSeenModel.fromJson(data).lastSeenUserList!;
         log("${lastSeenModel.value.lastSeenUserList}");
-
-        // No need to call update() here
       }
     });
   }
@@ -84,14 +80,16 @@ class OnlineOfflineController extends GetxController {
       if (typingUserListModel.value!.typingUserList == null) {
         log(data.toString());
         var respo = TypingUserModel.fromJson(data);
-        typingUserListModel.value = respo; // Update the value property
+        typingUserListModel.value = respo;
         typingList.value = TypingUserModel.fromJson(data).typingUserList!;
+        typingList.refresh();
         typingloder = false;
       } else {
         log(data.toString());
         var respo = TypingUserModel.fromJson(data);
-        typingUserListModel.value = respo; // Update the value property
+        typingUserListModel.value = respo;
         typingList.value = TypingUserModel.fromJson(data).typingUserList!;
+        typingList.refresh();
         typingloder = false;
       }
     });

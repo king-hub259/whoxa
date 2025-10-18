@@ -3,13 +3,13 @@
 import 'dart:convert';
 import 'package:get/get.dart';
 import 'package:hive/hive.dart';
-import 'package:meyaoo_new/Models/add_member_group_model.dart';
-import 'package:meyaoo_new/Models/group_create_model.dart';
-import 'package:meyaoo_new/src/global/api_helper.dart';
+import 'package:whoxachat/Models/add_member_group_model.dart';
+import 'package:whoxachat/Models/group_create_model.dart';
+import 'package:whoxachat/src/global/api_helper.dart';
 import 'package:http/http.dart' as http;
-import 'package:meyaoo_new/src/global/global.dart';
-import 'package:meyaoo_new/src/global/strings.dart';
-import 'package:meyaoo_new/src/screens/layout/bottombar.dart';
+import 'package:whoxachat/src/global/global.dart';
+import 'package:whoxachat/src/global/strings.dart';
+import 'package:whoxachat/src/screens/layout/bottombar.dart';
 
 final ApiHelper apiHelper = ApiHelper();
 
@@ -34,11 +34,13 @@ class GroupCreateController extends GetxController {
 
       request.headers.addAll(headers);
       request.fields['group_name'] = gpname;
-      //request.fields['conversation_id'] = conversationId;
-      request.files.add(await http.MultipartFile.fromPath('files', file));
 
-      print(request.fields);
-      print(request.files);
+      if (file != null) {
+        request.files.add(await http.MultipartFile.fromPath('files', file));
+      }
+
+      print("create-group ${request.fields}");
+      print("create-group ${request.files}");
       var response = await request.send();
       String responseData =
           await response.stream.transform(utf8.decoder).join();
@@ -47,7 +49,7 @@ class GroupCreateController extends GetxController {
 
       createModel.value = GroupCreateModel.fromJson(userData);
 
-      print(responseData);
+      print("create-group $responseData");
 
       if (createModel.value!.success == true) {
         addToGroupMember(createModel.value!.conversationId.toString(),

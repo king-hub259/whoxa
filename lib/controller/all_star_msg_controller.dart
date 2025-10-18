@@ -1,20 +1,36 @@
 // ignore_for_file: avoid_print
 
 import 'dart:convert';
+import 'dart:developer';
+import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:hive/hive.dart';
-import 'package:meyaoo_new/Models/all_starred_msg_list.dart';
-import 'package:meyaoo_new/controller/reply_msg_controller.dart';
-import 'package:meyaoo_new/src/global/api_helper.dart';
+import 'package:whoxachat/Models/all_starred_msg_list.dart';
+import 'package:whoxachat/Models/report_types_model.dart';
+import 'package:whoxachat/controller/reply_msg_controller.dart';
+import 'package:whoxachat/src/global/api_helper.dart';
 import 'package:http/http.dart' as http;
-import 'package:meyaoo_new/src/global/strings.dart';
+import 'package:whoxachat/src/global/global.dart';
+import 'package:whoxachat/src/global/strings.dart';
 
 final ApiHelper apiHelper = ApiHelper();
 
 class AllStaredMsgController extends GetxController {
   RxBool isLoading = false.obs;
+  RxBool isReportTypeLoading = false.obs;
+  RxBool isReportUserLoading = false.obs;
+
   Rx<AllStaredMsgModel?> starMessageModel = AllStaredMsgModel().obs;
   RxList<StarMessageList> allStarred = <StarMessageList>[].obs;
+  RxList<ReportType> reportTypesData = <ReportType>[].obs;
+
+  RxInt selectedReportIndex = (-1).obs;
+
+  @override
+  void onInit() {
+    super.onInit();
+    getReportTypes();
+  }
 
   getAllStarMsg(conversationid) async {
     isLoading.value = true;
@@ -43,6 +59,14 @@ class AllStaredMsgController extends GetxController {
               i < starMessageModel.value!.starMessageList!.length;
               i++) {
             allStarred.add(starMessageModel.value!.starMessageList![i]);
+            allStarred.value = allStarred
+                .where((element) =>
+                    element.chat!.deleteFromEveryone == false &&
+                    element.chat!.deleteForMe!.split(",").contains(
+                            Hive.box(userdata).get(userId).toString()) ==
+                        false)
+                .toList();
+            allStarred.refresh();
           }
 
           for (var i = 0;
@@ -63,6 +87,69 @@ class AllStaredMsgController extends GetxController {
       isLoading.value = false;
     } finally {
       isLoading.value = false;
+    }
+  }
+
+  getReportTypes() async {
+    try {
+      isReportTypeLoading.value = true;
+
+      await Hive.openBox(userdata);
+      log("token: ${Hive.box(userdata).get(authToken)}");
+      final responseJson = await apiHelper.postMethod(
+        url: apiHelper.getReportTypesList,
+        headers: {
+          'Authorization': 'Bearer ${Hive.box(userdata).get(authToken)}',
+          "Accept": "application/json",
+        },
+        requestBody: {},
+      );
+      reportTypesData.value =
+          ReportTypesModel.fromJson(responseJson).reportType!;
+      log("reportTypesData length ${reportTypesData.length}");
+      isReportTypeLoading.value = false;
+    } catch (e) {
+      isReportTypeLoading.value = false;
+
+      if (kDebugMode) {
+        print('get reportTypes data faield: $e');
+      }
+    }
+  }
+
+  reportUser({
+    required String conversationId,
+    required String reportUserId,
+    required String reportId,
+  }) async {
+    try {
+      isReportUserLoading.value = true;
+
+      await Hive.openBox(userdata);
+      log("token: ${Hive.box(userdata).get(authToken)}");
+      final responseJson = await apiHelper.postMethod(
+        url: apiHelper.reportUser,
+        headers: {
+          'Authorization': 'Bearer ${Hive.box(userdata).get(authToken)}',
+          'Content-Type': 'application/json',
+        },
+        requestBody: {
+          "conversation_id": int.parse(conversationId),
+          "reported_user_id": int.parse(reportUserId),
+          "report_id": int.parse(reportId),
+        },
+      );
+      if (responseJson['success'] == true) {
+        showCustomToast("User reported");
+        Get.back();
+      }
+      isReportUserLoading.value = false;
+    } catch (e) {
+      isReportUserLoading.value = false;
+
+      if (kDebugMode) {
+        print('report user faield: $e');
+      }
     }
   }
 }

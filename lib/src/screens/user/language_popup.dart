@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hive/hive.dart';
-import 'package:meyaoo_new/app.dart';
-import 'package:meyaoo_new/src/global/global.dart';
-import 'package:meyaoo_new/src/global/strings.dart';
-import 'package:meyaoo_new/src/screens/layout/bottombar.dart';
+import 'package:whoxachat/app.dart';
+import 'package:whoxachat/src/global/global.dart';
+import 'package:whoxachat/src/global/strings.dart';
+import 'package:whoxachat/src/screens/layout/bottombar.dart';
 
 class LanguagePopUp extends StatefulWidget {
   const LanguagePopUp({super.key});
@@ -14,19 +14,6 @@ class LanguagePopUp extends StatefulWidget {
 }
 
 class _LanguagePopUpState extends State<LanguagePopUp> {
-  // List<String> ln = [
-  //   'English',
-  //   'Franch',
-  // ];
-
-  // int selectedIndex = 0;
-
-  // @override
-  // void dispose() {
-  //   languageController.selectedLanguageIndex.value = -1;
-  //   super.dispose();
-  // }
-
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
@@ -47,9 +34,9 @@ class _LanguagePopUpState extends State<LanguagePopUp> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text(
-                "App Language",
-                style: TextStyle(
+              Text(
+                languageController.textTranslate("App Language"),
+                style: const TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
                 ),
@@ -68,8 +55,6 @@ class _LanguagePopUpState extends State<LanguagePopUp> {
                         return GestureDetector(
                           behavior: HitTestBehavior.translucent,
                           onTap: () async {
-                            // languageController.selectedLanguageIndex.value =
-                            //     index;
                             await Hive.box(userdata).put(
                                 lnId,
                                 languageController.languagesData[index].statusId
@@ -90,14 +75,14 @@ class _LanguagePopUpState extends State<LanguagePopUp> {
                               Container(
                                 height: 20,
                                 width: 20,
-                                decoration: const BoxDecoration(
+                                decoration:  BoxDecoration(
                                   shape: BoxShape.circle,
                                   gradient: LinearGradient(
                                     begin: Alignment.topLeft,
                                     end: Alignment.bottomRight,
                                     colors: [
-                                      Color(0xffFFEDAB),
-                                      Color(0xffFCC604),
+                                      secondaryColor,
+                                                                  chatownColor
                                     ],
                                   ),
                                 ),
@@ -117,12 +102,12 @@ class _LanguagePopUpState extends State<LanguagePopUp> {
                                           shape: BoxShape.circle,
                                           border: Border.all(
                                               color: appColorWhite, width: 3.5),
-                                          gradient: const LinearGradient(
+                                          gradient: LinearGradient(
                                             begin: Alignment.topLeft,
                                             end: Alignment.bottomRight,
                                             colors: [
-                                              Color(0xffFFEDAB),
-                                              Color(0xffFCC604),
+                                               secondaryColor,
+                                                                  chatownColor
                                             ],
                                           ),
                                         ),
@@ -163,8 +148,6 @@ class _LanguagePopUpState extends State<LanguagePopUp> {
                           return GestureDetector(
                             behavior: HitTestBehavior.translucent,
                             onTap: () async {
-                              // languageController.selectedLanguageIndex.value =
-                              //     index;
                               await Hive.box(userdata).put(
                                   lnId,
                                   languageController
@@ -186,14 +169,14 @@ class _LanguagePopUpState extends State<LanguagePopUp> {
                                 Container(
                                   height: 20,
                                   width: 20,
-                                  decoration: const BoxDecoration(
+                                  decoration: BoxDecoration(
                                     shape: BoxShape.circle,
                                     gradient: LinearGradient(
                                       begin: Alignment.topLeft,
                                       end: Alignment.bottomRight,
                                       colors: [
-                                        Color(0xffFFEDAB),
-                                        Color(0xffFCC604),
+                                       secondaryColor,
+                                                                  chatownColor
                                       ],
                                     ),
                                   ),
@@ -215,12 +198,12 @@ class _LanguagePopUpState extends State<LanguagePopUp> {
                                             border: Border.all(
                                                 color: appColorWhite,
                                                 width: 3.5),
-                                            gradient: const LinearGradient(
+                                            gradient: LinearGradient(
                                               begin: Alignment.topLeft,
                                               end: Alignment.bottomRight,
                                               colors: [
-                                                Color(0xffFFEDAB),
-                                                Color(0xffFCC604),
+                                                 secondaryColor,
+                                                                  chatownColor
                                               ],
                                             ),
                                           ),

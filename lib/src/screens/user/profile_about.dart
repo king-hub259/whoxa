@@ -1,4 +1,4 @@
-// ignore_for_file: camel_case_types, unused_local_variable, avoid_print, use_build_context_synchronously, avoid_returning_null_for_void, prefer_if_null_operators
+// ignore_for_file: camel_case_types, unused_local_variable, avoid_print, use_build_context_synchronously, avoid_returning_null_for_void, prefer_if_null_operators, deprecated_member_use
 import 'dart:convert';
 import 'dart:developer';
 import 'package:flutter/services.dart';
@@ -6,12 +6,12 @@ import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
-import 'package:meyaoo_new/Models/user_profile_model.dart';
-import 'package:meyaoo_new/app.dart';
-import 'package:meyaoo_new/src/global/api_helper.dart';
-import 'package:meyaoo_new/src/global/global.dart';
-import 'package:meyaoo_new/src/global/strings.dart';
-import 'package:meyaoo_new/src/screens/user/about_2.dart';
+import 'package:whoxachat/Models/user_profile_model.dart';
+import 'package:whoxachat/app.dart';
+import 'package:whoxachat/src/global/api_helper.dart';
+import 'package:whoxachat/src/global/global.dart';
+import 'package:whoxachat/src/global/strings.dart';
+import 'package:whoxachat/src/screens/user/about_2.dart';
 
 final ApiHelper apiHelper = ApiHelper();
 
@@ -23,7 +23,6 @@ class about extends StatefulWidget {
 }
 
 class _aboutState extends State<about> {
-  //TextEditingController aboutController = TextEditingController();
   UserProfileModel userProfileModel = UserProfileModel();
   bool isSelectedmessage = false;
   String selectedabouttext = "";
@@ -55,59 +54,20 @@ class _aboutState extends State<about> {
   Widget build(BuildContext context) {
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle(
-        statusBarColor: const Color(0xffFFEDAB).withOpacity(0.05),
+        statusBarColor: secondaryColor.withOpacity(0.05),
       ),
       child: Scaffold(
         backgroundColor: appColorWhite,
-        // appBar: AppBar(
-        //   shape: RoundedRectangleBorder(
-        //     borderRadius: BorderRadius.circular(0),
-        //     side: BorderSide(color: Colors.grey.shade200),
-        //   ),
-        //   elevation: 0,
-        //   backgroundColor: Colors.white,
-        //   leading: InkWell(
-        //     onTap: () {
-        //       Navigator.pop(context);
-        //     },
-        //     child: const Icon(
-        //       Icons.arrow_back_ios_new_rounded,
-        //       size: 18,
-        //       color: Colors.black,
-        //     ),
-        //   ),
-        //   title: const Text(
-        //     'About',
-        //     style: TextStyle(
-        //         color: Colors.black,
-        //         fontSize: 20,
-        //         fontFamily: "Poppins",
-        //         fontWeight: FontWeight.w500),
-        //   ),
-        //   actions: [
-        //     Padding(
-        //       padding: const EdgeInsets.only(right: 12),
-        //       child: InkWell(
-        //         onTap: () {
-        //           editApiCall();
-        //         },
-        //         child: statusText.isEmpty
-        //             ? const SizedBox.shrink()
-        //             : const Icon(Icons.check, color: Colors.black),
-        //       ),
-        //     ),
-        //   ],
-        // ),
         body: SingleChildScrollView(
           child: Column(
             children: [
               Container(
-                height: 130,
+                height: 110,
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
-                      const Color(0xffFFEDAB).withOpacity(0.04),
-                      const Color(0xffFCC604).withOpacity(0.04),
+                      secondaryColor.withOpacity(0.04),
+                      chatownColor.withOpacity(0.04),
                     ],
                   ),
                 ),
@@ -144,7 +104,7 @@ class _aboutState extends State<about> {
                           : const Icon(Icons.check, color: Colors.black),
                     ),
                   ],
-                ).paddingOnly(top: 20).paddingSymmetric(
+                ).paddingOnly(top: 30).paddingSymmetric(
                       horizontal: 28,
                     ),
               ),
@@ -211,49 +171,6 @@ class _aboutState extends State<about> {
                               child: Icon(Icons.arrow_forward_ios, size: 17))
                         ],
                       ),
-                      // SizedBox(
-                      //   height: 60,
-                      //   width: MediaQuery.of(context).size.width,
-                      //   child: TextField(
-                      //       controller: aboutController,
-                      //       readOnly: false,
-                      //       enabled: false,
-                      //       autofocus: false,
-                      //       maxLength: 50,
-                      //       style: const TextStyle(
-                      //           color: Colors.black,
-                      //           fontSize: 12,
-                      //           fontWeight: FontWeight.w500),
-                      //       textCapitalization: TextCapitalization.sentences,
-                      //       decoration: InputDecoration(
-                      //         enabledBorder: OutlineInputBorder(
-                      //             borderRadius: BorderRadius.circular(10),
-                      //             borderSide: const BorderSide(color: appgrey)),
-                      //         focusedBorder: OutlineInputBorder(
-                      //             borderSide: const BorderSide(color: appgrey),
-                      //             borderRadius: BorderRadius.circular(10)),
-                      //         disabledBorder: OutlineInputBorder(
-                      //             borderSide: const BorderSide(color: appgrey),
-                      //             borderRadius: BorderRadius.circular(10)),
-                      //         border: OutlineInputBorder(
-                      //           borderRadius: BorderRadius.circular(10),
-                      //           borderSide: const BorderSide(color: appgrey),
-                      //         ),
-                      //         contentPadding: const EdgeInsets.only(
-                      //             top: 1, left: 15, bottom: 1),
-                      //         suffixIcon: const Icon(Icons.arrow_forward_ios,
-                      //             size: 17, color: Colors.black),
-                      //         hintText: 'Type here',
-                      //         hintStyle: const TextStyle(
-                      //             fontSize: 12,
-                      //             color: Colors.grey,
-                      //             fontWeight: FontWeight.w400),
-                      //         filled: true,
-                      //         fillColor: Colors.white,
-
-                      //         // ),
-                      //       )),
-                      // ),
                       const SizedBox(
                         height: 20,
                       ),
@@ -312,14 +229,12 @@ class _aboutState extends State<about> {
                                                 color: Colors.black,
                                               )).paddingOnly(left: 12),
                                     ),
-                                    // Your additional condition here
-
                                     bioList[index].name.toString() ==
                                             selectedabouttext
                                         ? Container(
                                             height: 20,
                                             width: 20,
-                                            decoration: const BoxDecoration(
+                                            decoration: BoxDecoration(
                                                 shape: BoxShape.circle,
                                                 color: chatownColor),
                                             child: const Icon(
